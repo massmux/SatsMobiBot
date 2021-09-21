@@ -74,7 +74,6 @@ func (err Error) Error() string {
 }
 
 type Wallet struct {
-	*Client  `gorm:"-"`
 	ID       string `json:"id" gorm:"id"`
 	Adminkey string `json:"adminkey"`
 	Inkey    string `json:"inkey"`

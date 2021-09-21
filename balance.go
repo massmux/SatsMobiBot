@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
@@ -13,27 +14,27 @@ const (
 	balanceErrorMessage = "🚫 Error fetching your balance. Please try again later."
 )
 
-func (bot TipBot) balanceHandler(m *tb.Message) {
+func (bot TipBot) balanceHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(ctx, m)
 	// reply only in private message
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))
 	}
 	// first check whether the user is initialized
-	fromUser, err := GetUser(m.Sender, bot)
-	if err != nil {
-		log.Errorf("[/balance] Error: %s", err)
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
 		return
 	}
-	if !fromUser.Initialized {
+
+	if !user.Initialized {
 		bot.startHandler(m)
 		return
 	}
 
 	usrStr := GetUserStr(m.Sender)
-	balance, err := bot.GetUserBalance(m.Sender)
+	balance, err := bot.GetUserBalance(user)
 	if err != nil {
 		log.Errorf("[/balance] Error fetching %s's balance: %s", usrStr, err)
 		bot.trySendMessage(m.Sender, balanceErrorMessage)

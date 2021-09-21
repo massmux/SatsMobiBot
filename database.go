@@ -42,11 +42,9 @@ func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 	if tx.Error != nil {
 		errmsg := fmt.Sprintf("[GetUser] Couldn't fetch %s's info from database.", GetUserStr(u))
 		log.Warnln(errmsg)
+		user.Telegram = u
 		return user, tx.Error
 	}
-	defer func() {
-		user.Wallet.Client = bot.client
-	}()
 	var err error
 	go func() {
 		userCopy := bot.copyLowercaseUser(u)

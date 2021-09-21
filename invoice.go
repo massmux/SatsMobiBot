@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"strings"
 
@@ -28,9 +29,9 @@ func helpInvoiceUsage(errormsg string) string {
 	}
 }
 
-func (bot TipBot) invoiceHandler(m *tb.Message) {
+func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(ctx, m)
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))
@@ -41,7 +42,11 @@ func (bot TipBot) invoiceHandler(m *tb.Message) {
 		return
 	}
 
-	user, err := GetUser(m.Sender, bot)
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return
+	}
+
 	userStr := GetUserStr(m.Sender)
 	amount, err := decodeAmountFromCommand(m.Text)
 	if err != nil {
@@ -73,7 +78,7 @@ func (bot TipBot) invoiceHandler(m *tb.Message) {
 			Amount:  int64(amount),
 			Memo:    memo,
 			Webhook: Configuration.Lnbits.WebhookServer},
-		*user.Wallet)
+		bot.client)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err)
 		log.Errorln(errmsg)

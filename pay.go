@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -36,9 +37,14 @@ func helpPayInvoiceUsage(errormsg string) string {
 }
 
 // confirmPaymentHandler invoked on "/pay lnbc..." command
-func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
+func (bot TipBot) confirmPaymentHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(ctx, m)
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return
+	}
+
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))
@@ -48,13 +54,6 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 	if len(strings.Split(m.Text, " ")) < 2 {
 		NewMessage(m, WithDuration(0, bot.telegram))
 		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(""))
-		return
-	}
-	user, err := GetUser(m.Sender, bot)
-	if err != nil {
-		NewMessage(m, WithDuration(0, bot.telegram))
-		errmsg := fmt.Sprintf("[/pay] Error: Could not GetUser: %s", err)
-		log.Errorln(errmsg)
 		return
 	}
 	userStr := GetUserStr(m.Sender)
@@ -88,7 +87,7 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 	}
 
 	// check user balance first
-	balance, err := bot.GetUserBalance(m.Sender)
+	balance, err := bot.GetUserBalance(user)
 	if err != nil {
 		NewMessage(m, WithDuration(0, bot.telegram))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not get user balance: %s", err)
@@ -119,16 +118,14 @@ func (bot TipBot) confirmPaymentHandler(m *tb.Message) {
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
-func (bot TipBot) cancelPaymentHandler(c *tb.Callback) {
+func (bot TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 	// reset state immediately
-	user, err := GetUser(c.Sender, bot)
-	if err != nil {
-		return
-	}
+	user := LoadUser(ctx)
+
 	ResetUserState(user, bot)
 
 	bot.tryDeleteMessage(c.Message)
-	_, err = bot.telegram.Send(c.Sender, paymentCancelledMessage)
+	_, err := bot.telegram.Send(c.Sender, paymentCancelledMessage)
 	if err != nil {
 		log.WithField("message", paymentCancelledMessage).WithField("user", c.Sender.ID).Printf("[Send] %s", err.Error())
 		return
@@ -137,22 +134,22 @@ func (bot TipBot) cancelPaymentHandler(c *tb.Callback) {
 }
 
 // payHandler when user clicked pay "X" on payment confirmation
-func (bot TipBot) payHandler(c *tb.Callback) {
+func (bot TipBot) payHandler(ctx context.Context, c *tb.Callback) {
 	bot.tryEditMessage(c.Message, c.Message.Text, &tb.ReplyMarkup{})
-	user, err := GetUser(c.Sender, bot)
-	if err != nil {
-		log.Printf("[GetUser] User: %d: %s", c.Sender.ID, err.Error())
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
 		return
 	}
+
 	if user.StateKey == lnbits.UserStateConfirmPayment {
 		invoiceString := user.StateData
 
-		// reset state immediatelly
+		// reset state immediately
 		ResetUserState(user, bot)
 
 		userStr := GetUserStr(c.Sender)
 		// pay invoice
-		invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoiceString}, *user.Wallet)
+		invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoiceString}, bot.client)
 		if err != nil {
 			errmsg := fmt.Sprintf("[/pay] Could not pay invoice of user %s: %s", userStr, err)
 			bot.trySendMessage(c.Sender, fmt.Sprintf(invoicePaymentFailedMessage, err))

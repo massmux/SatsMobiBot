@@ -103,7 +103,7 @@ func (w Server) serveLNURLpSecond(username string, amount int64) (*lnurl.LNURLPa
 	}
 
 	// set wallet lnbits client
-	user.Wallet.Client = w.c
+
 	var resp *lnurl.LNURLPayResponse2
 
 	// the same description_hash needs to be built in the second request
@@ -118,7 +118,7 @@ func (w Server) serveLNURLpSecond(username string, amount int64) (*lnurl.LNURLPa
 			Out:             false,
 			DescriptionHash: descriptionHash,
 			Webhook:         w.WebhookServer},
-		*user.Wallet)
+		w.c)
 	if err != nil {
 		err = fmt.Errorf("[serveLNURLpSecond] Couldn't create invoice: %v", err)
 		resp = &lnurl.LNURLPayResponse2{

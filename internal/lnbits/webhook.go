@@ -50,7 +50,6 @@ func (w *WebhookServer) GetUserByWalletId(walletId string) (*User, error) {
 	if tx.Error != nil {
 		return user, tx.Error
 	}
-	user.Wallet.Client = w.c
 	return user, nil
 }
 

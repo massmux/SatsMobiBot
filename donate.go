@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -27,7 +28,7 @@ var (
 	donateHelpText           = "📖 Oops, that didn't work. %s\n\n" +
 		"*Usage:* `/donate <amount>`\n" +
 		"*Example:* `/donate 1000`"
-	endpoint string
+	donationEndpoint string
 )
 
 func helpDonateUsage(errormsg string) string {
@@ -38,9 +39,9 @@ func helpDonateUsage(errormsg string) string {
 	}
 }
 
-func (bot TipBot) donationHandler(m *tb.Message) {
+func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(ctx, m)
 
 	if len(strings.Split(m.Text, " ")) < 2 {
 		bot.trySendMessage(m.Sender, helpDonateUsage(donateEnterAmountMessage))
@@ -58,7 +59,7 @@ func (bot TipBot) donationHandler(m *tb.Message) {
 	// command is valid
 	msg := bot.trySendMessage(m.Sender, donationProgressMessage)
 	// get invoice
-	resp, err := http.Get(fmt.Sprintf(endpoint, amount, GetUserStr(m.Sender), GetUserStr(bot.telegram.Me)))
+	resp, err := http.Get(fmt.Sprintf(donationEndpoint, amount, GetUserStr(m.Sender), GetUserStr(bot.telegram.Me)))
 	if err != nil {
 		log.Errorln(err)
 		bot.tryEditMessage(msg, donationErrorMessage)
@@ -72,13 +73,9 @@ func (bot TipBot) donationHandler(m *tb.Message) {
 	}
 
 	// send donation invoice
-	user, err := GetUser(m.Sender, bot)
-	if err != nil {
-		return
-	}
-
+	user := LoadUser(ctx)
 	// bot.trySendMessage(user.Telegram, string(body))
-	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: string(body)}, *user.Wallet)
+	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: string(body)}, bot.client)
 	if err != nil {
 		userStr := GetUserStr(m.Sender)
 		errmsg := fmt.Sprintf("[/donate] Donation failed for user %s: %s", userStr, err)
@@ -96,7 +93,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	endpoint = sb.String()
+	donationEndpoint = sb.String()
 }
 
 type rot13Reader struct {
@@ -124,7 +121,7 @@ func (rot13 rot13Reader) Read(b []byte) (int, error) {
 	return n, err
 }
 
-func (bot TipBot) parseCmdDonHandler(m *tb.Message) error {
+func (bot TipBot) parseCmdDonHandler(ctx context.Context, m *tb.Message) error {
 	arg := ""
 	if strings.HasPrefix(strings.ToLower(m.Text), "/send") {
 		arg, _ = getArgumentFromCommand(m.Text, 2)
@@ -154,9 +151,9 @@ func (bot TipBot) parseCmdDonHandler(m *tb.Message) error {
 	}
 	donationInterceptMessage := sb.String()
 
-  bot.trySendMessage(m.Sender, MarkdownEscape(donationInterceptMessage))
+	bot.trySendMessage(m.Sender, MarkdownEscape(donationInterceptMessage))
 	m.Text = fmt.Sprintf("/donate %d", amount)
-	bot.donationHandler(m)
+	bot.donationHandler(ctx, m)
 	// returning nil here will abort the parent handler (/pay or /tip)
 	return nil
 }

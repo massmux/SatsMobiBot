@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
@@ -16,24 +17,20 @@ var (
 	couldNotLinkMessage = "🚫 Couldn't link your wallet. Please try again later."
 )
 
-func (bot TipBot) lndhubHandler(m *tb.Message) {
+func (bot TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	if Configuration.Lnbits.LnbitsPublicUrl == "" {
 		bot.trySendMessage(m.Sender, couldNotLinkMessage)
 		return
 	}
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(ctx, m)
 	// reply only in private message
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))
 	}
 	// first check whether the user is initialized
-	fromUser, err := GetUser(m.Sender, bot)
-	if err != nil {
-		log.Errorf("[/balance] Error: %s", err)
-		return
-	}
+	fromUser := LoadUser(ctx)
 	bot.trySendMessage(m.Sender, walletConnectMessage)
 
 	lndhubUrl := fmt.Sprintf("lndhub://admin:%s@%slndhub/ext/", fromUser.Wallet.Adminkey, Configuration.Lnbits.LnbitsPublicUrl)

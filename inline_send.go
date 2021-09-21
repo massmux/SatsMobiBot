@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
@@ -31,14 +34,14 @@ var (
 )
 
 type InlineSend struct {
-	Message       string   `json:"inline_send_message"`
-	Amount        int      `json:"inline_send_amount"`
-	From          *tb.User `json:"inline_send_from"`
-	To            *tb.User `json:"inline_send_to"`
-	Memo          string   `json:"inline_send_memo"`
-	ID            string   `json:"inline_send_id"`
-	Active        bool     `json:"inline_send_active"`
-	InTransaction bool     `json:"inline_send_intransaction"`
+	Message       string       `json:"inline_send_message"`
+	Amount        int          `json:"inline_send_amount"`
+	From          *lnbits.User `json:"inline_send_from"`
+	To            *tb.User     `json:"inline_send_to"`
+	Memo          string       `json:"inline_send_memo"`
+	ID            string       `json:"inline_send_id"`
+	Active        bool         `json:"inline_send_active"`
+	InTransaction bool         `json:"inline_send_intransaction"`
 }
 
 func NewInlineSend() *InlineSend {
@@ -112,7 +115,7 @@ func (bot *TipBot) getInlineSend(c *tb.Callback) (*InlineSend, error) {
 
 }
 
-func (bot TipBot) handleInlineSendQuery(q *tb.Query) {
+func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 	inlineSend := NewInlineSend()
 	var err error
 	inlineSend.Amount, err = decodeAmountFromCommand(q.Text)
@@ -124,8 +127,9 @@ func (bot TipBot) handleInlineSendQuery(q *tb.Query) {
 		bot.inlineQueryReplyWithError(q, inlineSendInvalidAmountMessage, fmt.Sprintf(inlineQuerySendDescription, bot.telegram.Me.Username))
 		return
 	}
+	fromUser := LoadUser(ctx)
 	fromUserStr := GetUserStr(&q.From)
-	balance, err := bot.GetUserBalance(&q.From)
+	balance, err := bot.GetUserBalance(fromUser)
 	if err != nil {
 		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
 		log.Errorln(errmsg)
@@ -175,7 +179,7 @@ func (bot TipBot) handleInlineSendQuery(q *tb.Query) {
 		// add data to persistent object
 		inlineSend.Message = inlineMessage
 		inlineSend.ID = id
-		inlineSend.From = &q.From
+		inlineSend.From = fromUser
 		// add result to persistent struct
 		runtime.IgnoreError(bot.bunt.Set(inlineSend))
 	}
@@ -190,12 +194,15 @@ func (bot TipBot) handleInlineSendQuery(q *tb.Query) {
 	}
 }
 
-func (bot *TipBot) acceptInlineSendHandler(c *tb.Callback) {
+func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) {
+	to := LoadUser(ctx)
+
 	inlineSend, err := bot.getInlineSend(c)
 	if err != nil {
 		log.Errorf("[acceptInlineSendHandler] %s", err)
 		return
 	}
+	fromUser := inlineSend.From
 	// immediatelly set intransaction to block duplicate calls
 	err = bot.LockSend(inlineSend)
 	if err != nil {
@@ -210,26 +217,24 @@ func (bot *TipBot) acceptInlineSendHandler(c *tb.Callback) {
 	defer bot.ReleaseSend(inlineSend)
 
 	amount := inlineSend.Amount
-	to := c.Sender
-	from := inlineSend.From
 
-	inlineSend.To = to
+	inlineSend.To = to.Telegram
 
-	if from.ID == to.ID {
-		bot.trySendMessage(from, sendYourselfMessage)
+	if fromUser.Telegram.ID == to.Telegram.ID {
+		bot.trySendMessage(fromUser.Telegram, sendYourselfMessage)
 		return
 	}
 
-	toUserStrMd := GetUserStrMd(to)
-	fromUserStrMd := GetUserStrMd(from)
-	toUserStr := GetUserStr(to)
-	fromUserStr := GetUserStr(from)
+	toUserStrMd := GetUserStrMd(to.Telegram)
+	fromUserStrMd := GetUserStrMd(fromUser.Telegram)
+	toUserStr := GetUserStr(to.Telegram)
+	fromUserStr := GetUserStr(fromUser.Telegram)
 
 	// check if user exists and create a wallet if not
-	_, exists := bot.UserExists(to)
+	_, exists := bot.UserExists(to.Telegram)
 	if !exists {
 		log.Infof("[sendInline] User %s has no wallet.", toUserStr)
-		err = bot.CreateWalletForTelegramUser(to)
+		to, err = bot.CreateWalletForTelegramUser(to.Telegram)
 		if err != nil {
 			errmsg := fmt.Errorf("[sendInline] Error: Could not create wallet for %s", toUserStr)
 			log.Errorln(errmsg)
@@ -241,15 +246,10 @@ func (bot *TipBot) acceptInlineSendHandler(c *tb.Callback) {
 
 	// todo: user new get username function to get userStrings
 	transactionMemo := fmt.Sprintf("Send from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
-	t := NewTransaction(bot, from, to, amount, TransactionType("inline send"))
+	t := NewTransaction(bot, fromUser, to, amount, TransactionType("inline send"))
 	t.Memo = transactionMemo
 	success, err := t.Send()
 	if !success {
-		if err != nil {
-			bot.trySendMessage(from, fmt.Sprintf(tipErrorMessage, err))
-		} else {
-			bot.trySendMessage(from, fmt.Sprintf(tipErrorMessage, tipUndefinedErrorMsg))
-		}
 		errMsg := fmt.Sprintf("[sendInline] Transaction failed: %s", err)
 		log.Errorln(errMsg)
 		bot.tryEditMessage(c.Message, inlineSendFailedMessage, &tb.ReplyMarkup{})
@@ -264,14 +264,14 @@ func (bot *TipBot) acceptInlineSendHandler(c *tb.Callback) {
 		inlineSend.Message = inlineSend.Message + fmt.Sprintf(inlineSendAppendMemo, memo)
 	}
 
-	if !bot.UserInitializedWallet(to) {
+	if !to.Initialized {
 		inlineSend.Message += "\n\n" + fmt.Sprintf(inlineSendCreateWalletMessage, GetUserStrMd(bot.telegram.Me))
 	}
 
 	bot.tryEditMessage(c.Message, inlineSend.Message, &tb.ReplyMarkup{})
 	// notify users
-	_, err = bot.telegram.Send(to, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, amount))
-	_, err = bot.telegram.Send(from, fmt.Sprintf(tipSentMessage, amount, toUserStrMd))
+	_, err = bot.telegram.Send(to.Telegram, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, amount))
+	_, err = bot.telegram.Send(fromUser.Telegram, fmt.Sprintf(tipSentMessage, amount, toUserStrMd))
 	if err != nil {
 		errmsg := fmt.Errorf("[sendInline] Error: Send message to %s: %s", toUserStr, err)
 		log.Errorln(errmsg)
@@ -285,7 +285,7 @@ func (bot *TipBot) cancelInlineSendHandler(c *tb.Callback) {
 		log.Errorf("[cancelInlineSendHandler] %s", err)
 		return
 	}
-	if c.Sender.ID == inlineSend.From.ID {
+	if c.Sender.ID == inlineSend.From.Telegram.ID {
 		bot.tryEditMessage(c.Message, sendCancelledMessage, &tb.ReplyMarkup{})
 		// set the inlineSend inactive
 		inlineSend.Active = false

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -71,9 +72,9 @@ func (bot TipBot) makeHelpMessage(m *tb.Message) string {
 	return fmt.Sprintf(helpMessage, dynamicHelpMessage)
 }
 
-func (bot TipBot) helpHandler(m *tb.Message) {
+func (bot TipBot) helpHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(ctx, m)
 	if !m.Private() {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))
@@ -82,9 +83,9 @@ func (bot TipBot) helpHandler(m *tb.Message) {
 	return
 }
 
-func (bot TipBot) basicsHandler(m *tb.Message) {
+func (bot TipBot) basicsHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(ctx, m)
 	if !m.Private() {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))
@@ -93,7 +94,7 @@ func (bot TipBot) basicsHandler(m *tb.Message) {
 	return
 }
 
-func (bot TipBot) makeadvancedHelpMessage(m *tb.Message) string {
+func (bot TipBot) makeAdvancedHelpMessage(m *tb.Message) string {
 	dynamicHelpMessage := ""
 	// user has no username set
 	if len(m.Sender.Username) == 0 {
@@ -108,7 +109,7 @@ func (bot TipBot) makeadvancedHelpMessage(m *tb.Message) string {
 			dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("Your Lightning Address:\n`%s`\n", lnaddr)
 		}
 
-		lnurl, err := bot.UserGetLNURL(m.Sender)
+		lnurl, err := UserGetLNURL(m.Sender)
 		if err != nil {
 			dynamicHelpMessage = ""
 		} else {
@@ -117,16 +118,16 @@ func (bot TipBot) makeadvancedHelpMessage(m *tb.Message) string {
 
 	}
 	// this is so stupid:
-	return fmt.Sprintf(advancedMessage, dynamicHelpMessage, GetUserStrMd(bot.telegram.Me), GetUserStrMd(bot.telegram.Me), GetUserStrMd(bot.telegram.Me))
+	return fmt.Sprintf(advancedMessage, dynamicHelpMessage, GetUserStr(bot.telegram.Me), GetUserStr(bot.telegram.Me), GetUserStr(bot.telegram.Me))
 }
 
-func (bot TipBot) advancedHelpHandler(m *tb.Message) {
+func (bot TipBot) advancedHelpHandler(ctx context.Context, m *tb.Message) {
 	// check and print all commands
-	bot.anyTextHandler(m)
+	bot.anyTextHandler(ctx, m)
 	if !m.Private() {
 		// delete message
 		NewMessage(m, WithDuration(0, bot.telegram))
 	}
-	bot.trySendMessage(m.Sender, bot.makeadvancedHelpMessage(m), tb.NoPreview)
+	bot.trySendMessage(m.Sender, bot.makeAdvancedHelpMessage(m), tb.NoPreview)
 	return
 }

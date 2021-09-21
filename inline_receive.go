@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
@@ -16,6 +19,7 @@ const (
 	inlineReceiveCreateWalletMessage = "Chat with %s 👈 to manage your wallet."
 	inlineReceiveYourselfMessage     = "📖 You can't pay to yourself."
 	inlineReceiveFailedMessage       = "🚫 Receive failed."
+	inlineReceiveCancelledMessage    = "🚫 Receive cancelled."
 )
 
 var (
@@ -29,10 +33,10 @@ var (
 )
 
 type InlineReceive struct {
-	Message       string   `json:"inline_receive_message"`
-	Amount        int      `json:"inline_receive_amount"`
-	From          *tb.User `json:"inline_receive_from"`
-	To            *tb.User `json:"inline_receive_to"`
+	Message       string       `json:"inline_receive_message"`
+	Amount        int          `json:"inline_receive_amount"`
+	From          *lnbits.User `json:"inline_receive_from"`
+	To            *lnbits.User `json:"inline_receive_to"`
 	Memo          string
 	ID            string `json:"inline_receive_id"`
 	Active        bool   `json:"inline_receive_active"`
@@ -108,7 +112,8 @@ func (bot *TipBot) getInlineReceive(c *tb.Callback) (*InlineReceive, error) {
 
 }
 
-func (bot TipBot) handleInlineReceiveQuery(q *tb.Query) {
+func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
+	from := LoadUser(ctx)
 	inlineReceive := NewInlineReceive()
 	var err error
 	inlineReceive.Amount, err = decodeAmountFromCommand(q.Text)
@@ -160,7 +165,7 @@ func (bot TipBot) handleInlineReceiveQuery(q *tb.Query) {
 		// create persistend inline send struct
 		// add data to persistent object
 		inlineReceive.ID = id
-		inlineReceive.To = &q.From // The user who wants to receive
+		inlineReceive.To = from // The user who wants to receive
 		// add result to persistent struct
 		inlineReceive.Message = inlineMessage
 		runtime.IgnoreError(bot.bunt.Set(inlineReceive))
@@ -177,7 +182,7 @@ func (bot TipBot) handleInlineReceiveQuery(q *tb.Query) {
 	}
 }
 
-func (bot *TipBot) acceptInlineReceiveHandler(c *tb.Callback) {
+func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
 	inlineReceive, err := bot.getInlineReceive(c)
 	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
@@ -199,18 +204,17 @@ func (bot *TipBot) acceptInlineReceiveHandler(c *tb.Callback) {
 
 	// user `from` is the one who is SENDING
 	// user `to` is the one who is RECEIVING
-	from := c.Sender
+	from := LoadUser(ctx)
 	to := inlineReceive.To
-	toUserStrMd := GetUserStrMd(to)
-	fromUserStrMd := GetUserStrMd(from)
-	toUserStr := GetUserStr(to)
-	fromUserStr := GetUserStr(from)
+	toUserStrMd := GetUserStrMd(to.Telegram)
+	fromUserStrMd := GetUserStrMd(from.Telegram)
+	toUserStr := GetUserStr(to.Telegram)
+	fromUserStr := GetUserStr(from.Telegram)
 
 	if from.ID == to.ID {
-		bot.trySendMessage(from, sendYourselfMessage)
+		bot.trySendMessage(from.Telegram, sendYourselfMessage)
 		return
 	}
-
 	// balance check of the user
 	balance, err := bot.GetUserBalance(from)
 	if err != nil {
@@ -221,7 +225,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(c *tb.Callback) {
 	// check if fromUser has balance
 	if balance < inlineReceive.Amount {
 		log.Errorln("[acceptInlineReceiveHandler] balance of user %s too low", fromUserStr)
-		bot.trySendMessage(from, fmt.Sprintf(inlineSendBalanceLowMessage, balance))
+		bot.trySendMessage(from.Telegram, fmt.Sprintf(inlineSendBalanceLowMessage, balance))
 		return
 	}
 
@@ -234,11 +238,6 @@ func (bot *TipBot) acceptInlineReceiveHandler(c *tb.Callback) {
 	t.Memo = transactionMemo
 	success, err := t.Send()
 	if !success {
-		if err != nil {
-			bot.trySendMessage(from, fmt.Sprintf(tipErrorMessage, err))
-		} else {
-			bot.trySendMessage(from, fmt.Sprintf(tipErrorMessage, tipUndefinedErrorMsg))
-		}
 		errMsg := fmt.Sprintf("[acceptInlineReceiveHandler] Transaction failed: %s", err)
 		log.Errorln(errMsg)
 		bot.tryEditMessage(c.Message, inlineReceiveFailedMessage, &tb.ReplyMarkup{})
@@ -253,14 +252,14 @@ func (bot *TipBot) acceptInlineReceiveHandler(c *tb.Callback) {
 		inlineReceive.Message = inlineReceive.Message + fmt.Sprintf(inlineReceiveAppendMemo, memo)
 	}
 
-	if !bot.UserInitializedWallet(to) {
+	if !to.Initialized {
 		inlineReceive.Message += "\n\n" + fmt.Sprintf(inlineSendCreateWalletMessage, GetUserStrMd(bot.telegram.Me))
 	}
 
 	bot.tryEditMessage(c.Message, inlineReceive.Message, &tb.ReplyMarkup{})
 	// notify users
-	_, err = bot.telegram.Send(to, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, inlineReceive.Amount))
-	_, err = bot.telegram.Send(from, fmt.Sprintf(tipSentMessage, inlineReceive.Amount, toUserStrMd))
+	_, err = bot.telegram.Send(to.Telegram, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, inlineReceive.Amount))
+	_, err = bot.telegram.Send(from.Telegram, fmt.Sprintf(tipSentMessage, inlineReceive.Amount, toUserStrMd))
 	if err != nil {
 		errmsg := fmt.Errorf("[acceptInlineReceiveHandler] Error: Receive message to %s: %s", toUserStr, err)
 		log.Errorln(errmsg)
@@ -274,8 +273,8 @@ func (bot *TipBot) cancelInlineReceiveHandler(c *tb.Callback) {
 		log.Errorf("[cancelInlineReceiveHandler] %s", err)
 		return
 	}
-	if c.Sender.ID == inlineReceive.To.ID {
-		bot.tryEditMessage(c.Message, sendCancelledMessage, &tb.ReplyMarkup{})
+	if c.Sender.ID == inlineReceive.To.Telegram.ID {
+		bot.tryEditMessage(c.Message, inlineReceiveCancelledMessage, &tb.ReplyMarkup{})
 		// set the inlineReceive inactive
 		inlineReceive.Active = false
 		inlineReceive.InTransaction = false

@@ -15,20 +15,12 @@ import (
 func SetUserState(user *lnbits.User, bot TipBot, stateKey lnbits.UserStateKey, stateData string) {
 	user.StateKey = stateKey
 	user.StateData = stateData
-	err := UpdateUserRecord(user, bot)
-	if err != nil {
-		log.Errorln(err.Error())
-		return
-	}
+	bot.database.Table("users").Where("name = ?", user.Name).Update("state_key", user.StateKey).Update("state_data", user.StateData)
 }
 
 func ResetUserState(user *lnbits.User, bot TipBot) {
 	user.ResetState()
-	err := UpdateUserRecord(user, bot)
-	if err != nil {
-		log.Errorln(err.Error())
-		return
-	}
+	bot.database.Table("users").Where("name = ?", user.Name).Update("state_key", 0).Update("state_data", "")
 }
 
 var markdownV2Escapes = []string{"_", "[", "]", "(", ")", "~", "`", ">", "#", "+", "-", "=", "|", "{", "}", ".", "!"}
@@ -87,34 +79,22 @@ func appendUinqueUsersToSlice(slice []*tb.User, i *tb.User) []*tb.User {
 	return append(slice, i)
 }
 
-func (bot *TipBot) UserInitializedWallet(user *tb.User) bool {
-	toUser, err := GetUser(user, *bot)
-	if err != nil {
-		return false
-	}
-	return toUser.Initialized
-}
+func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int, err error) {
 
-func (bot *TipBot) GetUserBalance(user *tb.User) (amount int, err error) {
-	// get user
-	fromUser, err := GetUser(user, *bot)
+	wallet, err := bot.client.Info(*user.Wallet)
 	if err != nil {
-		return
-	}
-	wallet, err := fromUser.Wallet.Info(*fromUser.Wallet)
-	if err != nil {
-		errmsg := fmt.Sprintf("[GetUserBalance] Error: Couldn't fetch user %s's info from LNbits: %s", GetUserStr(user), err)
+		errmsg := fmt.Sprintf("[GetUserBalance] Error: Couldn't fetch user %s's info from LNbits: %s", GetUserStr(user.Telegram), err)
 		log.Errorln(errmsg)
 		return
 	}
-	fromUser.Wallet.Balance = wallet.Balance
-	err = UpdateUserRecord(fromUser, *bot)
+	user.Wallet.Balance = wallet.Balance
+	err = UpdateUserRecord(user, *bot)
 	if err != nil {
 		return
 	}
 	// msat to sat
 	amount = int(wallet.Balance) / 1000
-	log.Infof("[GetUserBalance] %s's balance: %d sat\n", GetUserStr(user), amount)
+	log.Infof("[GetUserBalance] %s's balance: %d sat\n", GetUserStr(user.Telegram), amount)
 	return
 }
 
@@ -125,7 +105,7 @@ func (bot *TipBot) copyLowercaseUser(u *tb.User) *tb.User {
 	return &userCopy
 }
 
-func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) error {
+func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) (*lnbits.User, error) {
 	userCopy := bot.copyLowercaseUser(tbUser)
 	user := &lnbits.User{Telegram: userCopy}
 	userStr := GetUserStr(tbUser)
@@ -134,14 +114,14 @@ func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) error {
 	if err != nil {
 		errmsg := fmt.Sprintf("[CreateWalletForTelegramUser] Error: Could not create wallet for user %s", userStr)
 		log.Errorln(errmsg)
-		return err
+		return user, err
 	}
 	tx := bot.database.Save(user)
 	if tx.Error != nil {
-		return tx.Error
+		return nil, tx.Error
 	}
 	log.Printf("[CreateWalletForTelegramUser] Wallet created for user %s. ", userStr)
-	return nil
+	return user, nil
 }
 
 func (bot *TipBot) UserExists(user *tb.User) (*lnbits.User, bool) {

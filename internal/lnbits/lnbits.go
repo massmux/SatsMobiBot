@@ -74,14 +74,13 @@ func (c *Client) CreateWallet(userId, walletName, adminId string) (wal Wallet, e
 		return
 	}
 	err = resp.ToJSON(&wal)
-	wal.Client = c
 	return
 }
 
 // Invoice creates an invoice associated with this wallet.
-func (c Client) Invoice(params InvoiceParams, w Wallet) (lntx BitInvoice, err error) {
+func (w Wallet) Invoice(params InvoiceParams, c *Client) (lntx BitInvoice, err error) {
 	c.header["X-Api-Key"] = w.Adminkey
-	resp, err := req.Post(c.url+"/api/v1/payments", w.header, req.BodyJSON(&params))
+	resp, err := req.Post(c.url+"/api/v1/payments", c.header, req.BodyJSON(&params))
 	if err != nil {
 		return
 	}
@@ -100,7 +99,7 @@ func (c Client) Invoice(params InvoiceParams, w Wallet) (lntx BitInvoice, err er
 // Info returns wallet information
 func (c Client) Info(w Wallet) (wtx Wallet, err error) {
 	c.header["X-Api-Key"] = w.Adminkey
-	resp, err := req.Get(w.url+"/api/v1/wallet", w.header, nil)
+	resp, err := req.Get(c.url+"/api/v1/wallet", c.header, nil)
 	if err != nil {
 		return
 	}
@@ -135,9 +134,9 @@ func (c Client) Wallets(w User) (wtx []Wallet, err error) {
 }
 
 // Pay pays a given invoice with funds from the wallet.
-func (c Client) Pay(params PaymentParams, w Wallet) (wtx BitInvoice, err error) {
+func (w Wallet) Pay(params PaymentParams, c *Client) (wtx BitInvoice, err error) {
 	c.header["X-Api-Key"] = w.Adminkey
-	resp, err := req.Post(c.url+"/api/v1/payments", w.header, req.BodyJSON(&params))
+	resp, err := req.Post(c.url+"/api/v1/payments", c.header, req.BodyJSON(&params))
 	if err != nil {
 		return
 	}
