@@ -23,14 +23,17 @@ const (
 	inlineSendBalanceLowMessage    = "🚫 Your balance is too low (👑 %d sat)."
 )
 
-var (
+const (
 	inlineQuerySendTitle        = "💸 Send payment to a chat."
 	inlineQuerySendDescription  = "Usage: @%s send <amount> [<memo>]"
 	inlineResultSendTitle       = "💸 Send %d sat."
 	inlineResultSendDescription = "👉 Click to send %d sat to this chat."
-	inlineSendMenu              = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
-	btnCancelInlineSend         = inlineSendMenu.Data("🚫 Cancel", "cancel_send_inline")
-	btnAcceptInlineSend         = inlineSendMenu.Data("✅ Receive", "confirm_send_inline")
+)
+
+var (
+	inlineSendMenu      = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	btnCancelInlineSend = inlineSendMenu.Data("🚫 Cancel", "cancel_send_inline")
+	btnAcceptInlineSend = inlineSendMenu.Data("✅ Receive", "confirm_send_inline")
 )
 
 type InlineSend struct {
@@ -58,7 +61,7 @@ func (msg InlineSend) Key() string {
 	return msg.ID
 }
 
-func (bot *TipBot) LockSend(tx *InlineSend) error {
+func (bot *TipBot) LockInlineSend(tx *InlineSend) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = true
 	err := bot.bunt.Set(tx)
@@ -68,7 +71,7 @@ func (bot *TipBot) LockSend(tx *InlineSend) error {
 	return nil
 }
 
-func (bot *TipBot) ReleaseSend(tx *InlineSend) error {
+func (bot *TipBot) ReleaseInlineSend(tx *InlineSend) error {
 	// immediatelly set intransaction to block duplicate calls
 	tx.InTransaction = false
 	err := bot.bunt.Set(tx)
@@ -78,7 +81,7 @@ func (bot *TipBot) ReleaseSend(tx *InlineSend) error {
 	return nil
 }
 
-func (bot *TipBot) inactivateSend(tx *InlineSend) error {
+func (bot *TipBot) InactivateInlineSend(tx *InlineSend) error {
 	tx.Active = false
 	err := bot.bunt.Set(tx)
 	if err != nil {
@@ -137,7 +140,7 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 	}
 	// check if fromUser has balance
 	if balance < inlineSend.Amount {
-		log.Errorln("Balance of user %s too low", fromUserStr)
+		log.Errorf("Balance of user %s too low", fromUserStr)
 		bot.inlineQueryReplyWithError(q, fmt.Sprintf(inlineSendBalanceLowMessage, balance), fmt.Sprintf(inlineQuerySendDescription, bot.telegram.Me.Username))
 		return
 	}
@@ -204,7 +207,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 	}
 	fromUser := inlineSend.From
 	// immediatelly set intransaction to block duplicate calls
-	err = bot.LockSend(inlineSend)
+	err = bot.LockInlineSend(inlineSend)
 	if err != nil {
 		log.Errorf("[getInlineSend] %s", err)
 		return
@@ -214,7 +217,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		return
 	}
 
-	defer bot.ReleaseSend(inlineSend)
+	defer bot.ReleaseInlineSend(inlineSend)
 
 	amount := inlineSend.Amount
 
@@ -242,7 +245,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		}
 	}
 	// set inactive to avoid double-sends
-	bot.inactivateSend(inlineSend)
+	bot.InactivateInlineSend(inlineSend)
 
 	// todo: user new get username function to get userStrings
 	transactionMemo := fmt.Sprintf("Send from %s to %s (%d sat).", fromUserStr, toUserStr, amount)

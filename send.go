@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -14,13 +16,12 @@ import (
 
 const (
 	sendValidAmountMessage     = "Did you enter a valid amount?"
-	sendUserNotFoundMessage    = "User %s could not be found. You can /send only to Telegram tags like @%s."
-	sendIsNotAUsser            = "🚫 %s is not a username. You can /send only to Telegram tags like @%s."
 	sendUserHasNoWalletMessage = "🚫 User %s hasn't created a wallet yet."
 	sendSentMessage            = "💸 %d sat sent to %s."
+	sendPublicSentMessage      = "💸 %d sat sent from %s to %s."
 	sendReceivedMessage        = "🏅 %s sent you %d sat."
 	sendErrorMessage           = "🚫 Send failed."
-	confirmSendInvoiceMessage  = "Do you want to pay to %s?\n\n💸 Amount: %d sat"
+	confirmSendMessage         = "Do you want to pay to %s?\n\n💸 Amount: %d sat"
 	confirmSendAppendMemo      = "\n✉️ %s"
 	sendCancelledMessage       = "🚫 Send cancelled."
 	errorTryLaterMessage       = "🚫 Error. Please try again later."
@@ -28,6 +29,12 @@ const (
 		"*Usage:* `/send <amount> <user> [<memo>]`\n" +
 		"*Example:* `/send 1000 @LightningTipBot I just like the bot ❤️`\n" +
 		"*Example:* `/send 1234 LightningTipBot@ln.tips`"
+)
+
+var (
+	sendConfirmationMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	btnCancelSend        = sendConfirmationMenu.Data("🚫 Cancel", "cancel_send")
+	btnSend              = sendConfirmationMenu.Data("✅ Send", "confirm_send")
 )
 
 func helpSendUsage(errormsg string) string {
@@ -43,17 +50,92 @@ func (bot *TipBot) SendCheckSyntax(m *tb.Message) (bool, string) {
 	if len(arguments) < 2 {
 		return false, fmt.Sprintf("Did you enter an amount and a recipient? You can use the /send command to either send to Telegram users like %s or to a Lightning address like LightningTipBot@ln.tips.", GetUserStrMd(bot.telegram.Me))
 	}
-	// if len(arguments) < 3 {
-	// 	return false, "Did you enter a recipient?"
-	// }
-	// if !strings.HasPrefix(arguments[0], "/send") {
-	// 	return false, "Did you enter a valid command?"
-	// }
 	return true, ""
 }
 
-// confirmPaymentHandler invoked on "/send 123 @user" command
-func (bot *TipBot) confirmSendHandler(ctx context.Context, m *tb.Message) {
+type SendData struct {
+	ID             string       `json:"id"`
+	From           *lnbits.User `json:"from"`
+	ToTelegramId   int          `json:"to_telegram_id"`
+	ToTelegramUser string       `json:"to_telegram_user"`
+	Memo           string       `json:"memo"`
+	Message        string       `json:"message"`
+	Amount         int64        `json:"amount"`
+	InTransaction  bool         `json:"intransaction"`
+	Active         bool         `json:"active"`
+}
+
+func NewSend() *SendData {
+	sendData := &SendData{
+		Active:        true,
+		InTransaction: false,
+	}
+	return sendData
+}
+
+func (msg SendData) Key() string {
+	return msg.ID
+}
+
+func (bot *TipBot) LockSend(tx *SendData) error {
+	// immediatelly set intransaction to block duplicate calls
+	tx.InTransaction = true
+	err := bot.bunt.Set(tx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (bot *TipBot) ReleaseSend(tx *SendData) error {
+	// immediatelly set intransaction to block duplicate calls
+	tx.InTransaction = false
+	err := bot.bunt.Set(tx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (bot *TipBot) InactivateSend(tx *SendData) error {
+	tx.Active = false
+	err := bot.bunt.Set(tx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (bot *TipBot) getSend(c *tb.Callback) (*SendData, error) {
+	sendData := NewSend()
+	sendData.ID = c.Data
+
+	err := bot.bunt.Get(sendData)
+
+	// to avoid race conditions, we block the call if there is
+	// already an active transaction by loop until InTransaction is false
+	ticker := time.NewTicker(time.Second * 10)
+
+	for sendData.InTransaction {
+		select {
+		case <-ticker.C:
+			return nil, fmt.Errorf("send timeout")
+		default:
+			log.Infoln("[send] in transaction")
+			time.Sleep(time.Duration(500) * time.Millisecond)
+			err = bot.bunt.Get(sendData)
+		}
+	}
+	if err != nil {
+		return nil, fmt.Errorf("could not get sendData")
+	}
+
+	return sendData, nil
+
+}
+
+// sendHandler invoked on "/send 123 @user" command
+func (bot *TipBot) sendHandler(ctx context.Context, m *tb.Message) {
 	bot.anyTextHandler(ctx, m)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
@@ -118,142 +200,123 @@ func (bot *TipBot) confirmSendHandler(ctx context.Context, m *tb.Message) {
 	// check for memo in command
 	sendMemo := GetMemoFromCommand(m.Text, 3)
 
-	if len(m.Entities) < 2 {
-		arg, err := getArgumentFromCommand(m.Text, 2)
+	toUserStrMention := ""
+	toUserStrWithoutAt := ""
+
+	// check for user in command, accepts user mention or plan username without @
+	if len(m.Entities) > 1 && m.Entities[1].Type == "mention" {
+		toUserStrMention = m.Text[m.Entities[1].Offset : m.Entities[1].Offset+m.Entities[1].Length]
+		toUserStrWithoutAt = strings.TrimPrefix(toUserStrMention, "@")
+	} else {
+		toUserStrWithoutAt, err = getArgumentFromCommand(m.Text, 2)
 		if err != nil {
 			log.Errorln(err.Error())
 			return
 		}
-		arg = MarkdownEscape(arg)
-		NewMessage(m, WithDuration(0, bot.telegram))
-		errmsg := fmt.Sprintf("Error: User %s could not be found", arg)
-		bot.trySendMessage(m.Sender, helpSendUsage(fmt.Sprintf(sendUserNotFoundMessage, arg, bot.telegram.Me.Username)))
-		log.Errorln(errmsg)
-
-		return
+		toUserStrMention = "@" + toUserStrWithoutAt
+		toUserStrWithoutAt = strings.TrimPrefix(toUserStrWithoutAt, "@")
 	}
-	if m.Entities[1].Type != "mention" {
-		arg, err := getArgumentFromCommand(m.Text, 2)
-		if err != nil {
-			NewMessage(m, WithDuration(0, bot.telegram))
-			log.Errorln(err.Error())
-			return
-		}
-		arg = MarkdownEscape(arg)
-		NewMessage(m, WithDuration(0, bot.telegram))
-		errmsg := fmt.Sprintf("Error: %s is not a user", arg)
-		bot.trySendMessage(m.Sender, fmt.Sprintf(sendIsNotAUsser, arg, bot.telegram.Me.Username))
-		log.Errorln(errmsg)
-		return
-	}
-
-	toUserStrMention := m.Text[m.Entities[1].Offset : m.Entities[1].Offset+m.Entities[1].Length]
-	toUserStrWithoutAt := strings.TrimPrefix(toUserStrMention, "@")
 
 	err = bot.parseCmdDonHandler(ctx, m)
 	if err == nil {
 		return
 	}
 
-	toUserDb := &lnbits.User{}
-	tx := bot.database.Where("telegram_username = ?", strings.ToLower(toUserStrWithoutAt)).First(toUserDb)
-	if tx.Error != nil || toUserDb.Wallet == nil {
+	toUserDb, err := GetUserByTelegramUsername(toUserStrWithoutAt, *bot)
+	if err != nil {
 		NewMessage(m, WithDuration(0, bot.telegram))
-		err = fmt.Errorf(sendUserHasNoWalletMessage, MarkdownEscape(toUserStrMention))
-		bot.trySendMessage(m.Sender, err.Error())
-		if tx.Error != nil {
-			log.Printf("[/send] Error: %v %v", err, tx.Error)
-			return
-		}
-		log.Printf("[/send] Error: %v", err)
+		bot.trySendMessage(m.Sender, fmt.Sprintf(sendUserHasNoWalletMessage, toUserStrMention))
 		return
 	}
-	// string that holds all information about the send payment
-	sendData := strconv.Itoa(toUserDb.Telegram.ID) + "|" + toUserStrWithoutAt + "|" +
-		strconv.Itoa(amount)
-	if len(sendMemo) > 0 {
-		sendData = sendData + "|" + sendMemo
-	}
 
-	// save the send data to the database
-	log.Debug(sendData)
-
-	SetUserState(user, *bot, lnbits.UserStateConfirmSend, sendData)
-
-	sendConfirmationMenu.Inline(sendConfirmationMenu.Row(btnSend, btnCancelSend))
-	confirmText := fmt.Sprintf(confirmSendInvoiceMessage, MarkdownEscape(toUserStrMention), amount)
+	// entire text of the inline object
+	confirmText := fmt.Sprintf(confirmSendMessage, MarkdownEscape(toUserStrMention), amount)
 	if len(sendMemo) > 0 {
 		confirmText = confirmText + fmt.Sprintf(confirmSendAppendMemo, MarkdownEscape(sendMemo))
 	}
-	_, err = bot.telegram.Send(m.Sender, confirmText, sendConfirmationMenu)
+	// object that holds all information about the send payment
+	id := fmt.Sprintf("send-%d-%d-%s", m.Sender.ID, amount, RandStringRunes(5))
+	sendData := SendData{
+		From:           user,
+		Active:         true,
+		InTransaction:  false,
+		ID:             id,
+		Amount:         int64(amount),
+		ToTelegramId:   toUserDb.Telegram.ID,
+		ToTelegramUser: toUserStrWithoutAt,
+		Memo:           sendMemo,
+		Message:        confirmText,
+	}
+	// add result to persistent struct
+	runtime.IgnoreError(bot.bunt.Set(sendData))
+
+	sendDataJson, err := json.Marshal(sendData)
 	if err != nil {
-		log.Error("[confirmSendHandler]" + err.Error())
+		NewMessage(m, WithDuration(0, bot.telegram))
+		log.Printf("[/send] Error: %s\n", err.Error())
+		bot.trySendMessage(m.Sender, fmt.Sprint(errorTryLaterMessage))
 		return
 	}
-}
+	// save the send data to the database
+	// log.Debug(sendData)
+	SetUserState(user, *bot, lnbits.UserStateConfirmSend, string(sendDataJson))
 
-// cancelPaymentHandler invoked when user clicked cancel on payment confirmation
-func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
-	// reset state immediately
-	user := LoadUser(ctx)
-	ResetUserState(user, *bot)
+	btnSend.Data = id
+	btnCancelSend.Data = id
 
-	// delete the confirmation message
-	err := bot.telegram.Delete(c.Message)
-	if err != nil {
-		log.Errorln("[cancelSendHandler] " + err.Error())
-	}
-	// notify the user
-	_, err = bot.telegram.Send(c.Sender, sendCancelledMessage)
-	if err != nil {
-		log.WithField("message", sendCancelledMessage).WithField("user", c.Sender.ID).Printf("[Send] %s", err.Error())
-		return
+	sendConfirmationMenu.Inline(sendConfirmationMenu.Row(btnSend, btnCancelSend))
+
+	if m.Private() {
+		bot.trySendMessage(m.Chat, confirmText, sendConfirmationMenu)
+	} else {
+		bot.tryReplyMessage(m, confirmText, sendConfirmationMenu)
 	}
 }
 
 // sendHandler invoked when user clicked send on payment confirmation
-func (bot *TipBot) sendHandler(ctx context.Context, c *tb.Callback) {
-	// remove buttons from confirmation message
-	_, err := bot.telegram.Edit(c.Message, MarkdownEscape(c.Message.Text), &tb.ReplyMarkup{})
+func (bot *TipBot) confirmSendHandler(ctx context.Context, c *tb.Callback) {
+	sendData, err := bot.getSend(c)
 	if err != nil {
-		log.Errorln("[sendHandler] " + err.Error())
+		log.Errorf("[acceptSendHandler] %s", err)
+		return
 	}
+	// onnly the correct user can press
+	if sendData.From.Telegram.ID != c.Sender.ID {
+		return
+	}
+	// immediatelly set intransaction to block duplicate calls
+	err = bot.LockSend(sendData)
+	if err != nil {
+		log.Errorf("[acceptSendHandler] %s", err)
+		bot.tryDeleteMessage(c.Message)
+		return
+	}
+	if !sendData.Active {
+		log.Errorf("[acceptSendHandler] send not active anymore")
+		bot.tryDeleteMessage(c.Message)
+		return
+	}
+	defer bot.ReleaseSend(sendData)
+
+	// // remove buttons from confirmation message
+	// bot.tryEditMessage(c.Message, MarkdownEscape(sendData.Message), &tb.ReplyMarkup{})
+
 	// decode callback data
-	// log.Debug("[sendHandler] Callback: %s", c.Data)
+	// log.Debug("[send] Callback: %s", c.Data)
 	from := LoadUser(ctx)
-	if from.StateKey != lnbits.UserStateConfirmSend {
-		log.Errorf("[sendHandler] User StateKey does not match! User: %d: StateKey: %d", c.Sender.ID, from.StateKey)
-		return
-	}
+	ResetUserState(from, *bot) // we don't need to check the statekey anymore like we did earlier
 
-	// decode StateData in which we have information about the send payment
-	splits := strings.Split(from.StateData, "|")
-	if len(splits) < 3 {
-		log.Error("[sendHandler] Not enough arguments in callback data")
-		log.Errorf("user.StateData: %s", from.StateData)
-		return
-	}
-	toId, err := strconv.Atoi(splits[0])
-	if err != nil {
-		log.Errorln("[sendHandler] " + err.Error())
-	}
-	toUserStrWithoutAt := splits[1]
-	amount, err := strconv.Atoi(splits[2])
-	if err != nil {
-		log.Errorln("[sendHandler] " + err.Error())
-	}
-	sendMemo := ""
-	if len(splits) > 3 {
-		sendMemo = strings.Join(splits[3:], "|")
-	}
-
-	// reset state
-	ResetUserState(from, *bot)
+	// information about the send
+	toId := sendData.ToTelegramId
+	toUserStrWithoutAt := sendData.ToTelegramUser
+	amount := sendData.Amount
+	sendMemo := sendData.Memo
 
 	// we can now get the wallets of both users
 	to, err := GetUser(&tb.User{ID: toId, Username: toUserStrWithoutAt}, *bot)
 	if err != nil {
 		log.Errorln(err.Error())
+		bot.tryDeleteMessage(c.Message)
 		return
 	}
 	toUserStrMd := GetUserStrMd(to.Telegram)
@@ -262,24 +325,62 @@ func (bot *TipBot) sendHandler(ctx context.Context, c *tb.Callback) {
 	fromUserStr := GetUserStr(from.Telegram)
 
 	transactionMemo := fmt.Sprintf("Send from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
-	t := NewTransaction(bot, from, to, amount, TransactionType("send"))
+	t := NewTransaction(bot, from, to, int(amount), TransactionType("send"))
 	t.Memo = transactionMemo
 
 	success, err := t.Send()
 	if !success || err != nil {
-		// NewMessage(m, WithDuration(0, bot.telegram))
-		bot.trySendMessage(c.Sender, sendErrorMessage)
+		// bot.trySendMessage(c.Sender, sendErrorMessage)
 		errmsg := fmt.Sprintf("[/send] Error: Transaction failed. %s", err)
 		log.Errorln(errmsg)
+		bot.tryEditMessage(c.Message, sendErrorMessage, &tb.ReplyMarkup{})
 		return
 	}
 
-	bot.trySendMessage(from.Telegram, fmt.Sprintf(sendSentMessage, amount, toUserStrMd))
+	sendData.InTransaction = false
+
 	bot.trySendMessage(to.Telegram, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, amount))
+	// bot.trySendMessage(from.Telegram, fmt.Sprintf(sendSentMessage, amount, toUserStrMd))
+	if c.Message.Private() {
+		bot.tryEditMessage(c.Message, fmt.Sprintf(sendSentMessage, amount, toUserStrMd), &tb.ReplyMarkup{})
+	} else {
+		bot.trySendMessage(c.Sender, fmt.Sprintf(sendSentMessage, amount, toUserStrMd))
+		bot.tryEditMessage(c.Message, fmt.Sprintf(sendPublicSentMessage, amount, fromUserStrMd, toUserStrMd), &tb.ReplyMarkup{})
+	}
 	// send memo if it was present
 	if len(sendMemo) > 0 {
 		bot.trySendMessage(to.Telegram, fmt.Sprintf("✉️ %s", MarkdownEscape(sendMemo)))
 	}
 
 	return
+}
+
+// cancelPaymentHandler invoked when user clicked cancel on payment confirmation
+func (bot *TipBot) cancelSendHandler(ctx context.Context, c *tb.Callback) {
+	// reset state immediately
+	user := LoadUser(ctx)
+	ResetUserState(user, *bot)
+	sendData, err := bot.getSend(c)
+	if err != nil {
+		log.Errorf("[acceptSendHandler] %s", err)
+		return
+	}
+	// onnly the correct user can press
+	if sendData.From.Telegram.ID != c.Sender.ID {
+		return
+	}
+	// remove buttons from confirmation message
+	bot.tryEditMessage(c.Message, sendCancelledMessage, &tb.ReplyMarkup{})
+	sendData.InTransaction = false
+	bot.InactivateSend(sendData)
+	// // delete the confirmation message
+	// bot.tryDeleteMessage(c.Message)
+	// // notify the user
+	// bot.trySendMessage(c.Sender, sendCancelledMessage)
+
+	// // set the inlineSend inactive
+	// sendData.Active = false
+	// sendData.InTransaction = false
+	// runtime.IgnoreError(bot.bunt.Set(sendData))
+
 }
