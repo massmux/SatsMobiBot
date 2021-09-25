@@ -14,35 +14,17 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-	paymentCancelledMessage  = "🚫 Payment cancelled."
-	invoicePaidMessage       = "⚡️ Payment sent."
-	invoicePublicPaidMessage = "⚡️ Payment sent by %s."
-	// invoicePrivateChatOnlyErrorMessage = "You can pay invoices only in the private chat with the bot."
-	invalidInvoiceHelpMessage    = "Did you enter a valid Lightning invoice? Try /send if you want to send to a Telegram user or Lightning address."
-	invoiceNoAmountMessage       = "🚫 Can't pay invoices without an amount."
-	insufficientFundsMessage     = "🚫 Insufficient funds. You have %d sat but you need at least %d sat."
-	feeReserveMessage            = "⚠️ Sending your entire balance might fail because of network fees. If it fails, try sending a bit less."
-	invoicePaymentFailedMessage  = "🚫 Payment failed: %s"
-	invoiceUndefinedErrorMessage = "Could not pay invoice."
-	confirmPayInvoiceMessage     = "Do you want to send this payment?\n\n💸 Amount: %d sat"
-	confirmPayAppendMemo         = "\n✉️ %s"
-	payHelpText                  = "📖 Oops, that didn't work. %s\n\n" +
-		"*Usage:* `/pay <invoice>`\n" +
-		"*Example:* `/pay lnbc20n1psscehd...`"
-)
-
 var (
 	paymentConfirmationMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
 	btnCancelPay            = paymentConfirmationMenu.Data("🚫 Cancel", "cancel_pay")
 	btnPay                  = paymentConfirmationMenu.Data("✅ Pay", "confirm_pay")
 )
 
-func helpPayInvoiceUsage(errormsg string) string {
+func helpPayInvoiceUsage(ctx context.Context, errormsg string) string {
 	if len(errormsg) > 0 {
-		return fmt.Sprintf(payHelpText, fmt.Sprintf("%s", errormsg))
+		return fmt.Sprintf(Translate(ctx, "payHelpText"), fmt.Sprintf("%s", errormsg))
 	} else {
-		return fmt.Sprintf(payHelpText, "")
+		return fmt.Sprintf(Translate(ctx, "payHelpText"), "")
 	}
 }
 
@@ -57,6 +39,7 @@ type PayData struct {
 	Amount        int64        `json:"amount"`
 	InTransaction bool         `json:"intransaction"`
 	Active        bool         `json:"active"`
+	LanguageCode  string       `json:"languagecode"`
 }
 
 func NewPay() *PayData {
@@ -136,23 +119,16 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	if user.Wallet == nil {
 		return
 	}
-
-	// if m.Chat.Type != tb.ChatPrivate {
-	// 	// delete message
-	// 	NewMessage(m, WithDuration(0, bot.telegram))
-	// 	bot.trySendMessage(m.Sender, helpPayInvoiceUsage(invoicePrivateChatOnlyErrorMessage))
-	// 	return
-	// }
 	if len(strings.Split(m.Text, " ")) < 2 {
 		NewMessage(m, WithDuration(0, bot.telegram))
-		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(""))
+		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(ctx, ""))
 		return
 	}
 	userStr := GetUserStr(m.Sender)
 	paymentRequest, err := getArgumentFromCommand(m.Text, 1)
 	if err != nil {
 		NewMessage(m, WithDuration(0, bot.telegram))
-		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(invalidInvoiceHelpMessage))
+		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(ctx, Translate(ctx, "invalidInvoiceHelpMessage")))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not getArgumentFromCommand: %s", err)
 		log.Errorln(errmsg)
 		return
@@ -164,7 +140,7 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	// decode invoice
 	bolt11, err := decodepay.Decodepay(paymentRequest)
 	if err != nil {
-		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(invalidInvoiceHelpMessage))
+		bot.trySendMessage(m.Sender, helpPayInvoiceUsage(ctx, Translate(ctx, "invalidInvoiceHelpMessage")))
 		errmsg := fmt.Sprintf("[/pay] Error: Could not decode invoice: %s", err)
 		log.Errorln(errmsg)
 		return
@@ -172,7 +148,7 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	amount := int(bolt11.MSatoshi / 1000)
 
 	if amount <= 0 {
-		bot.trySendMessage(m.Sender, invoiceNoAmountMessage)
+		bot.trySendMessage(m.Sender, Translate(ctx, "invoiceNoAmountMessage"))
 		errmsg := fmt.Sprint("[/pay] Error: invoice without amount")
 		log.Errorln(errmsg)
 		return
@@ -188,17 +164,17 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	}
 	if amount > balance {
 		NewMessage(m, WithDuration(0, bot.telegram))
-		bot.trySendMessage(m.Sender, fmt.Sprintf(insufficientFundsMessage, balance, amount))
+		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "insufficientFundsMessage"), balance, amount))
 		return
 	}
 	// send warning that the invoice might fail due to missing fee reserve
 	if float64(amount) > float64(balance)*0.99 {
-		bot.trySendMessage(m.Sender, feeReserveMessage)
+		bot.trySendMessage(m.Sender, Translate(ctx, "feeReserveMessage"))
 	}
 
-	confirmText := fmt.Sprintf(confirmPayInvoiceMessage, amount)
+	confirmText := fmt.Sprintf(Translate(ctx, "confirmPayInvoiceMessage"), amount)
 	if len(bolt11.Description) > 0 {
-		confirmText = confirmText + fmt.Sprintf(confirmPayAppendMemo, MarkdownEscape(bolt11.Description))
+		confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmPayAppendMemo"), MarkdownEscape(bolt11.Description))
 	}
 
 	log.Printf("[/pay] User: %s, amount: %d sat.", userStr, amount)
@@ -214,6 +190,7 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 		Amount:        int64(amount),
 		Memo:          bolt11.Description,
 		Message:       confirmText,
+		LanguageCode:  ctx.Value("publicLanguageCode").(string),
 	}
 	// add result to persistent struct
 	runtime.IgnoreError(bot.bunt.Set(payData))
@@ -221,9 +198,16 @@ func (bot TipBot) payHandler(ctx context.Context, m *tb.Message) {
 	SetUserState(user, bot, lnbits.UserStateConfirmPayment, paymentRequest)
 
 	// // // create inline buttons
-	btnPay.Data = id
-	btnCancelPay.Data = id
-	paymentConfirmationMenu.Inline(paymentConfirmationMenu.Row(btnPay, btnCancelPay))
+	payButton := paymentConfirmationMenu.Data(Translate(ctx, "payButtonMessage"), "confirm_pay")
+	cancelButton := paymentConfirmationMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_pay")
+	payButton.Data = id
+	cancelButton.Data = id
+
+	paymentConfirmationMenu.Inline(
+		paymentConfirmationMenu.Row(
+			payButton,
+			cancelButton),
+	)
 	bot.trySendMessage(m.Chat, confirmText, paymentConfirmationMenu)
 }
 
@@ -270,12 +254,12 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 	// pay invoice
 	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoiceString}, bot.client)
 	if err != nil {
-		errmsg := fmt.Sprintf("[/pay] Could not pay invoice of user %s: %s", userStr, err)
+		errmsg := fmt.Sprintf("[/pay] Could not pay invoice of %s: %s", userStr, err)
 		if len(err.Error()) == 0 {
-			err = fmt.Errorf(invoiceUndefinedErrorMessage)
+			err = fmt.Errorf(bot.Translate(payData.LanguageCode, "invoiceUndefinedErrorMessage"))
 		}
 		// bot.trySendMessage(c.Sender, fmt.Sprintf(invoicePaymentFailedMessage, err))
-		bot.tryEditMessage(c.Message, fmt.Sprintf(invoicePaymentFailedMessage, err), &tb.ReplyMarkup{})
+		bot.tryEditMessage(c.Message, fmt.Sprintf(bot.Translate(payData.LanguageCode, "invoicePaymentFailedMessage"), err), &tb.ReplyMarkup{})
 		log.Errorln(errmsg)
 		return
 	}
@@ -283,12 +267,14 @@ func (bot TipBot) confirmPayHandler(ctx context.Context, c *tb.Callback) {
 	payData.InTransaction = false
 
 	if c.Message.Private() {
-		bot.tryEditMessage(c.Message, invoicePaidMessage, &tb.ReplyMarkup{})
+		// if the command was invoked in private chat
+		bot.tryEditMessage(c.Message, bot.Translate(payData.LanguageCode, "invoicePaidMessage"), &tb.ReplyMarkup{})
 	} else {
-		bot.trySendMessage(c.Sender, invoicePaidMessage)
-		bot.tryEditMessage(c.Message, fmt.Sprintf(invoicePublicPaidMessage, userStr), &tb.ReplyMarkup{})
+		// if the command was invoked in group chat
+		bot.trySendMessage(c.Sender, bot.Translate(payData.LanguageCode, "invoicePaidMessage"))
+		bot.tryEditMessage(c.Message, fmt.Sprintf(bot.Translate(payData.LanguageCode, "invoicePublicPaidMessage"), userStr), &tb.ReplyMarkup{})
 	}
-	log.Printf("[/pay] User %s paid invoice %s", userStr, invoice.PaymentHash)
+	log.Printf("[pay] User %s paid invoice %d (%d sat)", userStr, payData.ID, payData.Amount)
 	return
 }
 
@@ -307,7 +293,7 @@ func (bot TipBot) cancelPaymentHandler(ctx context.Context, c *tb.Callback) {
 	if payData.From.Telegram.ID != c.Sender.ID {
 		return
 	}
-	bot.tryEditMessage(c.Message, paymentCancelledMessage, &tb.ReplyMarkup{})
+	bot.tryEditMessage(c.Message, bot.Translate(payData.LanguageCode, "paymentCancelledMessage"), &tb.ReplyMarkup{})
 	payData.InTransaction = false
 	bot.InactivatePay(payData)
 }

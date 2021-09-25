@@ -19,23 +19,14 @@ import (
 // IF YOU USE THIS PROJECT, LEAVE THIS CODE ALONE
 
 var (
-	donationSuccess          = "🙏 Thank you for your donation."
-	donationErrorMessage     = "🚫 Oh no. Donation failed."
-	donationProgressMessage  = "🧮 Preparing your donation..."
-	donationFailedMessage    = "🚫 Donation failed: %s"
-	donateEnterAmountMessage = "Did you enter an amount?"
-	donateValidAmountMessage = "Did you enter a valid amount?"
-	donateHelpText           = "📖 Oops, that didn't work. %s\n\n" +
-		"*Usage:* `/donate <amount>`\n" +
-		"*Example:* `/donate 1000`"
 	donationEndpoint string
 )
 
-func helpDonateUsage(errormsg string) string {
+func helpDonateUsage(ctx context.Context, errormsg string) string {
 	if len(errormsg) > 0 {
-		return fmt.Sprintf(donateHelpText, fmt.Sprintf("%s", errormsg))
+		return fmt.Sprintf(Translate(ctx, "donateHelpText"), fmt.Sprintf("%s", errormsg))
 	} else {
-		return fmt.Sprintf(donateHelpText, "")
+		return fmt.Sprintf(Translate(ctx, "donateHelpText"), "")
 	}
 }
 
@@ -44,7 +35,7 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 	bot.anyTextHandler(ctx, m)
 
 	if len(strings.Split(m.Text, " ")) < 2 {
-		bot.trySendMessage(m.Sender, helpDonateUsage(donateEnterAmountMessage))
+		bot.trySendMessage(m.Sender, helpDonateUsage(ctx, Translate(ctx, "donateEnterAmountMessage")))
 		return
 	}
 	amount, err := decodeAmountFromCommand(m.Text)
@@ -52,23 +43,23 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	if amount < 1 {
-		bot.trySendMessage(m.Sender, helpDonateUsage(donateValidAmountMessage))
+		bot.trySendMessage(m.Sender, helpDonateUsage(ctx, Translate(ctx, "donateValidAmountMessage")))
 		return
 	}
 
 	// command is valid
-	msg := bot.trySendMessage(m.Sender, donationProgressMessage)
+	msg := bot.trySendMessage(m.Sender, Translate(ctx, "donationProgressMessage"))
 	// get invoice
 	resp, err := http.Get(fmt.Sprintf(donationEndpoint, amount, GetUserStr(m.Sender), GetUserStr(bot.telegram.Me)))
 	if err != nil {
 		log.Errorln(err)
-		bot.tryEditMessage(msg, donationErrorMessage)
+		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
 		return
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Errorln(err)
-		bot.tryEditMessage(msg, donationErrorMessage)
+		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
 		return
 	}
 
@@ -80,10 +71,10 @@ func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) {
 		userStr := GetUserStr(m.Sender)
 		errmsg := fmt.Sprintf("[/donate] Donation failed for user %s: %s", userStr, err)
 		log.Errorln(errmsg)
-		bot.tryEditMessage(msg, fmt.Sprintf(donationFailedMessage, err))
+		bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "donationFailedMessage"), err))
 		return
 	}
-	bot.tryEditMessage(msg, donationSuccess)
+	bot.tryEditMessage(msg, Translate(ctx, "donationSuccess"))
 
 }
 

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	log "github.com/sirupsen/logrus"
@@ -65,6 +67,45 @@ func (bot TipBot) loadReplyToInterceptor(ctx context.Context, i interface{}) (co
 	return ctx, invalidTypeError
 }
 
+func (bot TipBot) localizerInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+	var userLanguageCodeContext context.Context
+	var publicLanguageCodeContext context.Context
+	var userLocalizerContext context.Context
+	var publicLocalizerContext context.Context
+	var userLocalizer *i18n.Localizer
+	var publicLocalizer *i18n.Localizer
+
+	// default language is english
+	publicLocalizer = i18n.NewLocalizer(bot.bundle, "en")
+	publicLanguageCodeContext = context.WithValue(ctx, "publicLanguageCode", "en")
+	publicLocalizerContext = context.WithValue(publicLanguageCodeContext, "publicLocalizer", publicLocalizer)
+
+	switch i.(type) {
+	case *tb.Message:
+		m := i.(*tb.Message)
+		userLocalizer = i18n.NewLocalizer(bot.bundle, m.Sender.LanguageCode)
+		userLanguageCodeContext = context.WithValue(publicLocalizerContext, "userLanguageCode", m.Sender.LanguageCode)
+		userLocalizerContext = context.WithValue(userLanguageCodeContext, "userLocalizer", userLocalizer)
+		if m.Private() {
+			// in pm overwrite public localizer with user localizer
+			publicLanguageCodeContext = context.WithValue(userLocalizerContext, "publicLanguageCode", m.Sender.LanguageCode)
+			publicLocalizerContext = context.WithValue(publicLanguageCodeContext, "publicLocalizer", userLocalizer)
+		}
+		return publicLocalizerContext, nil
+	case *tb.Callback:
+		m := i.(*tb.Callback)
+		userLocalizer = i18n.NewLocalizer(bot.bundle, m.Sender.LanguageCode)
+		userLanguageCodeContext = context.WithValue(publicLocalizerContext, "userLanguageCode", m.Sender.LanguageCode)
+		return context.WithValue(userLanguageCodeContext, "userLocalizer", userLocalizer), nil
+	case *tb.Query:
+		m := i.(*tb.Query)
+		userLocalizer = i18n.NewLocalizer(bot.bundle, m.From.LanguageCode)
+		userLanguageCodeContext = context.WithValue(publicLocalizerContext, "userLanguageCode", m.From.LanguageCode)
+		return context.WithValue(userLanguageCodeContext, "userLocalizer", userLocalizer), nil
+	}
+	return ctx, nil
+}
+
 func (bot TipBot) requirePrivateChatInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	switch i.(type) {
 	case *tb.Message:
@@ -89,9 +130,40 @@ func (bot TipBot) logMessageInterceptor(ctx context.Context, i interface{}) (con
 			log.Infof("[%s:%d %s:%d] %s", m.Chat.Title, m.Chat.ID, GetUserStr(m.Sender), m.Sender.ID, photoTag)
 		}
 		return ctx, nil
+	case *tb.Callback:
+		m := i.(*tb.Callback)
+		log.Infof("[Callback %s:%d] Data: %s", GetUserStr(m.Sender), m.Sender.ID, m.Data)
+		return ctx, nil
 	}
 	return nil, invalidTypeError
 }
+
+// LoadUser from context
+func LoadUserLocalizer(ctx context.Context) *i18n.Localizer {
+	u := ctx.Value("userLocalizer")
+	if u != nil {
+		return u.(*i18n.Localizer)
+	}
+	return nil
+}
+
+// LoadUser from context
+func LoadPublicLocalizer(ctx context.Context) *i18n.Localizer {
+	u := ctx.Value("publicLocalizer")
+	if u != nil {
+		return u.(*i18n.Localizer)
+	}
+	return nil
+}
+
+// // LoadUser from context
+// func LoadLocalizer(ctx context.Context) *i18n.Localizer {
+// 	u := ctx.Value("localizer")
+// 	if u != nil {
+// 		return u.(*i18n.Localizer)
+// 	}
+// 	return nil
+// }
 
 // LoadUser from context
 func LoadUser(ctx context.Context) *lnbits.User {

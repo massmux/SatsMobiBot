@@ -12,24 +12,10 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-	inlineReceiveMessage             = "Press 💸 to pay to %s.\n\n💸 Amount: %d sat"
-	inlineReceiveAppendMemo          = "\n✉️ %s"
-	inlineReceiveUpdateMessageAccept = "💸 %d sat sent from %s to %s."
-	inlineReceiveCreateWalletMessage = "Chat with %s 👈 to manage your wallet."
-	inlineReceiveYourselfMessage     = "📖 You can't pay to yourself."
-	inlineReceiveFailedMessage       = "🚫 Receive failed."
-	inlineReceiveCancelledMessage    = "🚫 Receive cancelled."
-)
-
 var (
-	inlineQueryReceiveTitle        = "🏅 Request a payment in a chat."
-	inlineQueryReceiveDescription  = "Usage: @%s receive <amount> [<memo>]"
-	inlineResultReceiveTitle       = "🏅 Receive %d sat."
-	inlineResultReceiveDescription = "👉 Click to request a payment of %d sat."
-	inlineReceiveMenu              = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
-	btnCancelInlineReceive         = inlineReceiveMenu.Data("🚫 Cancel", "cancel_receive_inline")
-	btnAcceptInlineReceive         = inlineReceiveMenu.Data("💸 Pay", "confirm_receive_inline")
+	inlineReceiveMenu      = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	btnCancelInlineReceive = inlineReceiveMenu.Data("🚫 Cancel", "cancel_receive_inline")
+	btnAcceptInlineReceive = inlineReceiveMenu.Data("💸 Pay", "confirm_receive_inline")
 )
 
 type InlineReceive struct {
@@ -37,10 +23,11 @@ type InlineReceive struct {
 	Amount        int          `json:"inline_receive_amount"`
 	From          *lnbits.User `json:"inline_receive_from"`
 	To            *lnbits.User `json:"inline_receive_to"`
-	Memo          string
-	ID            string `json:"inline_receive_id"`
-	Active        bool   `json:"inline_receive_active"`
-	InTransaction bool   `json:"inline_receive_intransaction"`
+	Memo          string       `json:"inline_receive_memo"`
+	ID            string       `json:"inline_receive_id"`
+	Active        bool         `json:"inline_receive_active"`
+	InTransaction bool         `json:"inline_receive_intransaction"`
+	LanguageCode  string       `json:"languagecode"`
 }
 
 func NewInlineReceive() *InlineReceive {
@@ -98,15 +85,15 @@ func (bot *TipBot) getInlineReceive(c *tb.Callback) (*InlineReceive, error) {
 	for inlineReceive.InTransaction {
 		select {
 		case <-ticker.C:
-			return nil, fmt.Errorf("inline send timeout")
+			return nil, fmt.Errorf("inline receive %s timeout", inlineReceive.ID)
 		default:
-			log.Infoln("in transaction")
+			log.Warnf("[getInlineReceive] %s in transaction", inlineReceive.ID)
 			time.Sleep(time.Duration(500) * time.Millisecond)
 			err = bot.bunt.Get(inlineReceive)
 		}
 	}
 	if err != nil {
-		return nil, fmt.Errorf("could not get inline receive message")
+		return nil, fmt.Errorf("could not get inline receive %s", inlineReceive.ID)
 	}
 	return inlineReceive, nil
 
@@ -118,11 +105,11 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 	var err error
 	inlineReceive.Amount, err = decodeAmountFromCommand(q.Text)
 	if err != nil {
-		bot.inlineQueryReplyWithError(q, inlineQueryReceiveTitle, fmt.Sprintf(inlineQueryReceiveDescription, bot.telegram.Me.Username))
+		bot.inlineQueryReplyWithError(q, Translate(ctx, "inlineQueryReceiveTitle"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.telegram.Me.Username))
 		return
 	}
 	if inlineReceive.Amount < 1 {
-		bot.inlineQueryReplyWithError(q, inlineSendInvalidAmountMessage, fmt.Sprintf(inlineQueryReceiveDescription, bot.telegram.Me.Username))
+		bot.inlineQueryReplyWithError(q, Translate(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.telegram.Me.Username))
 		return
 	}
 
@@ -137,24 +124,31 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 	results := make(tb.Results, len(urls)) // []tb.Result
 	for i, url := range urls {
 
-		inlineMessage := fmt.Sprintf(inlineReceiveMessage, fromUserStr, inlineReceive.Amount)
+		inlineMessage := fmt.Sprintf(Translate(ctx, "inlineReceiveMessage"), fromUserStr, inlineReceive.Amount)
 
 		if len(inlineReceive.Memo) > 0 {
-			inlineMessage = inlineMessage + fmt.Sprintf(inlineReceiveAppendMemo, inlineReceive.Memo)
+			inlineMessage = inlineMessage + fmt.Sprintf(Translate(ctx, "inlineReceiveAppendMemo"), inlineReceive.Memo)
 		}
 
 		result := &tb.ArticleResult{
 			// URL:         url,
 			Text:        inlineMessage,
-			Title:       fmt.Sprintf(inlineResultReceiveTitle, inlineReceive.Amount),
-			Description: fmt.Sprintf(inlineResultReceiveDescription, inlineReceive.Amount),
+			Title:       fmt.Sprintf(TranslateUser(ctx, "inlineResultReceiveTitle"), inlineReceive.Amount),
+			Description: fmt.Sprintf(TranslateUser(ctx, "inlineResultReceiveDescription"), inlineReceive.Amount),
 			// required for photos
 			ThumbURL: url,
 		}
 		id := fmt.Sprintf("inl-receive-%d-%d-%s", q.From.ID, inlineReceive.Amount, RandStringRunes(5))
-		btnAcceptInlineReceive.Data = id
-		btnCancelInlineReceive.Data = id
-		inlineReceiveMenu.Inline(inlineReceiveMenu.Row(btnAcceptInlineReceive, btnCancelInlineReceive))
+		acceptInlineReceiveButton := inlineReceiveMenu.Data(Translate(ctx, "payReceiveButtonMessage"), "confirm_receive_inline")
+		cancelInlineReceiveButton := inlineReceiveMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_receive_inline")
+		acceptInlineReceiveButton.Data = id
+		cancelInlineReceiveButton.Data = id
+
+		inlineReceiveMenu.Inline(
+			inlineReceiveMenu.Row(
+				acceptInlineReceiveButton,
+				cancelInlineReceiveButton),
+		)
 		result.ReplyMarkup = &tb.InlineKeyboardMarkup{InlineKeyboard: inlineReceiveMenu.InlineKeyboard}
 
 		results[i] = result
@@ -168,6 +162,7 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 		inlineReceive.To = from // The user who wants to receive
 		// add result to persistent struct
 		inlineReceive.Message = inlineMessage
+		inlineReceive.LanguageCode = ctx.Value("publicLanguageCode").(string)
 		runtime.IgnoreError(bot.bunt.Set(inlineReceive))
 	}
 
@@ -212,7 +207,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	fromUserStr := GetUserStr(from.Telegram)
 
 	if from.Telegram.ID == to.Telegram.ID {
-		bot.trySendMessage(from.Telegram, sendYourselfMessage)
+		bot.trySendMessage(from.Telegram, Translate(ctx, "sendYourselfMessage"))
 		return
 	}
 	// balance check of the user
@@ -225,7 +220,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	// check if fromUser has balance
 	if balance < inlineReceive.Amount {
 		log.Errorf("[acceptInlineReceiveHandler] balance of user %s too low", fromUserStr)
-		bot.trySendMessage(from.Telegram, fmt.Sprintf(inlineSendBalanceLowMessage, balance))
+		bot.trySendMessage(from.Telegram, fmt.Sprintf(Translate(ctx, "inlineSendBalanceLowMessage"), balance))
 		return
 	}
 
@@ -233,33 +228,33 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	bot.inactivateReceive(inlineReceive)
 
 	// todo: user new get username function to get userStrings
-	transactionMemo := fmt.Sprintf("Send from %s to %s (%d sat).", fromUserStr, toUserStr, inlineReceive.Amount)
-	t := NewTransaction(bot, from, to, inlineReceive.Amount, TransactionType("inline send"))
+	transactionMemo := fmt.Sprintf("InlineReceive from %s to %s (%d sat).", fromUserStr, toUserStr, inlineReceive.Amount)
+	t := NewTransaction(bot, from, to, inlineReceive.Amount, TransactionType("inline receive"))
 	t.Memo = transactionMemo
 	success, err := t.Send()
 	if !success {
 		errMsg := fmt.Sprintf("[acceptInlineReceiveHandler] Transaction failed: %s", err)
 		log.Errorln(errMsg)
-		bot.tryEditMessage(c.Message, inlineReceiveFailedMessage, &tb.ReplyMarkup{})
+		bot.tryEditMessage(c.Message, bot.Translate(inlineReceive.LanguageCode, "inlineReceiveFailedMessage"), &tb.ReplyMarkup{})
 		return
 	}
 
 	log.Infof("[acceptInlineReceiveHandler] %d sat from %s to %s", inlineReceive.Amount, fromUserStr, toUserStr)
 
-	inlineReceive.Message = fmt.Sprintf("%s", fmt.Sprintf(inlineSendUpdateMessageAccept, inlineReceive.Amount, fromUserStrMd, toUserStrMd))
+	inlineReceive.Message = fmt.Sprintf("%s", fmt.Sprintf(bot.Translate(inlineReceive.LanguageCode, "inlineSendUpdateMessageAccept"), inlineReceive.Amount, fromUserStrMd, toUserStrMd))
 	memo := inlineReceive.Memo
 	if len(memo) > 0 {
-		inlineReceive.Message = inlineReceive.Message + fmt.Sprintf(inlineReceiveAppendMemo, memo)
+		inlineReceive.Message = inlineReceive.Message + fmt.Sprintf(bot.Translate(inlineReceive.LanguageCode, "inlineReceiveAppendMemo"), memo)
 	}
 
 	if !to.Initialized {
-		inlineReceive.Message += "\n\n" + fmt.Sprintf(inlineSendCreateWalletMessage, GetUserStrMd(bot.telegram.Me))
+		inlineReceive.Message += "\n\n" + fmt.Sprintf(bot.Translate(inlineReceive.LanguageCode, "inlineSendCreateWalletMessage"), GetUserStrMd(bot.telegram.Me))
 	}
 
 	bot.tryEditMessage(c.Message, inlineReceive.Message, &tb.ReplyMarkup{})
 	// notify users
-	_, err = bot.telegram.Send(to.Telegram, fmt.Sprintf(sendReceivedMessage, fromUserStrMd, inlineReceive.Amount))
-	_, err = bot.telegram.Send(from.Telegram, fmt.Sprintf(tipSentMessage, inlineReceive.Amount, toUserStrMd))
+	_, err = bot.telegram.Send(to.Telegram, fmt.Sprintf(bot.Translate(to.Telegram.LanguageCode, "sendReceivedMessage"), fromUserStrMd, inlineReceive.Amount))
+	_, err = bot.telegram.Send(from.Telegram, fmt.Sprintf(bot.Translate(from.Telegram.LanguageCode, "sendSentMessage"), inlineReceive.Amount, toUserStrMd))
 	if err != nil {
 		errmsg := fmt.Errorf("[acceptInlineReceiveHandler] Error: Receive message to %s: %s", toUserStr, err)
 		log.Errorln(errmsg)
@@ -267,14 +262,14 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	}
 }
 
-func (bot *TipBot) cancelInlineReceiveHandler(c *tb.Callback) {
+func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callback) {
 	inlineReceive, err := bot.getInlineReceive(c)
 	if err != nil {
 		log.Errorf("[cancelInlineReceiveHandler] %s", err)
 		return
 	}
 	if c.Sender.ID == inlineReceive.To.Telegram.ID {
-		bot.tryEditMessage(c.Message, inlineReceiveCancelledMessage, &tb.ReplyMarkup{})
+		bot.tryEditMessage(c.Message, bot.Translate(inlineReceive.LanguageCode, "inlineReceiveCancelledMessage"), &tb.ReplyMarkup{})
 		// set the inlineReceive inactive
 		inlineReceive.Active = false
 		inlineReceive.InTransaction = false

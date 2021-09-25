@@ -20,20 +20,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-	lnurlReceiveInfoText           = "👇 You can use this LNURL to receive payments."
-	lnurlResolvingUrlMessage       = "🧮 Resolving address..."
-	lnurlGettingUserMessage        = "🧮 Preparing payment..."
-	lnurlPaymentFailed             = "🚫 Payment failed: %s"
-	lnurlInvalidAmountMessage      = "🚫 Invalid amount."
-	lnurlInvalidAmountRangeMessage = "🚫 Amount must be between %d and %d sat."
-	lnurlNoUsernameMessage         = "🚫 You need to set a Telegram username to receive via LNURL."
-	lnurlEnterAmountMessage        = "⌨️ Enter an amount between %d and %d sat."
-	lnurlHelpText                  = "📖 Oops, that didn't work. %s\n\n" +
-		"*Usage:* `/lnurl [amount] <lnurl>`\n" +
-		"*Example:* `/lnurl LNURL1DP68GUR...`"
-)
-
 // lnurlHandler is invoked on /lnurl command
 func (bot TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 	// commands:
@@ -44,16 +30,16 @@ func (bot TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 
 	// if only /lnurl is entered, show the lnurl of the user
 	if m.Text == "/lnurl" {
-		bot.lnurlReceiveHandler(m)
+		bot.lnurlReceiveHandler(ctx, m)
 		return
 	}
 
 	// assume payment
 	// HandleLNURL by fiatjaf/go-lnurl
-	msg := bot.trySendMessage(m.Sender, lnurlResolvingUrlMessage)
+	msg := bot.trySendMessage(m.Sender, Translate(ctx, "lnurlResolvingUrlMessage"))
 	_, params, err := HandleLNURL(m.Text)
 	if err != nil {
-		bot.tryEditMessage(msg, fmt.Sprintf(lnurlPaymentFailed, "could not resolve LNURL."))
+		bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), "could not resolve LNURL."))
 		log.Errorln(err)
 		return
 	}
@@ -65,7 +51,7 @@ func (bot TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 	default:
 		err := fmt.Errorf("invalid LNURL type.")
 		log.Errorln(err)
-		bot.tryEditMessage(msg, fmt.Sprintf(lnurlPaymentFailed, err))
+		bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
 		// bot.trySendMessage(m.Sender, err.Error())
 		return
 	}
@@ -88,7 +74,7 @@ func (bot TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 
 		bot.tryDeleteMessage(msg)
 		// Let the user enter an amount and return
-		bot.trySendMessage(m.Sender, fmt.Sprintf(lnurlEnterAmountMessage, payParams.MinSendable/1000, payParams.MaxSendable/1000), tb.ForceReply)
+		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlEnterAmountMessage"), payParams.MinSendable/1000, payParams.MaxSendable/1000), tb.ForceReply)
 	} else {
 		// amount is already present in the command
 		// set also amount in the state of the user
@@ -131,12 +117,12 @@ func UserGetLNURL(user *tb.User) (string, error) {
 }
 
 // lnurlReceiveHandler outputs the LNURL of the user
-func (bot TipBot) lnurlReceiveHandler(m *tb.Message) {
+func (bot TipBot) lnurlReceiveHandler(ctx context.Context, m *tb.Message) {
 	lnurlEncode, err := UserGetLNURL(m.Sender)
 	if err != nil {
 		errmsg := fmt.Sprintf("[lnurlReceiveHandler] Failed to get LNURL: %s", err)
 		log.Errorln(errmsg)
-		bot.telegram.Send(m.Sender, lnurlNoUsernameMessage)
+		bot.telegram.Send(m.Sender, Translate(ctx, "lnurlNoUsernameMessage"))
 	}
 	// create qr code
 	qr, err := qrcode.Encode(lnurlEncode, qrcode.Medium, 256)
@@ -146,7 +132,7 @@ func (bot TipBot) lnurlReceiveHandler(m *tb.Message) {
 		return
 	}
 
-	bot.trySendMessage(m.Sender, lnurlReceiveInfoText)
+	bot.trySendMessage(m.Sender, Translate(ctx, "lnurlReceiveInfoText"))
 	// send the lnurl data to user
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lnurlEncode)})
 }
@@ -161,7 +147,7 @@ func (bot TipBot) lnurlEnterAmountHandler(ctx context.Context, m *tb.Message) {
 		a, err := strconv.Atoi(m.Text)
 		if err != nil {
 			log.Errorln(err)
-			bot.trySendMessage(m.Sender, lnurlInvalidAmountMessage)
+			bot.trySendMessage(m.Sender, Translate(ctx, "lnurlInvalidAmountMessage"))
 			ResetUserState(user, bot)
 			return
 		}
@@ -177,7 +163,7 @@ func (bot TipBot) lnurlEnterAmountHandler(ctx context.Context, m *tb.Message) {
 		if amount > (stateResponse.MaxSendable/1000) || amount < (stateResponse.MinSendable/1000) {
 			err = fmt.Errorf("amount not in range")
 			log.Errorln(err)
-			bot.trySendMessage(m.Sender, fmt.Sprintf(lnurlInvalidAmountRangeMessage, stateResponse.MinSendable/1000, stateResponse.MaxSendable/1000))
+			bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), stateResponse.MinSendable/1000, stateResponse.MaxSendable/1000))
 			ResetUserState(user, bot)
 			return
 		}
@@ -201,7 +187,7 @@ type LnurlStateResponse struct {
 
 // lnurlPayHandler is invoked when the user has delivered an amount and is ready to pay
 func (bot TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
-	msg := bot.trySendMessage(c.Sender, lnurlGettingUserMessage)
+	msg := bot.trySendMessage(c.Sender, Translate(ctx, "lnurlGettingUserMessage"))
 
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
@@ -213,7 +199,7 @@ func (bot TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
 		if err != nil {
 			log.Errorln(err)
 			// bot.trySendMessage(c.Sender, err.Error())
-			bot.tryEditMessage(msg, fmt.Sprintf(lnurlPaymentFailed, err))
+			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
 			return
 		}
 		var stateResponse LnurlStateResponse
@@ -221,14 +207,14 @@ func (bot TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
 		if err != nil {
 			log.Errorln(err)
 			// bot.trySendMessage(c.Sender, err.Error())
-			bot.tryEditMessage(msg, fmt.Sprintf(lnurlPaymentFailed, err))
+			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
 			return
 		}
 		callbackUrl, err := url.Parse(stateResponse.Callback)
 		if err != nil {
 			log.Errorln(err)
 			// bot.trySendMessage(c.Sender, err.Error())
-			bot.tryEditMessage(msg, fmt.Sprintf(lnurlPaymentFailed, err))
+			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
 			return
 		}
 		qs := callbackUrl.Query()
@@ -239,7 +225,7 @@ func (bot TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
 		if err != nil {
 			log.Errorln(err)
 			// bot.trySendMessage(c.Sender, err.Error())
-			bot.tryEditMessage(msg, fmt.Sprintf(lnurlPaymentFailed, err))
+			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
 			return
 		}
 		var response2 lnurl.LNURLPayResponse2
@@ -247,13 +233,13 @@ func (bot TipBot) lnurlPayHandler(ctx context.Context, c *tb.Message) {
 		if err != nil {
 			log.Errorln(err)
 			// bot.trySendMessage(c.Sender, err.Error())
-			bot.tryEditMessage(msg, fmt.Sprintf(lnurlPaymentFailed, err))
+			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), err))
 			return
 		}
 		json.Unmarshal(body, &response2)
 
 		if len(response2.PR) < 1 {
-			bot.tryEditMessage(msg, fmt.Sprintf(lnurlPaymentFailed, "could not receive invoice (wrong address?)."))
+			bot.tryEditMessage(msg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), "could not receive invoice (wrong address?)."))
 			return
 		}
 		bot.telegram.Delete(msg)

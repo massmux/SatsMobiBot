@@ -49,8 +49,13 @@ func GetUserByTelegramUsername(toUserStrWithoutAt string, bot TipBot) (*lnbits.U
 	return toUserDb, nil
 }
 
-// GetUser from telegram user. Update the user if user information changed.
-func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
+// GetLnbitsUser will not update the user in database.
+// this is required, because fetching lnbits.User from a incomplete tb.User
+// will update the incomplete (partial) user in storage.
+// this function will accept users like this:
+// &tb.User{ID: toId, Username: username}
+// without updating the user in storage.
+func GetLnbitsUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 	user := &lnbits.User{Name: strconv.Itoa(u.ID)}
 	tx := bot.database.First(user)
 	if tx.Error != nil {
@@ -59,7 +64,12 @@ func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 		user.Telegram = u
 		return user, tx.Error
 	}
-	var err error
+	return user, nil
+}
+
+// GetUser from telegram user. Update the user if user information changed.
+func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
+	user, err := GetLnbitsUser(u, bot)
 	go func() {
 		userCopy := bot.copyLowercaseUser(u)
 		if !reflect.DeepEqual(userCopy, user.Telegram) {

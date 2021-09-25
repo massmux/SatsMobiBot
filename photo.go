@@ -14,11 +14,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-var (
-	photoQrNotRecognizedMessage = "🚫 Could not regocognize a Lightning invoice. Try to center the QR code, crop the photo, or zoom in."
-	photoQrRecognizedMessage    = "✅ QR code:\n`%s`"
-)
-
 // TryRecognizeInvoiceFromQrCode will try to read an invoice string from a qr code and invoke the payment handler.
 func TryRecognizeQrCode(img image.Image) (*gozxing.Result, error) {
 	// check for qr code
@@ -62,11 +57,11 @@ func (bot TipBot) photoHandler(ctx context.Context, m *tb.Message) {
 	data, err := TryRecognizeQrCode(img)
 	if err != nil {
 		log.Errorf("[photoHandler] tryRecognizeQrCodes error: %v\n", err)
-		bot.trySendMessage(m.Sender, photoQrNotRecognizedMessage)
+		bot.trySendMessage(m.Sender, Translate(ctx, "photoQrNotRecognizedMessage"))
 		return
 	}
 
-	bot.trySendMessage(m.Sender, fmt.Sprintf(photoQrRecognizedMessage, data.String()))
+	bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "photoQrRecognizedMessage"), data.String()))
 	// invoke payment handler
 	if lightning.IsInvoice(data.String()) {
 		m.Text = fmt.Sprintf("/pay %s", data.String())

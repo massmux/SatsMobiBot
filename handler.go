@@ -31,18 +31,21 @@ func (bot TipBot) registerTelegramHandlers() {
 func (bot TipBot) registerHandlerWithInterceptor(h Handler) {
 	switch h.Interceptor.Type {
 	case MessageInterceptor:
+		h.Interceptor.Before = append(h.Interceptor.Before, bot.localizerInterceptor)
 		for _, endpoint := range h.Endpoints {
 			bot.handle(endpoint, intercept.HandlerWithMessage(h.Handler.(func(ctx context.Context, query *tb.Message)),
 				intercept.WithBeforeMessage(h.Interceptor.Before...),
 				intercept.WithAfterMessage(h.Interceptor.After...)))
 		}
 	case QueryInterceptor:
+		h.Interceptor.Before = append(h.Interceptor.Before, bot.localizerInterceptor)
 		for _, endpoint := range h.Endpoints {
 			bot.handle(endpoint, intercept.HandlerWithQuery(h.Handler.(func(ctx context.Context, query *tb.Query)),
 				intercept.WithBeforeQuery(h.Interceptor.Before...),
 				intercept.WithAfterQuery(h.Interceptor.After...)))
 		}
 	case CallbackInterceptor:
+		h.Interceptor.Before = append(h.Interceptor.Before, bot.localizerInterceptor)
 		for _, endpoint := range h.Endpoints {
 			bot.handle(endpoint, intercept.HandlerWithCallback(h.Handler.(func(ctx context.Context, callback *tb.Callback)),
 				intercept.WithBeforeCallback(h.Interceptor.Before...),
@@ -86,8 +89,9 @@ func (bot TipBot) register(h Handler) {
 func (bot TipBot) getHandler() []Handler {
 	return []Handler{
 		{
-			Endpoints: []interface{}{"/start"},
-			Handler:   bot.startHandler,
+			Endpoints:   []interface{}{"/start"},
+			Handler:     bot.startHandler,
+			Interceptor: &Interceptor{Type: MessageInterceptor},
 		},
 		{
 			Endpoints: []interface{}{"/faucet", "/zapfhahn", "/kraan"},
@@ -212,8 +216,8 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.logMessageInterceptor,
 					bot.requirePrivateChatInterceptor,
+					bot.logMessageInterceptor,
 					bot.loadUserInterceptor}},
 		},
 		{
@@ -232,7 +236,7 @@ func (bot TipBot) getHandler() []Handler {
 			Handler:   bot.anyQueryHandler,
 			Interceptor: &Interceptor{
 				Type:   QueryInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor}},
+				Before: []intercept.Func{bot.requireUserInterceptor, bot.localizerInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{tb.OnChosenInlineResult},
@@ -276,6 +280,9 @@ func (bot TipBot) getHandler() []Handler {
 		{
 			Endpoints: []interface{}{&btnCancelInlineSend},
 			Handler:   bot.cancelInlineSendHandler,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnAcceptInlineReceive},
@@ -287,6 +294,9 @@ func (bot TipBot) getHandler() []Handler {
 		{
 			Endpoints: []interface{}{&btnCancelInlineReceive},
 			Handler:   bot.cancelInlineReceiveHandler,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnAcceptInlineFaucet},
@@ -298,6 +308,9 @@ func (bot TipBot) getHandler() []Handler {
 		{
 			Endpoints: []interface{}{&btnCancelInlineFaucet},
 			Handler:   bot.cancelInlineFaucetHandler,
+			Interceptor: &Interceptor{
+				Type:   CallbackInterceptor,
+				Before: []intercept.Func{bot.loadUserInterceptor}},
 		},
 	}
 }

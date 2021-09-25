@@ -4,22 +4,15 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-var (
-	walletConnectMessage = "🔗 *Link your wallet*\n\n" +
-		"⚠️ Never share the URL or the QR code with anyone or they will be able to access your funds.\n\n" +
-		"- *BlueWallet:* Press *New wallet*, *Import wallet*, *Scan or import a file*, and scan the QR code.\n" +
-		"- *Zeus:* Copy the URL below, press *Add a new node*, *Import* (the URL), *Save Node Config*."
-	couldNotLinkMessage = "🚫 Couldn't link your wallet. Please try again later."
-)
-
 func (bot TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	if Configuration.Lnbits.LnbitsPublicUrl == "" {
-		bot.trySendMessage(m.Sender, couldNotLinkMessage)
+		bot.trySendMessage(m.Sender, Translate(ctx, "couldNotLinkMessage"))
 		return
 	}
 	// check and print all commands
@@ -31,7 +24,7 @@ func (bot TipBot) lndhubHandler(ctx context.Context, m *tb.Message) {
 	}
 	// first check whether the user is initialized
 	fromUser := LoadUser(ctx)
-	bot.trySendMessage(m.Sender, walletConnectMessage)
+	bot.trySendMessage(m.Sender, Translate(ctx, "walletConnectMessage"))
 
 	lndhubUrl := fmt.Sprintf("lndhub://admin:%s@%slndhub/ext/", fromUser.Wallet.Adminkey, Configuration.Lnbits.LnbitsPublicUrl)
 

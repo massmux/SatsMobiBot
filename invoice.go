@@ -13,19 +13,11 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-	invoiceEnterAmountMessage = "Did you enter an amount?"
-	invoiceValidAmountMessage = "Did you enter a valid amount?"
-	invoiceHelpText           = "📖 Oops, that didn't work. %s\n\n" +
-		"*Usage:* `/invoice <amount> [<memo>]`\n" +
-		"*Example:* `/invoice 1000 Thank you!`"
-)
-
-func helpInvoiceUsage(errormsg string) string {
+func helpInvoiceUsage(ctx context.Context, errormsg string) string {
 	if len(errormsg) > 0 {
-		return fmt.Sprintf(invoiceHelpText, fmt.Sprintf("%s", errormsg))
+		return fmt.Sprintf(Translate(ctx, "invoiceHelpText"), fmt.Sprintf("%s", errormsg))
 	} else {
-		return fmt.Sprintf(invoiceHelpText, "")
+		return fmt.Sprintf(Translate(ctx, "invoiceHelpText"), "")
 	}
 }
 
@@ -38,7 +30,7 @@ func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 		return
 	}
 	if len(strings.Split(m.Text, " ")) < 2 {
-		bot.trySendMessage(m.Sender, helpInvoiceUsage(invoiceEnterAmountMessage))
+		bot.trySendMessage(m.Sender, helpInvoiceUsage(ctx, Translate(ctx, "invoiceEnterAmountMessage")))
 		return
 	}
 
@@ -54,7 +46,7 @@ func (bot TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 	}
 	if amount > 0 {
 	} else {
-		bot.trySendMessage(m.Sender, helpInvoiceUsage(invoiceValidAmountMessage))
+		bot.trySendMessage(m.Sender, helpInvoiceUsage(ctx, Translate(ctx, "invoiceValidAmountMessage")))
 		return
 	}
 

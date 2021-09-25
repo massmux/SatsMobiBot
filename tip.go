@@ -10,33 +10,18 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-const (
-	tipDidYouReplyMessage = "Did you reply to a message to tip? To reply to any message, right-click -> Reply on your computer or swipe the message on your phone. If you want to send directly to another user, use the /send command."
-	tipInviteGroupMessage = "ℹ️ By the way, you can invite this bot to any group to start tipping there."
-	tipEnterAmountMessage = "Did you enter an amount?"
-	tipValidAmountMessage = "Did you enter a valid amount?"
-	tipYourselfMessage    = "📖 You can't tip yourself."
-	tipSentMessage        = "💸 %d sat sent to %s."
-	tipReceivedMessage    = "🏅 %s has tipped you %d sat."
-	tipErrorMessage       = "🚫 Tip failed."
-	tipUndefinedErrorMsg  = "please try again later"
-	tipHelpText           = "📖 Oops, that didn't work. %s\n\n" +
-		"*Usage:* `/tip <amount> [<memo>]`\n" +
-		"*Example:* `/tip 1000 Dank meme!`"
-)
-
-func helpTipUsage(errormsg string) string {
+func helpTipUsage(ctx context.Context, errormsg string) string {
 	if len(errormsg) > 0 {
-		return fmt.Sprintf(tipHelpText, fmt.Sprintf("%s", errormsg))
+		return fmt.Sprintf(Translate(ctx, "tipHelpText"), fmt.Sprintf("%s", errormsg))
 	} else {
-		return fmt.Sprintf(tipHelpText, "")
+		return fmt.Sprintf(Translate(ctx, "tipHelpText"), "")
 	}
 }
 
-func TipCheckSyntax(m *tb.Message) (bool, string) {
+func TipCheckSyntax(ctx context.Context, m *tb.Message) (bool, string) {
 	arguments := strings.Split(m.Text, " ")
 	if len(arguments) < 2 {
-		return false, tipEnterAmountMessage
+		return false, Translate(ctx, "tipEnterAmountMessage")
 	}
 	return true, ""
 }
@@ -54,13 +39,13 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	// only if message is a reply
 	if !m.IsReply() {
 		NewMessage(m, WithDuration(0, bot.telegram))
-		bot.trySendMessage(m.Sender, helpTipUsage(fmt.Sprintf(tipDidYouReplyMessage)))
-		bot.trySendMessage(m.Sender, tipInviteGroupMessage)
+		bot.trySendMessage(m.Sender, helpTipUsage(ctx, Translate(ctx, "tipDidYouReplyMessage")))
+		bot.trySendMessage(m.Sender, Translate(ctx, "tipInviteGroupMessage"))
 		return
 	}
 
-	if ok, err := TipCheckSyntax(m); !ok {
-		bot.trySendMessage(m.Sender, helpTipUsage(err))
+	if ok, err := TipCheckSyntax(ctx, m); !ok {
+		bot.trySendMessage(m.Sender, helpTipUsage(ctx, err))
 		NewMessage(m, WithDuration(0, bot.telegram))
 		return
 	}
@@ -71,7 +56,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 		errmsg := fmt.Sprintf("[/tip] Error: Tip amount not valid.")
 		// immediately delete if the amount is bullshit
 		NewMessage(m, WithDuration(0, bot.telegram))
-		bot.trySendMessage(m.Sender, helpTipUsage(tipValidAmountMessage))
+		bot.trySendMessage(m.Sender, helpTipUsage(ctx, Translate(ctx, "tipValidAmountMessage")))
 		log.Errorln(errmsg)
 		return
 	}
@@ -87,7 +72,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 
 	if from.Telegram.ID == to.Telegram.ID {
 		NewMessage(m, WithDuration(0, bot.telegram))
-		bot.trySendMessage(m.Sender, tipYourselfMessage)
+		bot.trySendMessage(m.Sender, Translate(ctx, "tipYourselfMessage"))
 		return
 	}
 
@@ -123,7 +108,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	success, err := t.Send()
 	if !success {
 		NewMessage(m, WithDuration(0, bot.telegram))
-		bot.trySendMessage(m.Sender, tipErrorMessage)
+		bot.trySendMessage(m.Sender, Translate(ctx, "tipErrorMessage"))
 		errMsg := fmt.Sprintf("[/tip] Transaction failed: %s", err)
 		log.Errorln(errMsg)
 		return
@@ -132,10 +117,10 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	// update tooltip if necessary
 	messageHasTip := tipTooltipHandler(m, bot, amount, to.Initialized)
 
-	log.Infof("[tip] %d sat from %s to %s", amount, fromUserStr, toUserStr)
+	log.Infof("[tip] Transaction sent from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
 
 	// notify users
-	_, err = bot.telegram.Send(from.Telegram, fmt.Sprintf(tipSentMessage, amount, toUserStrMd))
+	_, err = bot.telegram.Send(from.Telegram, fmt.Sprintf(Translate(ctx, "tipSentMessage"), amount, toUserStrMd))
 	if err != nil {
 		errmsg := fmt.Errorf("[/tip] Error: Send message to %s: %s", toUserStr, err)
 		log.Errorln(errmsg)
@@ -146,7 +131,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) {
 	if !messageHasTip {
 		bot.tryForwardMessage(to.Telegram, m.ReplyTo, tb.Silent)
 	}
-	bot.trySendMessage(to.Telegram, fmt.Sprintf(tipReceivedMessage, fromUserStrMd, amount))
+	bot.trySendMessage(to.Telegram, fmt.Sprintf(bot.Translate(to.Telegram.LanguageCode, "tipReceivedMessage"), fromUserStrMd, amount))
 
 	if len(tipMemo) > 0 {
 		bot.trySendMessage(to.Telegram, fmt.Sprintf("✉️ %s", MarkdownEscape(tipMemo)))
