@@ -3,19 +3,22 @@ package lnbits
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 	"net/url"
 	"time"
+
+	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 
 	"github.com/gorilla/mux"
 	tb "gopkg.in/tucnak/telebot.v2"
 
 	"net/http"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 )
 
 const (
-	invoiceReceivedMessage = "⚡️ You received %d sat."
+// invoiceReceivedMessage = "⚡️ You received %d sat."
 )
 
 type WebhookServer struct {
@@ -73,7 +76,7 @@ func (w WebhookServer) receive(writer http.ResponseWriter, request *http.Request
 		return
 	}
 	log.Infoln(fmt.Sprintf("[WebHook] User %s (%d) received invoice of %d sat.", user.Telegram.Username, user.Telegram.ID, depositEvent.Amount/1000))
-	_, err = w.bot.Send(user.Telegram, fmt.Sprintf(invoiceReceivedMessage, depositEvent.Amount/1000))
+	_, err = w.bot.Send(user.Telegram, fmt.Sprintf(i18n.Translate(user.Telegram.LanguageCode, "invoiceReceivedMessage"), depositEvent.Amount/1000))
 	if err != nil {
 		log.Errorln(err)
 	}
