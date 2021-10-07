@@ -235,8 +235,11 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{tb.OnQuery},
 			Handler:   bot.anyQueryHandler,
 			Interceptor: &Interceptor{
-				Type:   QueryInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor, bot.localizerInterceptor}},
+				Type: QueryInterceptor,
+				Before: []intercept.Func{
+					bot.requireUserInterceptor,
+					bot.localizerInterceptor,
+				}},
 		},
 		{
 			Endpoints: []interface{}{tb.OnChosenInlineResult},
@@ -300,7 +303,7 @@ func (bot TipBot) getHandler() []Handler {
 		},
 		{
 			Endpoints: []interface{}{&btnAcceptInlineFaucet},
-			Handler:   bot.accpetInlineFaucetHandler,
+			Handler:   bot.acceptInlineFaucetHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
 				Before: []intercept.Func{bot.loadUserInterceptor}},

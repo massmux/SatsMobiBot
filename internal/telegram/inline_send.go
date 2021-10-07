@@ -3,10 +3,10 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"time"
-
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage/transaction"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
@@ -20,97 +20,38 @@ var (
 )
 
 type InlineSend struct {
-	Message       string       `json:"inline_send_message"`
-	Amount        int          `json:"inline_send_amount"`
-	From          *lnbits.User `json:"inline_send_from"`
-	To            *tb.User     `json:"inline_send_to"`
-	Memo          string       `json:"inline_send_memo"`
-	ID            string       `json:"inline_send_id"`
-	Active        bool         `json:"inline_send_active"`
-	InTransaction bool         `json:"inline_send_intransaction"`
-	LanguageCode  string       `json:"languagecode"`
+	*transaction.Base
+	Message      string       `json:"inline_send_message"`
+	Amount       int          `json:"inline_send_amount"`
+	From         *lnbits.User `json:"inline_send_from"`
+	To           *tb.User     `json:"inline_send_to"`
+	Memo         string       `json:"inline_send_memo"`
+	LanguageCode string       `json:"languagecode"`
 }
 
-func NewInlineSend() *InlineSend {
-	inlineSend := &InlineSend{
-		Message:       "",
-		Active:        true,
-		InTransaction: false,
-	}
-	return inlineSend
+func (bot TipBot) makeSendKeyboard(ctx context.Context, id string) *tb.ReplyMarkup {
+	acceptInlineSendButton := inlineSendMenu.Data(Translate(ctx, "receiveButtonMessage"), "confirm_send_inline")
+	cancelInlineSendButton := inlineSendMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_send_inline")
+	acceptInlineSendButton.Data = id
+	cancelInlineSendButton.Data = id
 
-}
-
-func (msg InlineSend) Key() string {
-	return msg.ID
-}
-
-func (bot *TipBot) LockInlineSend(tx *InlineSend) error {
-	// immediatelly set intransaction to block duplicate calls
-	tx.InTransaction = true
-	err := bot.Bunt.Set(tx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (bot *TipBot) ReleaseInlineSend(tx *InlineSend) error {
-	// immediatelly set intransaction to block duplicate calls
-	tx.InTransaction = false
-	err := bot.Bunt.Set(tx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (bot *TipBot) InactivateInlineSend(tx *InlineSend) error {
-	tx.Active = false
-	err := bot.Bunt.Set(tx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (bot *TipBot) getInlineSend(c *tb.Callback) (*InlineSend, error) {
-	inlineSend := NewInlineSend()
-	inlineSend.ID = c.Data
-
-	err := bot.Bunt.Get(inlineSend)
-
-	// to avoid race conditions, we block the call if there is
-	// already an active transaction by loop until InTransaction is false
-	ticker := time.NewTicker(time.Second * 10)
-
-	for inlineSend.InTransaction {
-		select {
-		case <-ticker.C:
-			return nil, fmt.Errorf("inline send %s timeout", inlineSend.ID)
-		default:
-			log.Warnf("[getInlineSend] %s in transaction", inlineSend.ID)
-			time.Sleep(time.Duration(500) * time.Millisecond)
-			err = bot.Bunt.Get(inlineSend)
-		}
-	}
-	if err != nil {
-		return nil, fmt.Errorf("could not get inline send %s", inlineSend.ID)
-	}
-
-	return inlineSend, nil
-
+	inlineSendMenu.Inline(
+		inlineSendMenu.Row(
+			acceptInlineSendButton,
+			cancelInlineSendButton),
+	)
+	return inlineSendMenu
 }
 
 func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
-	inlineSend := NewInlineSend()
-	var err error
-	inlineSend.Amount, err = decodeAmountFromCommand(q.Text)
+	// inlineSend := NewInlineSend()
+	// var err error
+	amount, err := decodeAmountFromCommand(q.Text)
 	if err != nil {
 		bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineQuerySendTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQuerySendDescription"), bot.Telegram.Me.Username))
 		return
 	}
-	if inlineSend.Amount < 1 {
+	if amount < 1 {
 		bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(Translate(ctx, "inlineQuerySendDescription"), bot.Telegram.Me.Username))
 		return
 	}
@@ -123,60 +64,48 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 		return
 	}
 	// check if fromUser has balance
-	if balance < inlineSend.Amount {
+	if balance < amount {
 		log.Errorf("Balance of user %s too low", fromUserStr)
-		bot.inlineQueryReplyWithError(q, fmt.Sprintf(TranslateUser(ctx, "inlineSendBalanceLowMessage"), balance), fmt.Sprintf(TranslateUser(ctx, "inlineQuerySendDescription"), bot.Telegram.Me.Username))
+		bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendBalanceLowMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQuerySendDescription"), bot.Telegram.Me.Username))
 		return
 	}
-
 	// check for memo in command
-	inlineSend.Memo = GetMemoFromCommand(q.Text, 2)
-
+	memo := GetMemoFromCommand(q.Text, 2)
 	urls := []string{
 		queryImage,
 	}
 	results := make(tb.Results, len(urls)) // []tb.Result
 	for i, url := range urls {
-
-		inlineMessage := fmt.Sprintf(Translate(ctx, "inlineSendMessage"), fromUserStr, inlineSend.Amount)
-
-		if len(inlineSend.Memo) > 0 {
-			inlineMessage = inlineMessage + fmt.Sprintf(Translate(ctx, "inlineSendAppendMemo"), inlineSend.Memo)
+		inlineMessage := fmt.Sprintf(Translate(ctx, "inlineSendMessage"), fromUserStr, amount)
+		if len(memo) > 0 {
+			inlineMessage = inlineMessage + fmt.Sprintf(Translate(ctx, "inlineSendAppendMemo"), memo)
 		}
-
 		result := &tb.ArticleResult{
 			// URL:         url,
 			Text:        inlineMessage,
-			Title:       fmt.Sprintf(TranslateUser(ctx, "inlineResultSendTitle"), inlineSend.Amount),
-			Description: fmt.Sprintf(TranslateUser(ctx, "inlineResultSendDescription"), inlineSend.Amount),
+			Title:       fmt.Sprintf(TranslateUser(ctx, "inlineResultSendTitle"), amount),
+			Description: fmt.Sprintf(TranslateUser(ctx, "inlineResultSendDescription"), amount),
 			// required for photos
 			ThumbURL: url,
 		}
-		id := fmt.Sprintf("inl-send-%d-%d-%s", q.From.ID, inlineSend.Amount, RandStringRunes(5))
-		acceptInlineSendButton := inlineSendMenu.Data(Translate(ctx, "receiveButtonMessage"), "confirm_send_inline")
-		cancelInlineSendButton := inlineSendMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_send_inline")
-		acceptInlineSendButton.Data = id
-		cancelInlineSendButton.Data = id
-
-		inlineSendMenu.Inline(
-			inlineSendMenu.Row(
-				acceptInlineSendButton,
-				cancelInlineSendButton),
-		)
-		result.ReplyMarkup = &tb.InlineKeyboardMarkup{InlineKeyboard: inlineSendMenu.InlineKeyboard}
-
+		id := fmt.Sprintf("inl-send-%d-%d-%s", q.From.ID, amount, RandStringRunes(5))
+		result.ReplyMarkup = &tb.InlineKeyboardMarkup{InlineKeyboard: bot.makeSendKeyboard(ctx, id).InlineKeyboard}
 		results[i] = result
-
 		// needed to set a unique string ID for each result
 		results[i].SetResultID(id)
 
 		// add data to persistent object
-		inlineSend.Message = inlineMessage
-		inlineSend.ID = id
-		inlineSend.From = fromUser
-		inlineSend.LanguageCode = ctx.Value("publicLanguageCode").(string)
+		inlineSend := InlineSend{
+			Base:         transaction.New(transaction.ID(id)),
+			Message:      inlineMessage,
+			From:         fromUser,
+			Memo:         memo,
+			Amount:       amount,
+			LanguageCode: ctx.Value("publicLanguageCode").(string),
+		}
+
 		// add result to persistent struct
-		runtime.IgnoreError(bot.Bunt.Set(inlineSend))
+		runtime.IgnoreError(inlineSend.Set(inlineSend, bot.Bunt))
 	}
 
 	err = bot.Telegram.Answer(q, &tb.QueryResponse{
@@ -191,15 +120,18 @@ func (bot TipBot) handleInlineSendQuery(ctx context.Context, q *tb.Query) {
 
 func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) {
 	to := LoadUser(ctx)
-
-	inlineSend, err := bot.getInlineSend(c)
+	tx := &InlineSend{Base: transaction.New(transaction.ID(c.Data))}
+	sn, err := tx.Get(tx, bot.Bunt)
+	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[acceptInlineSendHandler] %s", err)
 		return
 	}
+	inlineSend := sn.(*InlineSend)
+
 	fromUser := inlineSend.From
 	// immediatelly set intransaction to block duplicate calls
-	err = bot.LockInlineSend(inlineSend)
+	err = inlineSend.Lock(inlineSend, bot.Bunt)
 	if err != nil {
 		log.Errorf("[getInlineSend] %s", err)
 		return
@@ -209,7 +141,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		return
 	}
 
-	defer bot.ReleaseInlineSend(inlineSend)
+	defer inlineSend.Release(inlineSend, bot.Bunt)
 
 	amount := inlineSend.Amount
 
@@ -237,7 +169,7 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 		}
 	}
 	// set inactive to avoid double-sends
-	bot.InactivateInlineSend(inlineSend)
+	inlineSend.Inactivate(inlineSend, bot.Bunt)
 
 	// todo: user new get username function to get userStrings
 	transactionMemo := fmt.Sprintf("InlineSend from %s to %s (%d sat).", fromUserStr, toUserStr, amount)
@@ -258,11 +190,9 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 	if len(memo) > 0 {
 		inlineSend.Message = inlineSend.Message + fmt.Sprintf(i18n.Translate(inlineSend.LanguageCode, "inlineSendAppendMemo"), memo)
 	}
-
 	if !to.Initialized {
 		inlineSend.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineSend.LanguageCode, "inlineSendCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
 	}
-
 	bot.tryEditMessage(c.Message, inlineSend.Message, &tb.ReplyMarkup{})
 	// notify users
 	_, err = bot.Telegram.Send(to.Telegram, fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "sendReceivedMessage"), fromUserStrMd, amount))
@@ -275,17 +205,20 @@ func (bot *TipBot) acceptInlineSendHandler(ctx context.Context, c *tb.Callback) 
 }
 
 func (bot *TipBot) cancelInlineSendHandler(ctx context.Context, c *tb.Callback) {
-	inlineSend, err := bot.getInlineSend(c)
+	tx := &InlineSend{Base: transaction.New(transaction.ID(c.Data))}
+	sn, err := tx.Get(tx, bot.Bunt)
+	// immediatelly set intransaction to block duplicate calls
 	if err != nil {
 		log.Errorf("[cancelInlineSendHandler] %s", err)
 		return
 	}
+	inlineSend := sn.(*InlineSend)
 	if c.Sender.ID == inlineSend.From.Telegram.ID {
 		bot.tryEditMessage(c.Message, i18n.Translate(inlineSend.LanguageCode, "sendCancelledMessage"), &tb.ReplyMarkup{})
 		// set the inlineSend inactive
 		inlineSend.Active = false
 		inlineSend.InTransaction = false
-		runtime.IgnoreError(bot.Bunt.Set(inlineSend))
+		runtime.IgnoreError(inlineSend.Set(inlineSend, bot.Bunt))
 	}
 	return
 }

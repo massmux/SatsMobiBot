@@ -3,9 +3,12 @@ package telegram
 import (
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"github.com/tidwall/buntdb"
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -15,6 +18,21 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	MessageOrderedByReplyToFrom = "message.reply_to_message.from.id"
+	TipTooltipKeyPattern        = "tip-tool-tip:*"
+)
+
+func createBunt() *storage.DB {
+	// create bunt database
+	bunt := storage.NewBunt(internal.Configuration.Database.BuntDbPath)
+	// create bunt database index for ascending (searching) TipTooltips
+	err := bunt.CreateIndex(MessageOrderedByReplyToFrom, TipTooltipKeyPattern, buntdb.IndexJSON(MessageOrderedByReplyToFrom))
+	if err != nil {
+		panic(err)
+	}
+	return bunt
+}
 func migration() (db *gorm.DB, txLogger *gorm.DB) {
 	txLogger, err := gorm.Open(sqlite.Open(internal.Configuration.Database.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
 	if err != nil {
@@ -90,6 +108,7 @@ func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 
 func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 	user.Telegram = bot.copyLowercaseUser(user.Telegram)
+	user.UpdatedAt = time.Now()
 	tx := bot.Database.Save(user)
 	if tx.Error != nil {
 		errmsg := fmt.Sprintf("[UpdateUserRecord] Error: Couldn't update %s's info in Database.", GetUserStr(user.Telegram))

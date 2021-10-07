@@ -29,12 +29,13 @@ var (
 
 // NewBot migrates data and creates a new bot
 func NewBot() TipBot {
+	// create sqlite databases
 	db, txLogger := migration()
 	return TipBot{
 		Database: db,
 		Client:   lnbits.NewClient(internal.Configuration.Lnbits.AdminKey, internal.Configuration.Lnbits.Url),
 		logger:   txLogger,
-		Bunt:     storage.NewBunt(internal.Configuration.Database.BuntDbPath),
+		Bunt:     createBunt(),
 		Telegram: newTelegramBot(),
 	}
 }
