@@ -1,13 +1,11 @@
 package main
 
 import (
-	"runtime/debug"
-
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits/webhook"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
-	"github.com/LightningTipBot/LightningTipBot/internal/price"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	log "github.com/sirupsen/logrus"
+	"runtime/debug"
 )
 
 // setLogger will initialize the log format
@@ -26,7 +24,6 @@ func main() {
 	bot := telegram.NewBot()
 	webhook.NewServer(&bot)
 	lnurl.NewServer(&bot)
-	price.NewPriceWatcher().Start()
 	bot.Start()
 }
 
