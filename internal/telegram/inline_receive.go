@@ -63,7 +63,7 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) {
 	for i, url := range urls {
 		inlineMessage := fmt.Sprintf(Translate(ctx, "inlineReceiveMessage"), fromUserStr, amount)
 		if len(memo) > 0 {
-			inlineMessage = inlineMessage + fmt.Sprintf(Translate(ctx, "inlineReceiveAppendMemo"), amount)
+			inlineMessage = inlineMessage + fmt.Sprintf(Translate(ctx, "inlineReceiveAppendMemo"), memo)
 		}
 		result := &tb.ArticleResult{
 			// URL:         url,
