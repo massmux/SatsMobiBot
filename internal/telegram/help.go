@@ -49,28 +49,21 @@ func (bot TipBot) basicsHandler(ctx context.Context, m *tb.Message) {
 
 func (bot TipBot) makeAdvancedHelpMessage(ctx context.Context, m *tb.Message) string {
 
-	dynamicHelpMessage := ""
+	dynamicHelpMessage := "ℹ️ *Info*\n"
 	// user has no username set
 	if len(m.Sender.Username) == 0 {
 		// return fmt.Sprintf(helpMessage, fmt.Sprintf("%s\n\n", helpNoUsernameMessage))
-		dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("%s", Translate(ctx, "helpNoUsernameMessage"))
-	} else {
-		dynamicHelpMessage = "ℹ️ *Info*\n"
-		lnaddr, err := bot.UserGetLightningAddress(m.Sender)
-		if err != nil {
-			dynamicHelpMessage = ""
-		} else {
-			dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("Your Lightning Address:\n`%s`\n", lnaddr)
-		}
-
-		lnurl, err := UserGetLNURL(m.Sender)
-		if err != nil {
-			dynamicHelpMessage = ""
-		} else {
-			dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("Your LNURL:\n`%s`", lnurl)
-		}
-
+		dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("%s", Translate(ctx, "helpNoUsernameMessage")) + "\n"
 	}
+	lnaddr, err := bot.UserGetLightningAddress(m.Sender)
+	if err == nil {
+		dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("Lightning Address: `%s`\n", lnaddr)
+	}
+	lnurl, err := UserGetLNURL(m.Sender)
+	if err == nil {
+		dynamicHelpMessage = dynamicHelpMessage + fmt.Sprintf("LNURL: `%s`", lnurl)
+	}
+
 	// this is so stupid:
 	return fmt.Sprintf(Translate(ctx, "advancedMessage"), dynamicHelpMessage, GetUserStr(bot.Telegram.Me), GetUserStr(bot.Telegram.Me), GetUserStr(bot.Telegram.Me))
 }
