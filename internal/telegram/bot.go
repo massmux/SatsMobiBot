@@ -2,10 +2,10 @@ package telegram
 
 import (
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal"
 	"sync"
 	"time"
 
+	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 	log "github.com/sirupsen/logrus"
@@ -30,7 +30,7 @@ var (
 // NewBot migrates data and creates a new bot
 func NewBot() TipBot {
 	// create sqlite databases
-	db, txLogger := migration()
+	db, txLogger := AutoMigration()
 	return TipBot{
 		Database: db,
 		Client:   lnbits.NewClient(internal.Configuration.Lnbits.AdminKey, internal.Configuration.Lnbits.Url),

@@ -2,13 +2,15 @@ package telegram
 
 import (
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
-	"github.com/tidwall/buntdb"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/LightningTipBot/LightningTipBot/internal/database"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"github.com/tidwall/buntdb"
 
 	log "github.com/sirupsen/logrus"
 
@@ -33,20 +35,40 @@ func createBunt() *storage.DB {
 	}
 	return bunt
 }
-func migration() (db *gorm.DB, txLogger *gorm.DB) {
-	txLogger, err := gorm.Open(sqlite.Open(internal.Configuration.Database.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
-	if err != nil {
-		panic("Initialize orm failed.")
-	}
 
+func ColumnMigrationTasks(db *gorm.DB) error {
+	var err error
+	if !db.Migrator().HasColumn(&lnbits.User{}, "anon_id") {
+		// first we need to auto migrate the user. This will create anon_id column
+		err = db.AutoMigrate(&lnbits.User{})
+		if err != nil {
+			panic(err)
+		}
+		log.Info("Running ano_id database migrations ...")
+		// run the migration on anon_id
+		err = database.MigrateAnonIdHash(db)
+	}
+	// todo -- add more database field migrations here in the future
+	return err
+}
+
+func AutoMigration() (db *gorm.DB, txLogger *gorm.DB) {
 	orm, err := gorm.Open(sqlite.Open(internal.Configuration.Database.DbPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
 	if err != nil {
 		panic("Initialize orm failed.")
 	}
-
+	err = ColumnMigrationTasks(orm)
+	if err != nil {
+		panic(err)
+	}
 	err = orm.AutoMigrate(&lnbits.User{})
 	if err != nil {
 		panic(err)
+	}
+
+	txLogger, err = gorm.Open(sqlite.Open(internal.Configuration.Database.TransactionsPath), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, FullSaveAssociations: true})
+	if err != nil {
+		panic("Initialize orm failed.")
 	}
 	err = txLogger.AutoMigrate(&Transaction{})
 	if err != nil {
@@ -93,7 +115,7 @@ func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 		return user, err
 	}
 	go func() {
-		userCopy := bot.copyLowercaseUser(u)
+		userCopy := bot.CopyLowercaseUser(u)
 		if !reflect.DeepEqual(userCopy, user.Telegram) {
 			// update possibly changed user details in Database
 			user.Telegram = userCopy
@@ -107,7 +129,7 @@ func GetUser(u *tb.User, bot TipBot) (*lnbits.User, error) {
 }
 
 func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
-	user.Telegram = bot.copyLowercaseUser(user.Telegram)
+	user.Telegram = bot.CopyLowercaseUser(user.Telegram)
 	user.UpdatedAt = time.Now()
 	tx := bot.Database.Save(user)
 	if tx.Error != nil {
