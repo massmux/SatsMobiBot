@@ -3,26 +3,25 @@ package telegram
 import (
 	"errors"
 	"fmt"
-	"strings"
-
-	"github.com/LightningTipBot/LightningTipBot/internal/str"
-
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
+	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
-
 	tb "gopkg.in/tucnak/telebot.v2"
 	"gorm.io/gorm"
+	"time"
 )
 
 func SetUserState(user *lnbits.User, bot *TipBot, stateKey lnbits.UserStateKey, stateData string) {
 	user.StateKey = stateKey
 	user.StateData = stateData
-	bot.Database.Table("users").Where("name = ?", user.Name).Update("state_key", user.StateKey).Update("state_data", user.StateData)
+	UpdateUserRecord(user, *bot)
+
 }
 
 func ResetUserState(user *lnbits.User, bot *TipBot) {
 	user.ResetState()
-	bot.Database.Table("users").Where("name = ?", user.Name).Update("state_key", 0).Update("state_data", "")
+	UpdateUserRecord(user, *bot)
 }
 
 func GetUserStr(user *tb.User) string {
@@ -60,8 +59,16 @@ func appendUinqueUsersToSlice(slice []*tb.User, i *tb.User) []*tb.User {
 	return append(slice, i)
 }
 
-func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int, err error) {
+func (bot *TipBot) GetUserBalanceCached(user *lnbits.User) (amount int, err error) {
+	u, err := bot.Cache.Get(fmt.Sprintf("%s_balance", user.Name))
+	if err != nil {
+		return bot.GetUserBalance(user)
+	}
+	cachedBalance := u.(int)
+	return cachedBalance, nil
+}
 
+func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int, err error) {
 	wallet, err := bot.Client.Info(*user.Wallet)
 	if err != nil {
 		errmsg := fmt.Sprintf("[GetUserBalance] Error: Couldn't fetch user %s's info from LNbits: %s", GetUserStr(user.Telegram), err.Error())
@@ -76,19 +83,18 @@ func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int, err error) {
 	// msat to sat
 	amount = int(wallet.Balance) / 1000
 	log.Infof("[GetUserBalance] %s's balance: %d sat\n", GetUserStr(user.Telegram), amount)
+
+	// update user balance in cache
+	bot.Cache.Set(
+		fmt.Sprintf("%s_balance", user.Name),
+		amount,
+		&store.Options{Expiration: 30 * time.Second},
+	)
 	return
 }
 
-// CopyLowercaseUser will create a coy user and cast username to lowercase.
-func (bot *TipBot) CopyLowercaseUser(u *tb.User) *tb.User {
-	userCopy := *u
-	userCopy.Username = strings.ToLower(u.Username)
-	return &userCopy
-}
-
 func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) (*lnbits.User, error) {
-	userCopy := bot.CopyLowercaseUser(tbUser)
-	user := &lnbits.User{Telegram: userCopy}
+	user := &lnbits.User{Telegram: tbUser}
 	userStr := GetUserStr(tbUser)
 	log.Printf("[CreateWalletForTelegramUser] Creating wallet for user %s ... ", userStr)
 	err := bot.createWallet(user)
@@ -97,9 +103,9 @@ func (bot *TipBot) CreateWalletForTelegramUser(tbUser *tb.User) (*lnbits.User, e
 		log.Errorln(errmsg)
 		return user, err
 	}
-	tx := bot.Database.Save(user)
-	if tx.Error != nil {
-		return nil, tx.Error
+	err = UpdateUserRecord(user, *bot)
+	if err != nil {
+		return nil, err
 	}
 	log.Printf("[CreateWalletForTelegramUser] Wallet created for user %s. ", userStr)
 	return user, nil
