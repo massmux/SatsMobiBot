@@ -297,3 +297,27 @@ inlineReceiveCreateWalletMessage = """Bate-papo com %s 👈 para administrar sua
 inlineReceiveYourselfMessage     = """📖 Você não pode pagar a si mesmo."""
 inlineReceiveFailedMessage       = """🚫 O recebimento falhou."""
 inlineReceiveCancelledMessage    = """🚫 Recepção cancelada."""
+
+# TIPJAR
+
+inlineQueryTipjarTitle        = """🍯 Criar um cofrinho."""
+inlineQueryTipjarDescription  = """Uso: @%s cofrinho <capacidade> <por_usuário>"""
+inlineResultTipjarTitle       = """🍯 Criar um cofrinho de %d sat."""
+inlineResultTipjarDescription = """👉 Clique aqui para criar um cofrinho neste chat."""
+
+inlineTipjarMessage                     = """Pressione 💸 para *pagar %d sat* a esse cofrinho de %s.
+
+🙏 Doados: *%d*/%d sat (por %d usuários)
+%s"""
+inlineTipjarEndedMessage                = """🍯 O cofrinho de %s está cheio ⭐️\n\n🏅 %d sat doados por %d usuários."""
+inlineTipjarAppendMemo                  = """\n✉️ %s"""
+inlineTipjarCancelledMessage            = """🚫 Cofrinho cancelado."""
+inlineTipjarInvalidPeruserAmountMessage = """🚫 Quantidade por usuário não divisor da capacidade."""
+inlineTipjarInvalidAmountMessage        = """🚫 Quantia inválida."""
+inlineTipjarSentMessage                 = """🍯 %d sat enviado(s) a %s."""
+inlineTipjarReceivedMessage             = """🍯 %s lhe enviou %d sat."""
+inlineTipjarHelpTipjarInGroup           = """Criar uma cofrinho em grupo com o bot dentro ou usar o 👉 comando_inline_ (/advanced para mais)."""
+inlineTipjarHelpText                    = """📖 Opa, isso não funcionou. %s
+
+*Uso:* `/tipjar <capacidade> <por_usuário>`
+*Exemplo:* `/tipjar 210 21`"""

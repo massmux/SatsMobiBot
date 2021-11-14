@@ -17,7 +17,7 @@ linkCommandStr = """enlace"""
 lnurlCommandStr = """lnurl"""
 faucetCommandStr = """grifo"""
 
-tipjarCommandStr = """bote"""
+tipjarCommandStr = """alcancía"""
 receiveCommandStr = """recibir"""
 hideCommandStr = """ocultar"""
 volcanoCommandStr = """volcán"""
@@ -124,7 +124,7 @@ advancedMessage = """%s
 
 # START
 
-startSettingWalletMessage = """🧮 Configurar tu monedero..."""
+startSettingWalletMessage = """🧮 Configurando tu monedero..."""
 startWalletCreatedMessage = """🧮 Monedero creado."""
 startWalletReadyMessage   = """✅ *Tu monedero está listo.*"""
 startWalletErrorMessage   = """🚫 Error al iniciar tu monedero.  Vuelve a intentarlo más tarde."""
@@ -297,3 +297,27 @@ inlineReceiveCreateWalletMessage = """Chatea con %s 👈 para gestionar tu carte
 inlineReceiveYourselfMessage     = """📖 No puedes pagarte a ti mismo."""
 inlineReceiveFailedMessage       = """🚫 Recepción fallida."""
 inlineReceiveCancelledMessage    = """🚫 Recepción cancelada."""
+
+# TIPJAR
+
+inlineQueryTipjarTitle        = """🍯 Crear una alcancía."""
+inlineQueryTipjarDescription  = """Uso: @%s alcancía <capacidad> <por_usuario>"""
+inlineResultTipjarTitle       = """🍯 Crear una alcancía de %d sat."""
+inlineResultTipjarDescription = """👉 Haz clic aquí para crear una alcancía en este chat."""
+
+inlineTipjarMessage                     = """Pulsa 💸 para *pagar %d sat* a esa alcancía de %s.
+
+🙏 Dados: *%d*/%d sat (por %d usuarios)
+%s"""
+inlineTipjarEndedMessage                = """🍯 La alcancía de %s está llena ⭐️\n\n🏅 %d sat dados por %d usuários."""
+inlineTipjarAppendMemo                  = """\n✉️ %s"""
+inlineTipjarCancelledMessage            = """🚫 Alcancía cancelada."""
+inlineTipjarInvalidPeruserAmountMessage = """🚫 El monto por usuario no es divisor de la capacidad."""
+inlineTipjarInvalidAmountMessage        = """🚫 Monto inválido."""
+inlineTipjarSentMessage                 = """🍯 %d sat enviado(s) a %s."""
+inlineTipjarReceivedMessage             = """🍯 %s te envió %d sat."""
+inlineTipjarHelpTipjarInGroup           = """Crea una alcancía en un grupo con el bot dentro o utiliza el 👉 comando _inline_ (/advanced para más)."""
+inlineTipjarHelpText                    = """📖 Oops, eso no funcionó. %s
+
+*Uso:* `/tipjar <capacidad> <por_usuario>`
+*Ejemplo:* `/tipjar 210 21`"""
