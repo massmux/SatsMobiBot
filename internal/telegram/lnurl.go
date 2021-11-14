@@ -3,9 +3,7 @@ package telegram
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -16,7 +14,6 @@ import (
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
-	"github.com/tidwall/gjson"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -74,19 +71,24 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) {
 
 	// assume payment
 	// HandleLNURL by fiatjaf/go-lnurl
-	_, params, err := bot.HandleLNURL(lnurlSplit)
+	_, params, err := lnurl.HandleLNURL(lnurlSplit)
 	if err != nil {
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), "could not resolve LNURL."))
 		log.Errorln(err)
 		return
 	}
 	switch params.(type) {
-	case lnurl.LNURLPayResponse1:
-		payParams := LnurlPayState{LNURLPayResponse1: params.(lnurl.LNURLPayResponse1)}
-		log.Infof("[lnurlHandler] %s", payParams.LNURLPayResponse1.Callback)
+	case lnurl.LNURLPayParams:
+		payParams := LnurlPayState{LNURLPayParams: params.(lnurl.LNURLPayParams)}
+		log.Infof("[lnurlHandler] %s", payParams.LNURLPayParams.Callback)
 		bot.tryDeleteMessage(statusMsg)
 		bot.lnurlPayHandler(ctx, m, payParams)
 		return
+	case lnurl.LNURLWithdrawResponse:
+		withdrawParams := LnurlWithdrawState{LNURLWithdrawResponse: params.(lnurl.LNURLWithdrawResponse)}
+		log.Infof("[lnurlHandler] %s", withdrawParams.LNURLWithdrawResponse.Callback)
+		bot.tryDeleteMessage(statusMsg)
+		bot.lnurlWithdrawHandler(ctx, m, withdrawParams)
 	default:
 		err := fmt.Errorf("invalid LNURL type.")
 		log.Errorln(err)
@@ -148,85 +150,4 @@ func (bot TipBot) lnurlReceiveHandler(ctx context.Context, m *tb.Message) {
 	bot.trySendMessage(m.Sender, Translate(ctx, "lnurlReceiveInfoText"))
 	// send the lnurl data to user
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lnurlEncode)})
-}
-
-// from https://github.com/fiatjaf/go-lnurl
-func (bot *TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error) {
-	var err error
-	var rawurl string
-
-	if name, domain, ok := lnurl.ParseInternetIdentifier(rawlnurl); ok {
-		isOnion := strings.Index(domain, ".onion") == len(domain)-6
-		rawurl = domain + "/.well-known/lnurlp/" + name
-		if isOnion {
-			rawurl = "http://" + rawurl
-		} else {
-			rawurl = "https://" + rawurl
-		}
-	} else if strings.HasPrefix(rawlnurl, "http") {
-		rawurl = rawlnurl
-	} else {
-		foundUrl, ok := lnurl.FindLNURLInText(rawlnurl)
-		if !ok {
-			return "", nil,
-				errors.New("invalid bech32-encoded lnurl: " + rawlnurl)
-		}
-		rawurl, err = lnurl.LNURLDecode(foundUrl)
-		if err != nil {
-			return "", nil, err
-		}
-	}
-
-	parsed, err := url.Parse(rawurl)
-	if err != nil {
-		return rawurl, nil, err
-	}
-
-	// query := parsed.Query()
-
-	// switch query.Get("tag") {
-	// case "login":
-	// 	value, err := lnurl.HandleAuth(rawurl, parsed, query)
-	// 	return rawurl, value, err
-	// case "withdrawRequest":
-	// 	if value, ok := lnurl.HandleFastWithdraw(query); ok {
-	// 		return rawurl, value, nil
-	// 	}
-	// }
-	client, err := bot.GetHttpClient()
-	if err != nil {
-		return "", nil, err
-	}
-	resp, err := client.Get(rawurl)
-	if err != nil {
-		return rawurl, nil, err
-	}
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return rawurl, nil, err
-	}
-
-	j := gjson.ParseBytes(b)
-	if j.Get("status").String() == "ERROR" {
-		return rawurl, nil, lnurl.LNURLErrorResponse{
-			URL:    parsed,
-			Reason: j.Get("reason").String(),
-			Status: "ERROR",
-		}
-	}
-
-	switch j.Get("tag").String() {
-	// case "withdrawRequest":
-	// 	value, err := lnurl.HandleWithdraw(j)
-	// 	return rawurl, value, err
-	case "payRequest":
-		value, err := lnurl.HandlePay(j)
-		return rawurl, value, err
-	// case "channelRequest":
-	// 	value, err := lnurl.HandleChannel(j)
-	// 	return rawurl, value, err
-	default:
-		return rawurl, nil, errors.New("unknown response tag " + j.String())
-	}
 }
