@@ -127,8 +127,9 @@ advancedMessage = """%s
 */tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`"""
 
 # GENERIC
-lnurlEnterAmountRangeMessage   = """⌨️ Enter an amount between %d and %d sat."""
-lnurlEnterAmountMessage        = """⌨️ Enter an amount."""
+enterAmountRangeMessage        = """💯 Enter an amount between %d and %d sat."""
+enterAmountMessage             = """💯 Enter an amount."""
+enterUserMessage               = """👤 Enter a user."""
 errorReasonMessage             = """🚫 Error: %s"""
 
 # START
@@ -256,7 +257,8 @@ walletConnectMessage = """🔗 *Link your wallet*
 
 - *BlueWallet:* Press *New wallet*, *Import wallet*, *Scan or import a file*, and scan the QR code.
 - *Zeus:* Copy the URL below, press *Add a new node*, *Import* (the URL), *Save Node Config*."""
-couldNotLinkMessage = """🚫 Couldn't link your wallet. Please try again later."""
+couldNotLinkMessage             = """🚫 Couldn't link your wallet. Please try again later."""
+linkHiddenMessage               = """🔍 Link hidden. Enter /link to see it again."""
 
 # FAUCET
 
