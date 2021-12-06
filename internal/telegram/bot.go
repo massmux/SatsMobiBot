@@ -5,6 +5,8 @@ import (
 	"sync"
 	"time"
 
+	limiter "github.com/LightningTipBot/LightningTipBot/internal/rate"
+
 	"github.com/eko/gocache/store"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
@@ -23,6 +25,7 @@ type TipBot struct {
 	logger   *gorm.DB
 	Telegram *telebot.Bot
 	Client   *lnbits.Client
+	limiter  map[string]limiter.Limiter
 	Cache
 }
 type Cache struct {
@@ -40,6 +43,7 @@ func NewBot() TipBot {
 	gocacheStore := store.NewGoCache(gocacheClient, nil)
 	// create sqlite databases
 	db, txLogger := AutoMigration()
+	limiter.Start()
 	return TipBot{
 		Database: db,
 		Client:   lnbits.NewClient(internal.Configuration.Lnbits.AdminKey, internal.Configuration.Lnbits.Url),
