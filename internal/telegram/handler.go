@@ -28,29 +28,43 @@ func (bot TipBot) registerTelegramHandlers() {
 	})
 }
 
+func getDefaultBeforeInterceptor(bot TipBot) []intercept.Func {
+	return []intercept.Func{bot.lockInterceptor, bot.localizerInterceptor}
+}
+func getDefaultDeferInterceptor(bot TipBot) []intercept.Func {
+	return []intercept.Func{bot.unlockInterceptor}
+}
+func getDefaultAfterInterceptor(bot TipBot) []intercept.Func {
+	return []intercept.Func{}
+}
+
 // registerHandlerWithInterceptor will register a handler with all the predefined interceptors, based on the interceptor type
 func (bot TipBot) registerHandlerWithInterceptor(h Handler) {
+	h.Interceptor.Before = append(getDefaultBeforeInterceptor(bot), h.Interceptor.Before...)
+	h.Interceptor.After = append(h.Interceptor.After, getDefaultAfterInterceptor(bot)...)
+	h.Interceptor.OnDefer = append(h.Interceptor.OnDefer, getDefaultDeferInterceptor(bot)...)
+
 	switch h.Interceptor.Type {
 	case MessageInterceptor:
-		h.Interceptor.Before = append(h.Interceptor.Before, bot.localizerInterceptor)
 		for _, endpoint := range h.Endpoints {
 			bot.handle(endpoint, intercept.HandlerWithMessage(h.Handler.(func(ctx context.Context, query *tb.Message)),
 				intercept.WithBeforeMessage(h.Interceptor.Before...),
-				intercept.WithAfterMessage(h.Interceptor.After...)))
+				intercept.WithAfterMessage(h.Interceptor.After...),
+				intercept.WithDeferMessage(h.Interceptor.OnDefer...)))
 		}
 	case QueryInterceptor:
-		h.Interceptor.Before = append(h.Interceptor.Before, bot.localizerInterceptor)
 		for _, endpoint := range h.Endpoints {
 			bot.handle(endpoint, intercept.HandlerWithQuery(h.Handler.(func(ctx context.Context, query *tb.Query)),
 				intercept.WithBeforeQuery(h.Interceptor.Before...),
-				intercept.WithAfterQuery(h.Interceptor.After...)))
+				intercept.WithAfterQuery(h.Interceptor.After...),
+				intercept.WithDeferQuery(h.Interceptor.OnDefer...)))
 		}
 	case CallbackInterceptor:
-		h.Interceptor.Before = append(h.Interceptor.Before, bot.localizerInterceptor)
 		for _, endpoint := range h.Endpoints {
 			bot.handle(endpoint, intercept.HandlerWithCallback(h.Handler.(func(ctx context.Context, callback *tb.Callback)),
 				intercept.WithBeforeCallback(h.Interceptor.Before...),
-				intercept.WithAfterCallback(h.Interceptor.After...)))
+				intercept.WithAfterCallback(h.Interceptor.After...),
+				intercept.WithDeferCallback(h.Interceptor.OnDefer...)))
 		}
 	}
 }
@@ -90,9 +104,14 @@ func (bot TipBot) register(h Handler) {
 func (bot TipBot) getHandler() []Handler {
 	return []Handler{
 		{
-			Endpoints:   []interface{}{"/start"},
-			Handler:     bot.startHandler,
-			Interceptor: &Interceptor{Type: MessageInterceptor},
+			Endpoints: []interface{}{"/start"},
+			Handler:   bot.startHandler,
+			Interceptor: &Interceptor{
+				Type: MessageInterceptor,
+				Before: []intercept.Func{
+					bot.logMessageInterceptor,
+					bot.loadUserInterceptor,
+				}},
 		},
 		{
 			Endpoints: []interface{}{"/tip"},
@@ -101,7 +120,7 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.logMessageInterceptor,
-					bot.loadUserInterceptor,
+					bot.requireUserInterceptor,
 					bot.loadReplyToInterceptor,
 				}},
 		},
@@ -112,7 +131,7 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.logMessageInterceptor,
-					bot.loadUserInterceptor,
+					bot.requireUserInterceptor,
 				}},
 		},
 		{
@@ -122,7 +141,7 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.logMessageInterceptor,
-					bot.loadUserInterceptor,
+					bot.requireUserInterceptor,
 				}},
 		},
 		{
@@ -132,7 +151,7 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.logMessageInterceptor,
-					bot.loadUserInterceptor,
+					bot.requireUserInterceptor,
 				}},
 		},
 		{
@@ -142,7 +161,7 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.logMessageInterceptor,
-					bot.loadUserInterceptor,
+					bot.requireUserInterceptor,
 					bot.loadReplyToInterceptor,
 				}},
 		},
@@ -150,15 +169,21 @@ func (bot TipBot) getHandler() []Handler {
 			Endpoints: []interface{}{"/faucet", "/zapfhahn", "/kraan", "/grifo"},
 			Handler:   bot.faucetHandler,
 			Interceptor: &Interceptor{
-				Type:   MessageInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor}},
+				Type: MessageInterceptor,
+				Before: []intercept.Func{
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+				}},
 		},
 		{
 			Endpoints: []interface{}{"/tipjar", "/spendendose"},
 			Handler:   bot.tipjarHandler,
 			Interceptor: &Interceptor{
-				Type:   MessageInterceptor,
-				Before: []intercept.Func{bot.requireUserInterceptor}},
+				Type: MessageInterceptor,
+				Before: []intercept.Func{
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+				}},
 		},
 		{
 			Endpoints: []interface{}{"/help"},
@@ -187,7 +212,7 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.logMessageInterceptor,
-					bot.loadUserInterceptor,
+					bot.requireUserInterceptor,
 				}},
 		},
 		{
@@ -197,7 +222,7 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.logMessageInterceptor,
-					bot.loadUserInterceptor,
+					bot.requireUserInterceptor,
 				}},
 		},
 		{
@@ -207,7 +232,7 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.logMessageInterceptor,
-					bot.loadUserInterceptor}},
+					bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{"/lnurl"},
@@ -216,7 +241,7 @@ func (bot TipBot) getHandler() []Handler {
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
 					bot.logMessageInterceptor,
-					bot.loadUserInterceptor}},
+					bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{tb.OnPhoto},
@@ -226,7 +251,7 @@ func (bot TipBot) getHandler() []Handler {
 				Before: []intercept.Func{
 					bot.requirePrivateChatInterceptor,
 					bot.logMessageInterceptor,
-					bot.loadUserInterceptor}},
+					bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{tb.OnText},
@@ -234,9 +259,9 @@ func (bot TipBot) getHandler() []Handler {
 			Interceptor: &Interceptor{
 				Type: MessageInterceptor,
 				Before: []intercept.Func{
-					bot.requirePrivateChatInterceptor,
-					bot.logMessageInterceptor, // Log message only if private chat
-					bot.loadUserInterceptor,
+					bot.requirePrivateChatInterceptor, // Respond to any text only in private chat
+					bot.logMessageInterceptor,
+					bot.loadUserInterceptor, // need to use loadUserInterceptor instead of requireUserInterceptor, because user might not be registered yet
 				}},
 		},
 		{
@@ -258,28 +283,28 @@ func (bot TipBot) getHandler() []Handler {
 			Handler:   bot.confirmPayHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelPay},
 			Handler:   bot.cancelPaymentHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnSend},
 			Handler:   bot.confirmSendHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelSend},
 			Handler:   bot.cancelSendHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnAcceptInlineSend},
@@ -293,7 +318,7 @@ func (bot TipBot) getHandler() []Handler {
 			Handler:   bot.cancelInlineSendHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnAcceptInlineReceive},
@@ -307,7 +332,7 @@ func (bot TipBot) getHandler() []Handler {
 			Handler:   bot.cancelInlineReceiveHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnAcceptInlineFaucet},
@@ -321,35 +346,35 @@ func (bot TipBot) getHandler() []Handler {
 			Handler:   bot.cancelInlineFaucetHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnAcceptInlineTipjar},
 			Handler:   bot.acceptInlineTipjarHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelInlineTipjar},
 			Handler:   bot.cancelInlineTipjarHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnWithdraw},
 			Handler:   bot.confirmWithdrawHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.requireUserInterceptor}},
 		},
 		{
 			Endpoints: []interface{}{&btnCancelWithdraw},
 			Handler:   bot.cancelWithdrawHandler,
 			Interceptor: &Interceptor{
 				Type:   CallbackInterceptor,
-				Before: []intercept.Func{bot.loadUserInterceptor}},
+				Before: []intercept.Func{bot.requireUserInterceptor}},
 		},
 	}
 }

@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	i18n2 "github.com/nicksnyder/go-i18n/v2/i18n"
@@ -21,34 +22,73 @@ const (
 	QueryInterceptor
 )
 
+func init() {
+	handlerUserMutex = make(map[int64]*sync.Mutex)
+}
+
 var invalidTypeError = fmt.Errorf("invalid type")
 
 type Interceptor struct {
-	Type   InterceptorType
-	Before []intercept.Func
-	After  []intercept.Func
+	Type    InterceptorType
+	Before  []intercept.Func
+	After   []intercept.Func
+	OnDefer []intercept.Func
+}
+type HandlerMutex map[int64]*sync.Mutex
+
+var handlerUserMutex HandlerMutex
+
+func (bot TipBot) unlockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+	user := getTelegramUserFromInterface(i)
+	if user != nil {
+		handlerUserMutex[user.ID].Unlock()
+	}
+	return ctx, nil
 }
 
-func (bot TipBot) requireUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	switch i.(type) {
-	case *tb.Query:
-		user, err := GetUser(&i.(*tb.Query).From, bot)
-		return context.WithValue(ctx, "user", user), err
-	case *tb.Callback:
-		c := i.(*tb.Callback)
-		m := *c.Message
-		m.Sender = c.Sender
-		user, err := GetUser(i.(*tb.Callback).Sender, bot)
-		return context.WithValue(ctx, "user", user), err
-	case *tb.Message:
-		user, err := GetUser(i.(*tb.Message).Sender, bot)
-		return context.WithValue(ctx, "user", user), err
+func (bot TipBot) lockInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+	user := getTelegramUserFromInterface(i)
+	if user != nil {
+		if handlerUserMutex[user.ID] == nil {
+			handlerUserMutex[user.ID] = &sync.Mutex{}
+		}
+		handlerUserMutex[user.ID].Lock()
+		return ctx, nil
 	}
 	return nil, invalidTypeError
 }
+
+// requireUserInterceptor will return an error if user is not found
+// user is here an lnbits.User
+func (bot TipBot) requireUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
+	var user *lnbits.User
+	var err error
+	u := getTelegramUserFromInterface(i)
+	if u != nil {
+		user, err = GetUser(u, bot)
+		if user != nil {
+			return context.WithValue(ctx, "user", user), err
+		}
+	}
+	return nil, invalidTypeError
+}
+
 func (bot TipBot) loadUserInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
 	ctx, _ = bot.requireUserInterceptor(ctx, i)
 	return ctx, nil
+}
+
+// getTelegramUserFromInterface returns the tb user based in interface type
+func getTelegramUserFromInterface(i interface{}) (user *tb.User) {
+	switch i.(type) {
+	case *tb.Query:
+		user = &i.(*tb.Query).From
+	case *tb.Callback:
+		user = i.(*tb.Callback).Sender
+	case *tb.Message:
+		user = i.(*tb.Message).Sender
+	}
+	return
 }
 
 // loadReplyToInterceptor Loading the Telegram user with message intercept
