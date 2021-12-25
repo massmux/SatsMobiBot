@@ -251,12 +251,6 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 	}
 	if !inlineFaucet.Active {
 		log.Debugf(fmt.Sprintf("[faucet] faucet %s inactive. Remaining: %d sat", inlineFaucet.ID, inlineFaucet.RemainingAmount))
-
-		// hack
-		editTo := i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCancelledMessage")
-		if c.Message.Text != editTo {
-			bot.tryEditMessage(c.Message, editTo, &tb.ReplyMarkup{})
-		}
 		return
 	}
 	// release faucet no matter what
