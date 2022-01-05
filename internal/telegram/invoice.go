@@ -101,7 +101,7 @@ func (bot *TipBot) invoiceHandler(ctx context.Context, m *tb.Message) {
 	}
 
 	creatingMsg := bot.trySendMessage(m.Sender, Translate(ctx, "lnurlGettingUserMessage"))
-	log.Infof("[/invoice] Creating invoice for %s of %d sat.", userStr, amount)
+	log.Debugf("[/invoice] Creating invoice for %s of %d sat.", userStr, amount)
 	invoice, err := bot.createInvoiceWithEvent(ctx, user, amount, memo, InvoiceCallbackGeneric, "")
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())

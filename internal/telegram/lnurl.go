@@ -118,7 +118,7 @@ func (bot *TipBot) UserGetAnonLightningAddress(user *lnbits.User) (string, error
 }
 
 func UserGetLNURL(user *lnbits.User) (string, error) {
-	name := fmt.Sprint(user.AnonID)
+	name := fmt.Sprint(user.AnonIDSha256)
 	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, name)
 	log.Debugf("[lnurlReceiveHandler] %s's LNURL: %s", GetUserStr(user.Telegram), callback)
 

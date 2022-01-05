@@ -25,28 +25,30 @@ func (w LndHub) Handle(writer http.ResponseWriter, request *http.Request) {
 
 	// check if the user is banned
 	if auth != "" {
-		username, password, ok := parseBearerAuth(auth)
+		_, password, ok := parseBearerAuth(auth)
 		if !ok {
 			return
 		}
-		log.Debugf("[LNDHUB] %s, %s", username, password)
+		// first we make sure that the password is not already "banned_"
 		if strings.Contains(password, "_") || strings.HasPrefix(password, "banned_") {
-			log.Warnf("[LNDHUB] Banned user. Not forwarding request")
+			log.Warnf("[LNDHUB] Banned user %s. Not forwarding request", password)
 			return
 		}
+		// then we check whether the "normal" password provided is in the database (it should be not if the user is banned)
 		user := &lnbits.User{}
 		tx := w.database.Where("wallet_adminkey = ? COLLATE NOCASE", password).First(user)
 		if tx.Error != nil {
-			log.Warnf("[LNDHUB] wallet admin key (%s) not found: %v", password, tx.Error)
+			log.Warnf("[LNDHUB] Could not get wallet admin key %s: %v", password, tx.Error)
 			return
 		}
+		log.Debugf("[LNDHUB] User: %s", telegram.GetUserStr(user.Telegram))
 	}
 	// if not, proxy the request
 	api.Proxy(writer, request, internal.Configuration.Lnbits.Url)
 }
 
-// parseBasicAuth parses an HTTP Basic Authentication string.
-// "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" returns ("Aladdin", "open sesame", true).
+// parseBearerAuth parses an HTTP Basic Authentication string.
+// "Bearer QWxhZGRpbjpvcGVuIHNlc2FtZQ==" returns ("Aladdin", "open sesame", true).
 func parseBearerAuth(auth string) (username, password string, ok bool) {
 	const prefix = "Bearer "
 	// Case insensitive prefix match. See Issue 22736.
