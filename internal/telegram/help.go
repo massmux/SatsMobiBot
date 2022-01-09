@@ -26,7 +26,7 @@ func (bot TipBot) makeHelpMessage(ctx context.Context, m *tb.Message) string {
 	return fmt.Sprintf(helpMessage, dynamicHelpMessage)
 }
 
-func (bot TipBot) helpHandler(ctx context.Context, m *tb.Message) {
+func (bot TipBot) helpHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
 	if !m.Private() {
@@ -34,10 +34,10 @@ func (bot TipBot) helpHandler(ctx context.Context, m *tb.Message) {
 		bot.tryDeleteMessage(m)
 	}
 	bot.trySendMessage(m.Sender, bot.makeHelpMessage(ctx, m), tb.NoPreview)
-	return
+	return ctx, nil
 }
 
-func (bot TipBot) basicsHandler(ctx context.Context, m *tb.Message) {
+func (bot TipBot) basicsHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
 	if !m.Private() {
@@ -45,7 +45,7 @@ func (bot TipBot) basicsHandler(ctx context.Context, m *tb.Message) {
 		bot.tryDeleteMessage(m)
 	}
 	bot.trySendMessage(m.Sender, Translate(ctx, "basicsMessage"), tb.NoPreview)
-	return
+	return ctx, nil
 }
 
 func (bot TipBot) makeAdvancedHelpMessage(ctx context.Context, m *tb.Message) string {
@@ -74,7 +74,7 @@ func (bot TipBot) makeAdvancedHelpMessage(ctx context.Context, m *tb.Message) st
 	)
 }
 
-func (bot TipBot) advancedHelpHandler(ctx context.Context, m *tb.Message) {
+func (bot TipBot) advancedHelpHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
 	// check and print all commands
 	bot.anyTextHandler(ctx, m)
 	if !m.Private() {
@@ -82,5 +82,5 @@ func (bot TipBot) advancedHelpHandler(ctx context.Context, m *tb.Message) {
 		bot.tryDeleteMessage(m)
 	}
 	bot.trySendMessage(m.Sender, bot.makeAdvancedHelpMessage(ctx, m), tb.NoPreview)
-	return
+	return ctx, nil
 }

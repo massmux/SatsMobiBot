@@ -1,20 +1,17 @@
 package errors
 
-import "encoding/json"
-
-type TipBotErrorType int
-
-const (
-	DecodeAmountError TipBotErrorType = 1000 + iota
-	DecodePerUserAmountError
-	InvalidAmountError
-	InvalidAmountPerUserError
-	GetBalanceError
-	BalanceToLowError
+import (
+	"encoding/json"
 )
 
+func Create(code TipBotErrorType) TipBotError {
+	return errMap[code]
+}
 func New(code TipBotErrorType, err error) TipBotError {
-	return TipBotError{Err: err, Message: err.Error(), Code: code}
+	if err != nil {
+		return TipBotError{Err: err, Message: err.Error(), Code: code}
+	}
+	return Create(code)
 }
 
 type TipBotError struct {
