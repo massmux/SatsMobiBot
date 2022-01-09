@@ -51,6 +51,14 @@ func checkSoftLock(s string) int {
 // nLocks in the mutexMap. If not, it locks the object. This is supposed to lock only if nLock == 0.
 func LockWithContext(ctx context.Context, s string) {
 	uid := ctx.Value("uid").(string)
+	if len(uid) == 0 {
+		log.Error("[Mutex] LockWithContext: uid is empty!")
+		return
+	}
+	if len(s) == 0 {
+		log.Error("[Mutex] LockWithContext: s is empty!")
+		return
+	}
 	// sync mutex to sync checkSoftLock with the increment of nLocks
 	// same user can't lock the same object multiple times
 	Lock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
@@ -58,7 +66,7 @@ func LockWithContext(ctx context.Context, s string) {
 	if nLocks == 0 {
 		Lock(s)
 	} else {
-		log.Tracef("[Mutex] Skip lock (nLocks: %d)", nLocks)
+		log.Debugf("[Mutex] Skip lock (nLocks: %d)", nLocks)
 	}
 	nLocks++
 	mutexMap.Set(fmt.Sprintf("nLocks:%s", uid), nLocks)
@@ -71,6 +79,14 @@ func LockWithContext(ctx context.Context, s string) {
 // nLocks == 1
 func UnlockWithContext(ctx context.Context, s string) {
 	uid := ctx.Value("uid").(string)
+	if len(uid) == 0 {
+		log.Error("[Mutex] UnlockWithContext: uid is empty!")
+		return
+	}
+	if len(s) == 0 {
+		log.Error("[Mutex] UnlockWithContext: s is empty!")
+		return
+	}
 	Lock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
 	var nLocks = checkSoftLock(uid)
 	nLocks--
@@ -79,7 +95,7 @@ func UnlockWithContext(ctx context.Context, s string) {
 		Unlock(s)
 		mutexMap.Remove(fmt.Sprintf("nLocks:%s", uid))
 	} else {
-		log.Tracef("[Mutex] Skip unlock (nLocks: %d)", nLocks)
+		log.Debugf("[Mutex] Skip unlock (nLocks: %d)", nLocks)
 	}
 	Unlock(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
 	//mutexMap.Remove(fmt.Sprintf("mutex-sync:%s:%s", s, uid))
@@ -98,7 +114,7 @@ func Lock(s string) {
 		m.Lock()
 		mutexMap.Set(s, m)
 	}
-	log.Tracef("[Mutex] Locked %s", s)
+	log.Debugf("[Mutex] Locked %s", s)
 }
 
 // Unlock unlocks a mutex in the mutexMap.
@@ -106,7 +122,7 @@ func Unlock(s string) {
 	if m, ok := mutexMap.Get(s); ok {
 		mutexMap.Remove(s)
 		m.(*sync.Mutex).Unlock()
-		log.Tracef("[Mutex] Unlocked %s", s)
+		log.Debugf("[Mutex] Unlocked %s", s)
 	} else {
 		// this should never happen. Mutex should have been in the mutexMap.
 		log.Errorf("[Mutex] ⚠️⚠️⚠️ Unlock %s not in mutexMap. Skip.", s)
