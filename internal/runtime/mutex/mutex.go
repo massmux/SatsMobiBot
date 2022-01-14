@@ -13,9 +13,11 @@ import (
 )
 
 var mutexMap cmap.ConcurrentMap
+var mutexMapSync sync.Mutex
 
 func init() {
 	mutexMap = cmap.New()
+	mutexMapSync = sync.Mutex{}
 }
 
 func ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -106,17 +108,24 @@ func Lock(s string) {
 	log.Tracef("[Mutex] Attempt Lock %s", s)
 	if m, ok := mutexMap.Get(s); ok {
 		m.(*sync.Mutex).Lock()
+		// write into mutex map
+		mutexMapSync.Lock()
 		mutexMap.Set(s, m)
+		mutexMapSync.Unlock()
 	} else {
 		m := &sync.Mutex{}
 		m.Lock()
+		// write into mutex map
+		mutexMapSync.Lock()
 		mutexMap.Set(s, m)
+		mutexMapSync.Unlock()
 	}
 	log.Tracef("[Mutex] Locked %s", s)
 }
 
 // Unlock unlocks a mutex in the mutexMap.
 func Unlock(s string) {
+	mutexMapSync.Lock()
 	if m, ok := mutexMap.Get(s); ok {
 		mutexMap.Remove(s)
 		m.(*sync.Mutex).Unlock()
@@ -125,4 +134,5 @@ func Unlock(s string) {
 		// this should never happen. Mutex should have been in the mutexMap.
 		log.Errorf("[Mutex] ⚠️⚠️⚠️ Unlock %s not in mutexMap. Skip.", s)
 	}
+	mutexMapSync.Unlock()
 }

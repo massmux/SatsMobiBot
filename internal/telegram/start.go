@@ -4,9 +4,10 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"strconv"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 
@@ -26,7 +27,7 @@ func (bot TipBot) startHandler(ctx context.Context, m *tb.Message) (context.Cont
 	// WILL RESULT IN AN ENDLESS LOOP OTHERWISE
 	// bot.helpHandler(m)
 	log.Printf("[⭐️ /start] New user: %s (%d)\n", GetUserStr(m.Sender), m.Sender.ID)
-	walletCreationMsg := bot.trySendMessage(m.Sender, Translate(ctx, "startSettingWalletMessage"))
+	walletCreationMsg := bot.trySendMessageEditable(m.Sender, Translate(ctx, "startSettingWalletMessage"))
 	user, err := bot.initWallet(m.Sender)
 	if err != nil {
 		log.Errorln(fmt.Sprintf("[startHandler] Error with initWallet: %s", err.Error()))
@@ -54,6 +55,8 @@ func (bot TipBot) initWallet(tguser *tb.User) (*lnbits.User, error) {
 		if err != nil {
 			return user, err
 		}
+		// set user initialized
+		user, err := GetUser(tguser, bot)
 		user.Initialized = true
 		err = UpdateUserRecord(user, bot)
 		if err != nil {
