@@ -241,6 +241,13 @@ lnurlHelpText                  = """📖 Oops, that didn't work. %s
 *Usage:* `/lnurl [amount] <lnurl>`
 *Example:* `/lnurl LNURL1DP68GUR...`"""
 
+# LNURL LOGIN
+
+confirmLnurlAuthMessager        = """Do you want to login to %s?"""
+lnurlSuccessfulLogin            = """✅ Login successful."""
+loginButtonMessage              = """✅ Login"""
+loginCancelledMessage           = """🚫 Login cancelled."""
+
 # LNURL WITHDRAW
 
 confirmLnurlWithdrawMessage     = """Do you want to make this withdrawal?\n\n💸 Amount: %d sat"""

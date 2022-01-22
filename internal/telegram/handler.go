@@ -652,6 +652,36 @@ func (bot TipBot) getHandler() []Handler {
 			},
 		},
 		{
+			Endpoints: []interface{}{&btnAuth},
+			Handler:   bot.confirmLnurlAuthHandler,
+			Interceptor: &Interceptor{
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{&btnCancelAuth},
+			Handler:   bot.cancelLnurlAuthHandler,
+			Interceptor: &Interceptor{
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
 			Endpoints: []interface{}{&shopNewShopButton},
 			Handler:   bot.shopNewShopHandler,
 			Interceptor: &Interceptor{

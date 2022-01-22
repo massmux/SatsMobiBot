@@ -74,6 +74,8 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Con
 
 	// get rid of the URI prefix
 	lnurlSplit = strings.TrimPrefix(lnurlSplit, "lightning:")
+
+	log.Debugf("[lnurlHandler] lnurlSplit: %s", lnurlSplit)
 	// HandleLNURL by fiatjaf/go-lnurl
 	_, params, err := bot.HandleLNURL(lnurlSplit)
 	if err != nil {
@@ -83,6 +85,12 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Con
 		return ctx, err
 	}
 	switch params.(type) {
+	case lnurl.LNURLAuthParams:
+		authParams := &LnurlAuthState{LNURLAuthParams: params.(lnurl.LNURLAuthParams)}
+		log.Infof("[LNURL-auth] %s", authParams.LNURLAuthParams.Callback)
+		bot.tryDeleteMessage(statusMsg)
+		return bot.lnurlAuthHandler(ctx, m, *authParams)
+
 	case lnurl.LNURLPayParams:
 		payParams := &LnurlPayState{LNURLPayParams: params.(lnurl.LNURLPayParams)}
 		log.Infof("[LNURL-p] %s", payParams.LNURLPayParams.Callback)
