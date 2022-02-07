@@ -1,10 +1,17 @@
 package telegram
 
 import (
+	"bufio"
+	"crypto/sha1"
+	"encoding/base64"
 	"fmt"
+	"os"
 	"reflect"
+	"runtime/debug"
 	"strconv"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 
 	"github.com/eko/gocache/store"
 
@@ -168,9 +175,49 @@ func telegramUserChanged(apiUser, stateUser *tb.User) bool {
 	}
 	return true
 }
+func debugStack() {
+	stack := debug.Stack()
+	go func() {
+		hasher := sha1.New()
+		hasher.Write(stack)
+		sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+		fo, err := os.Create(fmt.Sprintf("trace_%s.txt", sha))
+		log.Infof("[debugStack] ⚠️ Writing stack trace to %s", fmt.Sprintf("trace_%s.txt", sha))
+		if err != nil {
+			panic(err)
+		}
+		defer func() {
+			if err := fo.Close(); err != nil {
+				panic(err)
+			}
+		}()
+		w := bufio.NewWriter(fo)
+		if _, err := w.Write(stack); err != nil {
+			panic(err)
+		}
 
+		if err = w.Flush(); err != nil {
+			panic(err)
+		}
+	}()
+}
 func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 	user.UpdatedAt = time.Now()
+
+	// There is a weird bug that makes the AnonID vanish. This is a workaround.
+	// TODO -- Remove this after empty anon id bug is identified
+	if user.AnonIDSha256 == "" {
+		debugStack()
+		user.AnonIDSha256 = str.AnonIdSha256(user)
+		log.Errorf("[UpdateUserRecord] AnonIDSha256 empty! Setting to: %s", user.AnonID)
+	}
+	// TODO -- Remove this after empty anon id bug is identified
+	if user.AnonID == "" {
+		debugStack()
+		user.AnonID = fmt.Sprint(str.Int32Hash(user.ID))
+		log.Errorf("[UpdateUserRecord] AnonID empty! Setting to: %s", user.AnonID)
+	}
+
 	tx := bot.Database.Save(user)
 	if tx.Error != nil {
 		errmsg := fmt.Sprintf("[UpdateUserRecord] Error: Couldn't update %s's info in Database.", GetUserStr(user.Telegram))
