@@ -95,6 +95,18 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Con
 		payParams := &LnurlPayState{LNURLPayParams: params.(lnurl.LNURLPayParams)}
 		log.Infof("[LNURL-p] %s", payParams.LNURLPayParams.Callback)
 		bot.tryDeleteMessage(statusMsg)
+
+		// display the metadata image from the first LNURL-p response
+		if len(payParams.LNURLPayParams.Metadata.Image.Bytes) > 0 {
+			bot.trySendMessage(m.Sender, &tb.Photo{
+				File:    tb.File{FileReader: bytes.NewReader(payParams.LNURLPayParams.Metadata.Image.Bytes)},
+				Caption: fmt.Sprintf("%s", payParams.LNURLPayParams.Metadata.Description)})
+		} else if len(payParams.LNURLPayParams.Metadata.Description) > 0 {
+			// display the metadata text from the first LNURL-p response
+			// if there was no photo in the last step
+			bot.trySendMessage(m.Sender, fmt.Sprintf("`%s`", payParams.LNURLPayParams.Metadata.Description))
+		}
+		// ask whether to make payment
 		bot.lnurlPayHandler(ctx, m, *payParams)
 
 	case lnurl.LNURLWithdrawResponse:
@@ -128,7 +140,7 @@ func (bot *TipBot) UserGetAnonLightningAddress(user *lnbits.User) (string, error
 }
 
 func UserGetLNURL(user *lnbits.User) (string, error) {
-	name := fmt.Sprint(user.AnonIDSha256)
+	name := fmt.Sprint(user.UUID)
 	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, name)
 	log.Debugf("[lnurlReceiveHandler] %s's LNURL: %s", GetUserStr(user.Telegram), callback)
 
@@ -158,7 +170,7 @@ func (bot TipBot) lnurlReceiveHandler(ctx context.Context, m *tb.Message) (conte
 	}
 
 	bot.trySendMessage(m.Sender, Translate(ctx, "lnurlReceiveInfoText"))
-	// send the lnurl data to user
+	// send the lnurl QR code
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lnurlEncode)})
 	return ctx, nil
 }

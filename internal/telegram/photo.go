@@ -1,16 +1,21 @@
 package telegram
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"image"
 	"image/jpeg"
 	"strings"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+
 	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
+	"github.com/nfnt/resize"
+
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
@@ -78,4 +83,74 @@ func (bot *TipBot) photoHandler(ctx context.Context, m *tb.Message) (context.Con
 		return bot.lnurlHandler(ctx, m)
 	}
 	return ctx, nil
+}
+
+// DownloadProfilePicture downloads a profile picture from Telegram.
+// This is a public function because it is used in another package (lnurl)
+func DownloadProfilePicture(telegram *tb.Bot, user *tb.User) ([]byte, error) {
+	photo, err := ProfilePhotosOf(telegram, user)
+	if err != nil {
+		log.Errorf("[DownloadProfilePicture] %v", err)
+		return nil, err
+	}
+	if len(photo) == 0 {
+		log.Error("[DownloadProfilePicture] No profile picture found")
+		return nil, err
+	}
+	buf := new(bytes.Buffer)
+	reader, err := telegram.GetFile(&photo[0].File)
+	if err != nil {
+		log.Errorf("[DownloadProfilePicture] %v", err)
+		return nil, err
+	}
+	img, err := jpeg.Decode(reader)
+	if err != nil {
+		log.Errorf("[DownloadProfilePicture] %v", err)
+		return nil, err
+	}
+
+	// resize image
+	img = resize.Thumbnail(100, 100, img, resize.Lanczos3)
+
+	err = jpeg.Encode(buf, img, nil)
+	return buf.Bytes(), nil
+}
+
+var BotProfilePicture []byte
+
+// downloadMyProfilePicture downloads the profile picture of the bot
+// and saves it in `BotProfilePicture`
+func (bot *TipBot) downloadMyProfilePicture() error {
+	picture, err := DownloadProfilePicture(bot.Telegram, bot.Telegram.Me)
+	if err != nil {
+		log.Errorf("[downloadMyProfilePicture] %v", err)
+		return err
+	}
+	BotProfilePicture = picture
+	return nil
+}
+
+// ProfilePhotosOf returns list of profile pictures for a user.
+func ProfilePhotosOf(bot *tb.Bot, user *tb.User) ([]tb.Photo, error) {
+	params := map[string]interface {
+	}{
+		"user_id": user.Recipient(),
+		"limit":   1,
+	}
+
+	data, err := bot.Raw("getUserProfilePhotos", params)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp struct {
+		Result struct {
+			Count  int        `json:"total_count"`
+			Photos []tb.Photo `json:"photos"`
+		}
+	}
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return nil, err
+	}
+	return resp.Result.Photos, nil
 }

@@ -10,6 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/eko/gocache/store"
+	tb "gopkg.in/lightningtipbot/telebot.v2"
+
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/api"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -40,11 +43,13 @@ type Invoice struct {
 	PaidAt    time.Time    `json:"paid_at"`
 }
 type Lnurl struct {
+	telegram         *tb.Bot
 	c                *lnbits.Client
 	database         *gorm.DB
 	callbackHostname *url.URL
 	buntdb           *storage.DB
 	WebhookServer    string
+	cache            telegram.Cache
 }
 
 func New(bot *telegram.TipBot) Lnurl {
@@ -54,6 +59,8 @@ func New(bot *telegram.TipBot) Lnurl {
 		callbackHostname: internal.Configuration.Bot.LNURLHostUrl,
 		WebhookServer:    internal.Configuration.Lnbits.WebhookServer,
 		buntdb:           bot.Bunt,
+		telegram:         bot.Telegram,
+		cache:            bot.Cache,
 	}
 }
 func (lnurlInvoice Invoice) Key() string {
@@ -103,6 +110,30 @@ func (w Lnurl) Handle(writer http.ResponseWriter, request *http.Request) {
 		api.NotFoundHandler(writer, err)
 	}
 }
+func (w Lnurl) getMetaDataCached(username string) lnurl.Metadata {
+	key := fmt.Sprintf("lnurl_metadata_%s", username)
+
+	// load metadata from cache
+	if m, err := w.cache.Get(key); err == nil {
+		return m.(lnurl.Metadata)
+	}
+
+	// otherwise, create new metadata
+	metadata := w.metaData(username)
+
+	// load the user profile picture
+	if internal.Configuration.Bot.LNURLSendImage {
+		// get the user from the database
+		user, tx := findUser(w.database, username)
+		if tx.Error == nil && user.Telegram != nil {
+			addImageToMetaData(w.telegram, &metadata, username, user.Telegram)
+		}
+	}
+
+	// save into cache
+	runtime.IgnoreError(w.cache.Set(key, metadata, &store.Options{Expiration: 12 * time.Hour}))
+	return metadata
+}
 
 // serveLNURLpFirst serves the first part of the LNURLp protocol with the endpoint
 // to call and the metadata that matches the description hash of the second response
@@ -112,7 +143,9 @@ func (w Lnurl) serveLNURLpFirst(username string) (*lnurl.LNURLPayParams, error) 
 	if err != nil {
 		return nil, err
 	}
-	metadata := w.metaData(username)
+
+	// produce the metadata including the image
+	metadata := w.getMetaDataCached(username)
 
 	return &lnurl.LNURLPayParams{
 		LNURLResponse:   lnurl.LNURLResponse{Status: api.StatusOk},
@@ -123,7 +156,6 @@ func (w Lnurl) serveLNURLpFirst(username string) (*lnurl.LNURLPayParams, error) 
 		EncodedMetadata: metadata.Encode(),
 		CommentAllowed:  CommentAllowed,
 	}, nil
-
 }
 
 // serveLNURLpSecond serves the second LNURL response with the payment request with the correct description hash
@@ -145,22 +177,7 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 				Reason: fmt.Sprintf("Comment too long (max: %d characters).", CommentAllowed)},
 		}, fmt.Errorf("comment too long")
 	}
-
-	// now check for the user
-	user := &lnbits.User{}
-	// check if "username" is actually the user ID
-	tx := w.database
-	if _, err := strconv.ParseInt(username, 10, 64); err == nil {
-		// asume it's anon_id
-		tx = w.database.Where("anon_id = ?", username).First(user)
-	} else if strings.HasPrefix(username, "0x") {
-		// asume it's anon_id_sha256
-		tx = w.database.Where("anon_id_sha256 = ?", username).First(user)
-	} else {
-		// assume it's a string @username
-		tx = w.database.Where("telegram_username = ? COLLATE NOCASE", username).First(user)
-	}
-
+	user, tx := findUser(w.database, username)
 	if tx.Error != nil {
 		return &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
@@ -181,7 +198,8 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 	var resp *lnurl.LNURLPayValues
 
 	// the same description_hash needs to be built in the second request
-	metadata := w.metaData(username)
+	metadata := w.getMetaDataCached(username)
+
 	descriptionHash, err := w.descriptionHash(metadata)
 	if err != nil {
 		return nil, err
@@ -242,8 +260,66 @@ func (w Lnurl) descriptionHash(metadata lnurl.Metadata) (string, error) {
 // metaData returns the metadata that is sent in the first response
 // and is used again in the second response to verify the description hash
 func (w Lnurl) metaData(username string) lnurl.Metadata {
+	// this is a bit stupid but if the address is a UUID starting with 1x...
+	// we actually want to find the users username so it looks nicer in the
+	// metadata description
+	if strings.HasPrefix(username, "1x") {
+		user, _ := findUser(w.database, username)
+		if user.Telegram.Username != "" {
+			username = user.Telegram.Username
+		}
+	}
+
 	return lnurl.Metadata{
 		Description:      fmt.Sprintf("Pay to %s@%s", username, w.callbackHostname.Hostname()),
 		LightningAddress: fmt.Sprintf("%s@%s", username, w.callbackHostname.Hostname()),
 	}
+}
+
+// addImageMetaData add images an image to the LNURL metadata
+func addImageToMetaData(tb *tb.Bot, metadata *lnurl.Metadata, username string, user *tb.User) {
+	metadata.Image.Ext = "jpeg"
+
+	// if the username is anonymous, add the bot's avatar
+	if isAnonUsername(username) {
+		metadata.Image.Bytes = telegram.BotProfilePicture
+		return
+	}
+
+	// if the user has a profile picture, add it
+	picture, err := telegram.DownloadProfilePicture(tb, user)
+	if err != nil {
+		log.Errorf("[LNURL] Couldn't download user %s's profile picture: %v", username, err)
+		return
+	}
+	metadata.Image.Bytes = picture
+}
+
+func isAnonUsername(username string) bool {
+	if _, err := strconv.ParseInt(username, 10, 64); err == nil {
+		return true
+	} else {
+		return strings.HasPrefix(username, "0x")
+	}
+}
+
+func findUser(database *gorm.DB, username string) (*lnbits.User, *gorm.DB) {
+	// now check for the user
+	user := &lnbits.User{}
+	// check if "username" is actually the user ID
+	tx := database
+	if _, err := strconv.ParseInt(username, 10, 64); err == nil {
+		// asume it's anon_id
+		tx = database.Where("anon_id = ?", username).First(user)
+	} else if strings.HasPrefix(username, "0x") {
+		// asume it's anon_id_sha256
+		tx = database.Where("anon_id_sha256 = ?", username).First(user)
+	} else if strings.HasPrefix(username, "1x") {
+		// asume it's uuid
+		tx = database.Where("uuid = ?", username).First(user)
+	} else {
+		// assume it's a string @username
+		tx = database.Where("telegram_username = ? COLLATE NOCASE", username).First(user)
+	}
+	return user, tx
 }

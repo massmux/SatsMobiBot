@@ -70,6 +70,18 @@ func ColumnMigrationTasks(db *gorm.DB) error {
 		err = database.MigrateAnonIdSha265Hash(db)
 	}
 
+	// uuid migration (2022-02-11)
+	if !db.Migrator().HasColumn(&lnbits.User{}, "uuid") {
+		// first we need to auto migrate the user. This will create uuid column
+		err = db.AutoMigrate(&lnbits.User{})
+		if err != nil {
+			panic(err)
+		}
+		log.Info("Running UUID database migrations ...")
+		// run the migration on uuid
+		err = database.MigrateUUIDSha265Hash(db)
+	}
+
 	// todo -- add more database field migrations here in the future
 	return err
 }
@@ -209,13 +221,19 @@ func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 	if user.AnonIDSha256 == "" {
 		debugStack()
 		user.AnonIDSha256 = str.AnonIdSha256(user)
-		log.Errorf("[UpdateUserRecord] AnonIDSha256 empty! Setting to: %s", user.AnonID)
+		log.Errorf("[UpdateUserRecord] AnonIDSha256 empty! Setting to: %s", user.AnonIDSha256)
 	}
 	// TODO -- Remove this after empty anon id bug is identified
 	if user.AnonID == "" {
 		debugStack()
 		user.AnonID = fmt.Sprint(str.Int32Hash(user.ID))
 		log.Errorf("[UpdateUserRecord] AnonID empty! Setting to: %s", user.AnonID)
+	}
+	// TODO -- Remove this after empty anon id bug is identified
+	if user.UUID == "" {
+		debugStack()
+		user.UUID = str.UUIDSha256(user)
+		log.Errorf("[UpdateUserRecord] UUID empty! Setting to: %s", user.UUID)
 	}
 
 	tx := bot.Database.Save(user)
