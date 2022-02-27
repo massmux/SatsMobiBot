@@ -89,7 +89,7 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Con
 		authParams := &LnurlAuthState{LNURLAuthParams: params.(lnurl.LNURLAuthParams)}
 		log.Infof("[LNURL-auth] %s", authParams.LNURLAuthParams.Callback)
 		bot.tryDeleteMessage(statusMsg)
-		return bot.lnurlAuthHandler(ctx, m, *authParams)
+		return bot.lnurlAuthHandler(ctx, m, authParams)
 
 	case lnurl.LNURLPayParams:
 		payParams := &LnurlPayState{LNURLPayParams: params.(lnurl.LNURLPayParams)}
@@ -107,7 +107,7 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Con
 			bot.trySendMessage(m.Sender, fmt.Sprintf("`%s`", payParams.LNURLPayParams.Metadata.Description))
 		}
 		// ask whether to make payment
-		bot.lnurlPayHandler(ctx, m, *payParams)
+		bot.lnurlPayHandler(ctx, m, payParams)
 
 	case lnurl.LNURLWithdrawResponse:
 		withdrawParams := &LnurlWithdrawState{LNURLWithdrawResponse: params.(lnurl.LNURLWithdrawResponse)}

@@ -37,19 +37,17 @@ type LnurlAuthState struct {
 
 // lnurlPayHandler1 is invoked when the first lnurl response was a lnurlpay response
 // at this point, the user hans't necessarily entered an amount yet
-func (bot *TipBot) lnurlAuthHandler(ctx context.Context, m *tb.Message, authParams LnurlAuthState) (context.Context, error) {
+func (bot *TipBot) lnurlAuthHandler(ctx context.Context, m *tb.Message, authParams *LnurlAuthState) (context.Context, error) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	// object that holds all information about the send payment
 	id := fmt.Sprintf("lnurlauth-%d-%s", m.Sender.ID, RandStringRunes(5))
-	lnurlAuthState := &LnurlAuthState{
-		Base:            storage.New(storage.ID(id)),
-		From:            user,
-		LNURLAuthParams: authParams.LNURLAuthParams,
-		LanguageCode:    ctx.Value("publicLanguageCode").(string),
-	}
+	authParams.Base = storage.New(storage.ID(id))
+	authParams.From = user
+	authParams.LanguageCode = ctx.Value("publicLanguageCode").(string)
+
 	// // // create inline buttons
 	btnAuth = paymentConfirmationMenu.Data(Translate(ctx, "loginButtonMessage"), "confirm_login", id)
 	btnCancelAuth = paymentConfirmationMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_login", id)
@@ -59,15 +57,15 @@ func (bot *TipBot) lnurlAuthHandler(ctx context.Context, m *tb.Message, authPara
 			btnAuth,
 			btnCancelAuth),
 	)
-	lnurlAuthState.Message = bot.trySendMessageEditable(m.Chat,
+	authParams.Message = bot.trySendMessageEditable(m.Chat,
 		fmt.Sprintf(Translate(ctx, "confirmLnurlAuthMessager"),
-			lnurlAuthState.LNURLAuthParams.CallbackURL.Host,
+			authParams.LNURLAuthParams.CallbackURL.Host,
 		),
 		paymentConfirmationMenu,
 	)
 
 	// save to bunt
-	runtime.IgnoreError(lnurlAuthState.Set(lnurlAuthState, bot.Bunt))
+	runtime.IgnoreError(authParams.Set(authParams, bot.Bunt))
 	return ctx, nil
 }
 

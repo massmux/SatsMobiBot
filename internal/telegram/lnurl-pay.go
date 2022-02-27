@@ -34,19 +34,16 @@ type LnurlPayState struct {
 
 // lnurlPayHandler1 is invoked when the first lnurl response was a lnurlpay response
 // at this point, the user hans't necessarily entered an amount yet
-func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams LnurlPayState) {
+func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams *LnurlPayState) {
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return
 	}
 	// object that holds all information about the send payment
 	id := fmt.Sprintf("lnurlp-%d-%s", m.Sender.ID, RandStringRunes(5))
-	lnurlPayState := &LnurlPayState{
-		Base:           storage.New(storage.ID(id)),
-		From:           user,
-		LNURLPayParams: payParams.LNURLPayParams,
-		LanguageCode:   ctx.Value("publicLanguageCode").(string),
-	}
+	payParams.Base = storage.New(storage.ID(id))
+	payParams.From = user
+	payParams.LanguageCode = ctx.Value("publicLanguageCode").(string)
 
 	// first we check whether an amount is present in the command
 	amount, amount_err := decodeAmountFromCommand(m.Text)
@@ -61,42 +58,42 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 	// check if memo is present in command
 	memo := GetMemoFromCommand(m.Text, memoStartsAt)
 	// shorten memo to allowed length
-	if len(memo) > int(lnurlPayState.LNURLPayParams.CommentAllowed) {
-		memo = memo[:lnurlPayState.LNURLPayParams.CommentAllowed]
+	if len(memo) > int(payParams.LNURLPayParams.CommentAllowed) {
+		memo = memo[:payParams.LNURLPayParams.CommentAllowed]
 	}
 	if len(memo) > 0 {
-		lnurlPayState.Comment = memo
+		payParams.Comment = memo
 	}
 
 	// amount is already present in the command, i.e., /lnurl <amount> <LNURL>
 	// amount not in allowed range from LNURL
 	if amount_err == nil &&
-		(int64(amount) > (lnurlPayState.LNURLPayParams.MaxSendable/1000) || int64(amount) < (lnurlPayState.LNURLPayParams.MinSendable/1000)) &&
-		(lnurlPayState.LNURLPayParams.MaxSendable != 0 && lnurlPayState.LNURLPayParams.MinSendable != 0) { // only if max and min are set
+		(int64(amount) > (payParams.LNURLPayParams.MaxSendable/1000) || int64(amount) < (payParams.LNURLPayParams.MinSendable/1000)) &&
+		(payParams.LNURLPayParams.MaxSendable != 0 && payParams.LNURLPayParams.MinSendable != 0) { // only if max and min are set
 		err := fmt.Errorf("amount not in range")
 		log.Warnf("[lnurlPayHandler] Error: %s", err.Error())
-		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), lnurlPayState.LNURLPayParams.MinSendable/1000, lnurlPayState.LNURLPayParams.MaxSendable/1000))
+		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), payParams.LNURLPayParams.MinSendable/1000, payParams.LNURLPayParams.MaxSendable/1000))
 		ResetUserState(user, bot)
 		return
 	}
 	// set also amount in the state of the user
-	lnurlPayState.Amount = amount * 1000 // save as mSat
+	payParams.Amount = amount * 1000 // save as mSat
 
 	// add result to persistent struct
-	runtime.IgnoreError(lnurlPayState.Set(lnurlPayState, bot.Bunt))
+	runtime.IgnoreError(payParams.Set(payParams, bot.Bunt))
 
 	// now we actualy check whether the amount was in the command and if not, ask for it
-	if lnurlPayState.LNURLPayParams.MinSendable == lnurlPayState.LNURLPayParams.MaxSendable {
-		amount = lnurlPayState.LNURLPayParams.MaxSendable / 1000
-		lnurlPayState.Amount = amount * 1000 // save as mSat
+	if payParams.LNURLPayParams.MinSendable == payParams.LNURLPayParams.MaxSendable {
+		amount = payParams.LNURLPayParams.MaxSendable / 1000
+		payParams.Amount = amount * 1000 // save as mSat
 	} else if amount_err != nil || amount < 1 {
 		// // no amount was entered, set user state and ask for amount
-		bot.askForAmount(ctx, id, "LnurlPayState", lnurlPayState.LNURLPayParams.MinSendable, lnurlPayState.LNURLPayParams.MaxSendable, m.Text)
+		bot.askForAmount(ctx, id, "LnurlPayState", payParams.LNURLPayParams.MinSendable, payParams.LNURLPayParams.MaxSendable, m.Text)
 		return
 	}
 
 	// We need to save the pay state in the user state so we can load the payment in the next handler
-	paramsJson, err := json.Marshal(lnurlPayState)
+	paramsJson, err := json.Marshal(payParams)
 	if err != nil {
 		log.Errorf("[lnurlPayHandler] Error: %s", err.Error())
 		// bot.trySendMessage(m.Sender, err.Error())
