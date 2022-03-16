@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 
@@ -21,15 +22,21 @@ import (
 	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
-type InvoiceEventCallback map[int]func(*InvoiceEvent)
+type InvoiceEventCallback map[int]EventHandler
+
+type EventHandler struct {
+	Function func(event Event)
+	Type     EventType
+}
 
 var InvoiceCallback InvoiceEventCallback
 
 func initInvoiceEventCallbacks(bot *TipBot) {
 	InvoiceCallback = InvoiceEventCallback{
-		InvoiceCallbackGeneric:         bot.notifyInvoiceReceivedEvent,
-		InvoiceCallbackInlineReceive:   bot.inlineReceiveEvent,
-		InvoiceCallbackLNURLPayReceive: bot.lnurlReceiveEvent,
+		InvoiceCallbackGeneric:         EventHandler{Function: bot.notifyInvoiceReceivedEvent, Type: EventTypeInvoice},
+		InvoiceCallbackInlineReceive:   EventHandler{Function: bot.inlineReceiveEvent, Type: EventTypeInvoice},
+		InvoiceCallbackLNURLPayReceive: EventHandler{Function: bot.lnurlReceiveEvent, Type: EventTypeInvoice},
+		InvoiceCallbackGroupTicket:     EventHandler{Function: bot.groupGetInviteLinkHandler, Type: EventTypeInvoice},
 	}
 }
 
@@ -39,7 +46,22 @@ const (
 	InvoiceCallbackGeneric = iota + 1
 	InvoiceCallbackInlineReceive
 	InvoiceCallbackLNURLPayReceive
+	InvoiceCallbackGroupTicket
 )
+
+const (
+	EventTypeInvoice       EventType = "invoice"
+	EventTypeTicketInvoice EventType = "ticket-invoice"
+)
+
+type EventType string
+
+func AssertEventType(event Event, eventType EventType) error {
+	if event.Type() != eventType {
+		return fmt.Errorf("invalid event type")
+	}
+	return nil
+}
 
 type Invoice struct {
 	PaymentHash    string `json:"payment_hash"`
@@ -49,12 +71,23 @@ type Invoice struct {
 }
 type InvoiceEvent struct {
 	*Invoice
-	User           *lnbits.User `json:"user"`
-	Message        *tb.Message  `json:"message"`
-	InvoiceMessage *tb.Message  `json:"invoice_message"`
-	LanguageCode   string       `json:"languagecode"`
-	Callback       int          `json:"func"`
-	CallbackData   string       `json:"callbackdata"`
+	*storage.Base
+	User           *lnbits.User `json:"user"`                      // the user that is being paid
+	Message        *tb.Message  `json:"message,omitempty"`         // the message that the invoice replies to
+	InvoiceMessage *tb.Message  `json:"invoice_message,omitempty"` // the message that displays the invoice
+	LanguageCode   string       `json:"languagecode"`              // language code of the user
+	Callback       int          `json:"func"`                      // which function to call if the invoice is paid
+	CallbackData   string       `json:"callbackdata"`              // add some data for the callback
+	Chat           *tb.Chat     `json:"chat,omitempty"`            // if invoice is supposed to be sent to a particular chat
+	Payer          *lnbits.User `json:"payer,omitempty"`           // if a particular user is supposed to pay this
+}
+
+func (invoiceEvent InvoiceEvent) Type() EventType {
+	return EventTypeInvoice
+}
+
+type Event interface {
+	Type() EventType
 }
 
 func (invoiceEvent InvoiceEvent) Key() string {
@@ -158,7 +191,8 @@ func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User
 	return invoiceEvent, nil
 }
 
-func (bot *TipBot) notifyInvoiceReceivedEvent(invoiceEvent *InvoiceEvent) {
+func (bot *TipBot) notifyInvoiceReceivedEvent(event Event) {
+	invoiceEvent := event.(*InvoiceEvent)
 	// do balance check for keyboard update
 	_, err := bot.GetUserBalance(invoiceEvent.User)
 	if err != nil {
@@ -183,7 +217,9 @@ func (lnurlInvoice LNURLInvoice) Key() string {
 	return fmt.Sprintf("lnurl-p:%s", lnurlInvoice.PaymentHash)
 }
 
-func (bot *TipBot) lnurlReceiveEvent(invoiceEvent *InvoiceEvent) {
+func (bot *TipBot) lnurlReceiveEvent(event Event) {
+	invoiceEvent := event.(*InvoiceEvent)
+
 	bot.notifyInvoiceReceivedEvent(invoiceEvent)
 	tx := &LNURLInvoice{Invoice: &Invoice{PaymentHash: invoiceEvent.PaymentHash}}
 	err := bot.Bunt.Get(tx)

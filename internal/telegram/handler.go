@@ -377,6 +377,55 @@ func (bot TipBot) getHandler() []Handler {
 				},
 			},
 		},
+		// group tickets
+		{
+			Endpoints: []interface{}{"/group"},
+			Handler:   bot.groupHandler,
+			Interceptor: &Interceptor{
+				Type: MessageInterceptor,
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{"/join"},
+			Handler:   bot.groupRequestJoinHandler,
+			Interceptor: &Interceptor{
+				Type: MessageInterceptor,
+				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.startUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{&btnPayTicket},
+			Handler:   bot.groupConfirmPayButtonHandler,
+			Interceptor: &Interceptor{
+				Type: CallbackInterceptor,
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
 		{
 			Endpoints: []interface{}{tb.OnPhoto},
 			Handler:   bot.photoHandler,
