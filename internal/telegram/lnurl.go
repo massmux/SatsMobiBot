@@ -2,8 +2,8 @@ package telegram
 
 import (
 	"bytes"
-	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -18,7 +18,7 @@ import (
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 func (bot *TipBot) GetHttpClient() (*http.Client, error) {
@@ -37,11 +37,12 @@ func (bot TipBot) cancelLnUrlHandler(c *tb.Callback) {
 }
 
 // lnurlHandler is invoked on /lnurl command
-func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) lnurlHandler(ctx intercept.Context) (intercept.Context, error) {
 	// commands:
 	// /lnurl
 	// /lnurl <LNURL>
 	// or /lnurl <amount> <LNURL>
+	m := ctx.Message()
 	if m.Chat.Type != tb.ChatPrivate {
 		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
@@ -53,7 +54,7 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Con
 
 	// if only /lnurl is entered, show the lnurl of the user
 	if m.Text == "/lnurl" {
-		return bot.lnurlReceiveHandler(ctx, m)
+		return bot.lnurlReceiveHandler(ctx)
 	}
 	statusMsg := bot.trySendMessageEditable(m.Sender, Translate(ctx, "lnurlResolvingUrlMessage"))
 
@@ -89,7 +90,8 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Con
 		authParams := &LnurlAuthState{LNURLAuthParams: params.(lnurl.LNURLAuthParams)}
 		log.Infof("[LNURL-auth] %s", authParams.LNURLAuthParams.Callback)
 		bot.tryDeleteMessage(statusMsg)
-		return bot.lnurlAuthHandler(ctx, m, authParams)
+		ctx.Context, err = bot.lnurlAuthHandler(ctx, m, authParams)
+		return ctx, err
 
 	case lnurl.LNURLPayParams:
 		payParams := &LnurlPayState{LNURLPayParams: params.(lnurl.LNURLPayParams)}
@@ -107,13 +109,13 @@ func (bot *TipBot) lnurlHandler(ctx context.Context, m *tb.Message) (context.Con
 			bot.trySendMessage(m.Sender, fmt.Sprintf("`%s`", payParams.LNURLPayParams.Metadata.Description))
 		}
 		// ask whether to make payment
-		bot.lnurlPayHandler(ctx, m, payParams)
+		bot.lnurlPayHandler(ctx, payParams)
 
 	case lnurl.LNURLWithdrawResponse:
 		withdrawParams := &LnurlWithdrawState{LNURLWithdrawResponse: params.(lnurl.LNURLWithdrawResponse)}
 		log.Infof("[LNURL-w] %s", withdrawParams.LNURLWithdrawResponse.Callback)
 		bot.tryDeleteMessage(statusMsg)
-		bot.lnurlWithdrawHandler(ctx, m, withdrawParams)
+		bot.lnurlWithdrawHandler(ctx, withdrawParams)
 	default:
 		if err == nil {
 			err = fmt.Errorf("invalid LNURL type")
@@ -152,7 +154,8 @@ func UserGetLNURL(user *lnbits.User) (string, error) {
 }
 
 // lnurlReceiveHandler outputs the LNURL of the user
-func (bot TipBot) lnurlReceiveHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot TipBot) lnurlReceiveHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
 	fromUser := LoadUser(ctx)
 	lnurlEncode, err := UserGetLNURL(fromUser)
 	if err != nil {

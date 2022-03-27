@@ -1,19 +1,20 @@
 package telegram
 
 import (
-	"context"
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
-func (bot *TipBot) fileHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) fileHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
 	if m.Chat.Type != tb.ChatPrivate {
 		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
 	user := LoadUser(ctx)
 	if c := stateCallbackMessage[user.StateKey]; c != nil {
-		// found handler for this state
+		// found ctx for this state
 		// now looking for user state reset ticker
 		ticker := runtime.GetTicker(user.ID)
 		if !ticker.Started {
@@ -27,7 +28,7 @@ func (bot *TipBot) fileHandler(ctx context.Context, m *tb.Message) (context.Cont
 			ticker.ResetChan <- struct{}{}
 		}
 
-		return c(ctx, m)
+		return c(ctx)
 	}
 	return ctx, errors.Create(errors.NoFileFoundError)
 }

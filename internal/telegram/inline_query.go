@@ -7,18 +7,20 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	i18n2 "github.com/nicksnyder/go-i18n/v2/i18n"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 const queryImage = "https://avatars.githubusercontent.com/u/88730856?v=4"
 
-func (bot TipBot) inlineQueryInstructions(ctx context.Context, q *tb.Query) (context.Context, error) {
+func (bot TipBot) inlineQueryInstructions(ctx intercept.Context) (intercept.Context, error) {
 	instructions := []struct {
 		url         string
 		title       string
@@ -60,11 +62,11 @@ func (bot TipBot) inlineQueryInstructions(ctx context.Context, q *tb.Query) (con
 		results[i].SetResultID(strconv.Itoa(i))
 	}
 
-	err := bot.Telegram.Answer(q, &tb.QueryResponse{
+	err := ctx.Answer(&tb.QueryResponse{
 		Results:    results,
 		CacheTime:  5, // a minute
 		IsPersonal: true,
-		QueryID:    q.ID,
+		QueryID:    ctx.Query().ID,
 	})
 
 	if err != nil {
@@ -73,7 +75,7 @@ func (bot TipBot) inlineQueryInstructions(ctx context.Context, q *tb.Query) (con
 	return ctx, err
 }
 
-func (bot TipBot) inlineQueryReplyWithError(q *tb.Query, message string, help string) {
+func (bot TipBot) inlineQueryReplyWithError(ctx intercept.Context, message string, help string) {
 	results := make(tb.Results, 1) // []tb.Result
 	result := &tb.ArticleResult{
 		// URL:         url,
@@ -83,11 +85,12 @@ func (bot TipBot) inlineQueryReplyWithError(q *tb.Query, message string, help st
 		// required for photos
 		ThumbURL: queryImage,
 	}
-	id := fmt.Sprintf("inl-error-%d-%s", q.From.ID, RandStringRunes(5))
+	id := fmt.Sprintf("inl-error-%d-%s", ctx.Query().Sender.ID, RandStringRunes(5))
 	result.SetResultID(id)
 	results[0] = result
-	err := bot.Telegram.Answer(q, &tb.QueryResponse{
-		Results:   results,
+	err := ctx.Answer(&tb.QueryResponse{
+		Results: results,
+
 		CacheTime: 1, // 60 == 1 minute, todo: make higher than 1 s in production
 
 	})
@@ -98,21 +101,22 @@ func (bot TipBot) inlineQueryReplyWithError(q *tb.Query, message string, help st
 
 // anyChosenInlineHandler will load any inline object from cache and store into bunt.
 // this is used to decrease bunt db write ops.
-func (bot TipBot) anyChosenInlineHandler(q *tb.ChosenInlineResult) {
+func (bot TipBot) anyChosenInlineHandler(ctx intercept.Context) (intercept.Context, error) {
 	// load inline object from cache
-	inlineObject, err := bot.Cache.Get(q.ResultID)
+	inlineObject, err := bot.Cache.Get(ctx.InlineResult().ResultID)
 	// check error
 	if err != nil {
 		log.Errorf("[anyChosenInlineHandler] could not find inline object in cache. %v", err.Error())
-		return
+		return ctx, err
 	}
 	switch inlineObject.(type) {
 	case storage.Storable:
 		// persist inline object in bunt
 		runtime.IgnoreError(bot.Bunt.Set(inlineObject.(storage.Storable)))
 	default:
-		log.Errorf("[anyChosenInlineHandler] invalid inline object type: %s, query: %s", reflect.TypeOf(inlineObject).String(), q.Query)
+		log.Errorf("[anyChosenInlineHandler] invalid inline object type: %s, query: %s", reflect.TypeOf(inlineObject).String(), ctx.InlineResult().Query)
 	}
+	return ctx, nil
 }
 
 func (bot TipBot) commandTranslationMap(ctx context.Context, command string) context.Context {
@@ -134,36 +138,37 @@ func (bot TipBot) commandTranslationMap(ctx context.Context, command string) con
 	return ctx
 }
 
-func (bot TipBot) anyQueryHandler(ctx context.Context, q *tb.Query) (context.Context, error) {
-	if q.Text == "" {
-		return bot.inlineQueryInstructions(ctx, q)
+func (bot TipBot) anyQueryHandler(ctx intercept.Context) (intercept.Context, error) {
+	if ctx.Query().Text == "" {
+		return bot.inlineQueryInstructions(ctx)
 	}
 
 	// create the inline send result
-	if strings.HasPrefix(q.Text, "/") {
-		q.Text = strings.TrimPrefix(q.Text, "/")
+	var text = ctx.Query().Text
+	if strings.HasPrefix(text, "/") {
+		text = strings.TrimPrefix(text, "/")
 	}
-	if strings.HasPrefix(q.Text, "send") || strings.HasPrefix(q.Text, "pay") {
-		return bot.handleInlineSendQuery(ctx, q)
-	}
-
-	if strings.HasPrefix(q.Text, "faucet") || strings.HasPrefix(q.Text, "zapfhahn") || strings.HasPrefix(q.Text, "kraan") || strings.HasPrefix(q.Text, "grifo") {
-		if len(strings.Split(q.Text, " ")) > 1 {
-			c := strings.Split(q.Text, " ")[0]
-			ctx = bot.commandTranslationMap(ctx, c)
-		}
-		return bot.handleInlineFaucetQuery(ctx, q)
-	}
-	if strings.HasPrefix(q.Text, "tipjar") || strings.HasPrefix(q.Text, "spendendose") {
-		if len(strings.Split(q.Text, " ")) > 1 {
-			c := strings.Split(q.Text, " ")[0]
-			ctx = bot.commandTranslationMap(ctx, c)
-		}
-		return bot.handleInlineTipjarQuery(ctx, q)
+	if strings.HasPrefix(text, "send") || strings.HasPrefix(text, "pay") {
+		return bot.handleInlineSendQuery(ctx)
 	}
 
-	if strings.HasPrefix(q.Text, "receive") || strings.HasPrefix(q.Text, "get") || strings.HasPrefix(q.Text, "payme") || strings.HasPrefix(q.Text, "request") {
-		return bot.handleInlineReceiveQuery(ctx, q)
+	if strings.HasPrefix(text, "faucet") || strings.HasPrefix(text, "zapfhahn") || strings.HasPrefix(text, "kraan") || strings.HasPrefix(text, "grifo") {
+		if len(strings.Split(text, " ")) > 1 {
+			c := strings.Split(text, " ")[0]
+			ctx.Context = bot.commandTranslationMap(ctx, c)
+		}
+		return bot.handleInlineFaucetQuery(ctx)
+	}
+	if strings.HasPrefix(text, "tipjar") || strings.HasPrefix(text, "spendendose") {
+		if len(strings.Split(text, " ")) > 1 {
+			c := strings.Split(text, " ")[0]
+			ctx.Context = bot.commandTranslationMap(ctx, c)
+		}
+		return bot.handleInlineTipjarQuery(ctx)
+	}
+
+	if strings.HasPrefix(text, "receive") || strings.HasPrefix(text, "get") || strings.HasPrefix(text, "payme") || strings.HasPrefix(text, "request") {
+		return bot.handleInlineReceiveQuery(ctx)
 	}
 	return ctx, nil
 }

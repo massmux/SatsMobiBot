@@ -2,24 +2,25 @@ package telegram
 
 import (
 	"bytes"
-	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
-func (bot *TipBot) lndhubHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) lndhubHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
 	if internal.Configuration.Lnbits.LnbitsPublicUrl == "" {
 		bot.trySendMessage(m.Sender, Translate(ctx, "couldNotLinkMessage"))
 		return ctx, fmt.Errorf("invalid configuration")
 	}
 	// check and print all commands
-	bot.anyTextHandler(ctx, m)
+	bot.anyTextHandler(ctx)
 	// reply only in private message
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message

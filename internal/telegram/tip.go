@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strings"
 	"time"
 
@@ -12,7 +13,7 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 func helpTipUsage(ctx context.Context, errormsg string) string {
@@ -31,9 +32,10 @@ func TipCheckSyntax(ctx context.Context, m *tb.Message) (bool, string) {
 	return true, ""
 }
 
-func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) tipHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
 	// check and print all commands
-	bot.anyTextHandler(ctx, m)
+	bot.anyTextHandler(ctx)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return ctx, fmt.Errorf("user has no wallet")
@@ -64,7 +66,7 @@ func (bot *TipBot) tipHandler(ctx context.Context, m *tb.Message) (context.Conte
 		return ctx, errors.Create(errors.InvalidAmountError)
 	}
 
-	err = bot.parseCmdDonHandler(ctx, m)
+	err = bot.parseCmdDonHandler(ctx)
 	if err == nil {
 		return ctx, fmt.Errorf("invalid parseCmdDonHandler")
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strconv"
 	"time"
 
@@ -15,34 +16,34 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 	"gorm.io/gorm"
 )
 
-func (bot TipBot) startHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
-	if !m.Private() {
+func (bot TipBot) startHandler(ctx intercept.Context) (intercept.Context, error) {
+	if !ctx.Message().Private() {
 		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
 	// ATTENTION: DO NOT CALL ANY HANDLER BEFORE THE WALLET IS CREATED
 	// WILL RESULT IN AN ENDLESS LOOP OTHERWISE
 	// bot.helpHandler(m)
-	log.Printf("[⭐️ /start] New user: %s (%d)\n", GetUserStr(m.Sender), m.Sender.ID)
-	walletCreationMsg := bot.trySendMessageEditable(m.Sender, Translate(ctx, "startSettingWalletMessage"))
-	user, err := bot.initWallet(m.Sender)
+	log.Printf("[⭐️ /start] New user: %s (%d)\n", GetUserStr(ctx.Sender()), ctx.Sender().ID)
+	walletCreationMsg := bot.trySendMessageEditable(ctx.Sender(), Translate(ctx, "startSettingWalletMessage"))
+	user, err := bot.initWallet(ctx.Sender())
 	if err != nil {
 		log.Errorln(fmt.Sprintf("[startHandler] Error with initWallet: %s", err.Error()))
 		bot.tryEditMessage(walletCreationMsg, Translate(ctx, "startWalletErrorMessage"))
 		return ctx, err
 	}
 	bot.tryDeleteMessage(walletCreationMsg)
-	ctx = context.WithValue(ctx, "user", user)
-	bot.helpHandler(ctx, m)
-	bot.trySendMessage(m.Sender, Translate(ctx, "startWalletReadyMessage"))
-	bot.balanceHandler(ctx, m)
+	ctx.Context = context.WithValue(ctx, "user", user)
+	bot.helpHandler(ctx)
+	bot.trySendMessage(ctx.Sender(), Translate(ctx, "startWalletReadyMessage"))
+	bot.balanceHandler(ctx)
 
 	// send the user a warning about the fact that they need to set a username
-	if len(m.Sender.Username) == 0 {
-		bot.trySendMessage(m.Sender, Translate(ctx, "startNoUsernameMessage"), tb.NoPreview)
+	if len(ctx.Sender().Username) == 0 {
+		bot.trySendMessage(ctx.Sender(), Translate(ctx, "startNoUsernameMessage"), tb.NoPreview)
 	}
 	return ctx, nil
 }

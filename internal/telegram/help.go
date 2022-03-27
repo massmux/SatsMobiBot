@@ -3,8 +3,9 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 func (bot TipBot) makeHelpMessage(ctx context.Context, m *tb.Message) string {
@@ -26,25 +27,25 @@ func (bot TipBot) makeHelpMessage(ctx context.Context, m *tb.Message) string {
 	return fmt.Sprintf(helpMessage, dynamicHelpMessage)
 }
 
-func (bot TipBot) helpHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot TipBot) helpHandler(ctx intercept.Context) (intercept.Context, error) {
 	// check and print all commands
-	bot.anyTextHandler(ctx, m)
-	if !m.Private() {
+	bot.anyTextHandler(ctx)
+	if !ctx.Message().Private() {
 		// delete message
-		bot.tryDeleteMessage(m)
+		bot.tryDeleteMessage(ctx.Message())
 	}
-	bot.trySendMessage(m.Sender, bot.makeHelpMessage(ctx, m), tb.NoPreview)
+	bot.trySendMessage(ctx.Sender(), bot.makeHelpMessage(ctx, ctx.Message()), tb.NoPreview)
 	return ctx, nil
 }
 
-func (bot TipBot) basicsHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot TipBot) basicsHandler(ctx intercept.Context) (intercept.Context, error) {
 	// check and print all commands
-	bot.anyTextHandler(ctx, m)
-	if !m.Private() {
+	bot.anyTextHandler(ctx)
+	if !ctx.Message().Private() {
 		// delete message
-		bot.tryDeleteMessage(m)
+		bot.tryDeleteMessage(ctx.Message())
 	}
-	bot.trySendMessage(m.Sender, Translate(ctx, "basicsMessage"), tb.NoPreview)
+	bot.trySendMessage(ctx.Sender(), Translate(ctx, "basicsMessage"), tb.NoPreview)
 	return ctx, nil
 }
 
@@ -74,13 +75,13 @@ func (bot TipBot) makeAdvancedHelpMessage(ctx context.Context, m *tb.Message) st
 	)
 }
 
-func (bot TipBot) advancedHelpHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot TipBot) advancedHelpHandler(ctx intercept.Context) (intercept.Context, error) {
 	// check and print all commands
-	bot.anyTextHandler(ctx, m)
-	if !m.Private() {
+	bot.anyTextHandler(ctx)
+	if !ctx.Message().Private() {
 		// delete message
-		bot.tryDeleteMessage(m)
+		bot.tryDeleteMessage(ctx.Message())
 	}
-	bot.trySendMessage(m.Sender, bot.makeAdvancedHelpMessage(ctx, m), tb.NoPreview)
+	bot.trySendMessage(ctx.Sender(), bot.makeAdvancedHelpMessage(ctx, ctx.Message()), tb.NoPreview)
 	return ctx, nil
 }

@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"strings"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -19,11 +21,11 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 var (
-	inlineReceiveMenu      = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	inlineReceiveMenu      = &tb.ReplyMarkup{ResizeKeyboard: true}
 	btnCancelInlineReceive = inlineReceiveMenu.Data("🚫 Cancel", "cancel_receive_inline")
 	btnAcceptInlineReceive = inlineReceiveMenu.Data("💸 Pay", "confirm_receive_inline")
 )
@@ -31,7 +33,7 @@ var (
 type InlineReceive struct {
 	*storage.Base
 	MessageText       string       `json:"inline_receive_messagetext"`
-	Message           *tb.Message  `json:"inline_receive_message"`
+	Message           tb.Editable  `json:"inline_receive_message"`
 	Amount            int64        `json:"inline_receive_amount"`
 	From              *lnbits.User `json:"inline_receive_from"`
 	To                *lnbits.User `json:"inline_receive_to"`
@@ -41,7 +43,7 @@ type InlineReceive struct {
 }
 
 func (bot TipBot) makeReceiveKeyboard(ctx context.Context, id string) *tb.ReplyMarkup {
-	inlineReceiveMenu := &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	inlineReceiveMenu := &tb.ReplyMarkup{ResizeKeyboard: true}
 	acceptInlineReceiveButton := inlineReceiveMenu.Data(Translate(ctx, "payReceiveButtonMessage"), "confirm_receive_inline")
 	cancelInlineReceiveButton := inlineReceiveMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_receive_inline")
 	acceptInlineReceiveButton.Data = id
@@ -55,18 +57,19 @@ func (bot TipBot) makeReceiveKeyboard(ctx context.Context, id string) *tb.ReplyM
 	return inlineReceiveMenu
 }
 
-func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) (context.Context, error) {
+func (bot TipBot) handleInlineReceiveQuery(ctx intercept.Context) (intercept.Context, error) {
+	q := ctx.Query()
 	to := LoadUser(ctx)
 	amount, err := decodeAmountFromCommand(q.Text)
 	if err != nil {
-		bot.inlineQueryReplyWithError(q, Translate(ctx, "inlineQueryReceiveTitle"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.Telegram.Me.Username))
+		bot.inlineQueryReplyWithError(ctx, Translate(ctx, "inlineQueryReceiveTitle"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.Telegram.Me.Username))
 		return ctx, err
 	}
 	if amount < 1 {
-		bot.inlineQueryReplyWithError(q, Translate(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.Telegram.Me.Username))
+		bot.inlineQueryReplyWithError(ctx, Translate(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(Translate(ctx, "inlineQueryReceiveDescription"), bot.Telegram.Me.Username))
 		return ctx, errors.Create(errors.InvalidAmountError)
 	}
-	toUserStr := GetUserStr(&q.From)
+	toUserStr := GetUserStr(q.Sender)
 
 	// check whether the 3rd argument is a username
 	// command is "@LightningTipBot receive 123 @from_user This is the memo"
@@ -80,7 +83,7 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) (co
 			if err != nil {
 				//bot.tryDeleteMessage(m)
 				//bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "sendUserHasNoWalletMessage"), toUserStrMention))
-				bot.inlineQueryReplyWithError(q,
+				bot.inlineQueryReplyWithError(ctx,
 					fmt.Sprintf(TranslateUser(ctx, "sendUserHasNoWalletMessage"), from_username),
 					fmt.Sprintf(TranslateUser(ctx, "inlineQueryReceiveDescription"),
 						bot.Telegram.Me.Username))
@@ -116,8 +119,8 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) (co
 			// required for photos
 			ThumbURL: url,
 		}
-		id := fmt.Sprintf("inl-receive-%d-%d-%s", q.From.ID, amount, RandStringRunes(5))
-		result.ReplyMarkup = &tb.InlineKeyboardMarkup{InlineKeyboard: bot.makeReceiveKeyboard(ctx, id).InlineKeyboard}
+		id := fmt.Sprintf("inl-receive-%d-%d-%s", q.Sender.ID, amount, RandStringRunes(5))
+		result.ReplyMarkup = &tb.ReplyMarkup{InlineKeyboard: bot.makeReceiveKeyboard(ctx, id).InlineKeyboard}
 		results[i] = result
 		// needed to set a unique string ID for each result
 		results[i].SetResultID(id)
@@ -147,7 +150,8 @@ func (bot TipBot) handleInlineReceiveQuery(ctx context.Context, q *tb.Query) (co
 	return ctx, nil
 }
 
-func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+func (bot *TipBot) acceptInlineReceiveHandler(ctx intercept.Context) (intercept.Context, error) {
+	c := ctx.Callback()
 	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
 	// immediatelly set intransaction to block duplicate calls
 	mutex.LockWithContext(ctx, tx.ID)
@@ -177,7 +181,7 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		inlineReceive.From = from
 
 	}
-	inlineReceive.Message = c.Message
+	inlineReceive.Message = c
 	runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.Bunt))
 
 	to := inlineReceive.To
@@ -196,16 +200,16 @@ func (bot *TipBot) acceptInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 		// if user has no wallet, show invoice
 		bot.tryEditMessage(inlineReceive.Message, inlineReceive.MessageText, &tb.ReplyMarkup{})
 		// runtime.IgnoreError(inlineReceive.Set(inlineReceive, bot.Bunt))
-		bot.inlineReceiveInvoice(ctx, c, inlineReceive)
+		bot.inlineReceiveInvoice(ctx, inlineReceive)
 		return ctx, errors.Create(errors.BalanceToLowError)
 	} else {
 		// else, do an internal transaction
-		return bot.sendInlineReceiveHandler(ctx, c)
-
+		return bot.sendInlineReceiveHandler(ctx)
 	}
 }
 
-func (bot *TipBot) sendInlineReceiveHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+func (bot *TipBot) sendInlineReceiveHandler(ctx intercept.Context) (intercept.Context, error) {
+	c := ctx.Callback()
 	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
 	mutex.LockWithContext(ctx, tx.ID)
 	defer mutex.UnlockWithContext(ctx, tx.ID)
@@ -254,17 +258,18 @@ func (bot *TipBot) sendInlineReceiveHandler(ctx context.Context, c *tb.Callback)
 	if !success {
 		errMsg := fmt.Sprintf("[acceptInlineReceiveHandler] Transaction failed: %s", err.Error())
 		log.Errorln(errMsg)
-		bot.tryEditMessage(c.Message, i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveFailedMessage"), &tb.ReplyMarkup{})
+		bot.tryEditMessage(c, i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveFailedMessage"), &tb.ReplyMarkup{})
 		return ctx, errors.Create(errors.UnknownError)
 	}
 
 	log.Infof("[💸 inlineReceive] Send from %s to %s (%d sat).", fromUserStr, toUserStr, inlineReceive.Amount)
 	inlineReceive.Set(inlineReceive, bot.Bunt)
-	return bot.finishInlineReceiveHandler(ctx, c)
+	ctx.Context, err = bot.finishInlineReceiveHandler(ctx, ctx.Callback())
+	return ctx, err
 
 }
 
-func (bot *TipBot) inlineReceiveInvoice(ctx context.Context, c *tb.Callback, inlineReceive *InlineReceive) {
+func (bot *TipBot) inlineReceiveInvoice(ctx intercept.Context, inlineReceive *InlineReceive) {
 	if !inlineReceive.Active {
 		log.Errorf("[acceptInlineReceiveHandler] inline receive not active anymore")
 		return
@@ -287,13 +292,8 @@ func (bot *TipBot) inlineReceiveInvoice(ctx context.Context, c *tb.Callback, inl
 	}
 
 	// send the invoice data to user
-	var msg *tb.Message
-	if inlineReceive.Message.Chat != nil {
-		msg = bot.trySendMessage(inlineReceive.Message.Chat, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
-	} else {
-		msg = bot.trySendMessage(c.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
-		bot.tryEditMessage(inlineReceive.Message, fmt.Sprintf("%s\n\nPay this invoice:\n```%s```", inlineReceive.MessageText, invoice.PaymentRequest))
-	}
+	msg := bot.trySendMessage(ctx.Callback().Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
+	bot.tryEditMessage(inlineReceive.Message, fmt.Sprintf("%s\n\nPay this invoice:\n```%s```", inlineReceive.MessageText, invoice.PaymentRequest))
 	invoice.InvoiceMessage = msg
 	runtime.IgnoreError(bot.Bunt.Set(invoice))
 	log.Printf("[/invoice] Incvoice created. User: %s, amount: %d sat.", GetUserStr(inlineReceive.To.Telegram), inlineReceive.Amount)
@@ -309,8 +309,10 @@ func (bot *TipBot) inlineReceiveEvent(event Event) {
 func (bot *TipBot) finishInlineReceiveHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
 	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
 	// immediatelly set intransaction to block duplicate calls
-	mutex.LockWithContext(ctx, tx.ID)
-	defer mutex.UnlockWithContext(ctx, tx.ID)
+	if ctx != nil {
+		mutex.LockWithContext(ctx, tx.ID)
+		defer mutex.UnlockWithContext(ctx, tx.ID)
+	}
 	rn, err := tx.Get(tx, bot.Bunt)
 	if err != nil {
 		log.Errorf("[getInlineReceive] %s", err.Error())
@@ -323,7 +325,7 @@ func (bot *TipBot) finishInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	toUserStrMd := GetUserStrMd(to.Telegram)
 	fromUserStrMd := GetUserStrMd(from.Telegram)
 	toUserStr := GetUserStr(to.Telegram)
-	inlineReceive.MessageText = fmt.Sprintf("%s", fmt.Sprintf(i18n.Translate(inlineReceive.LanguageCode, "inlineSendUpdateMessageAccept"), inlineReceive.Amount, fromUserStrMd, toUserStrMd))
+	inlineReceive.MessageText = fmt.Sprintf(i18n.Translate(inlineReceive.LanguageCode, "inlineSendUpdateMessageAccept"), inlineReceive.Amount, fromUserStrMd, toUserStrMd)
 	memo := inlineReceive.Memo
 	if len(memo) > 0 {
 		inlineReceive.MessageText += fmt.Sprintf(i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveAppendMemo"), memo)
@@ -346,7 +348,8 @@ func (bot *TipBot) finishInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	// inlineReceive.Release(inlineReceive, bot.Bunt)
 }
 
-func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+func (bot *TipBot) cancelInlineReceiveHandler(ctx intercept.Context) (intercept.Context, error) {
+	c := ctx.Callback()
 	tx := &InlineReceive{Base: storage.New(storage.ID(c.Data))}
 	mutex.LockWithContext(ctx, tx.ID)
 	defer mutex.UnlockWithContext(ctx, tx.ID)
@@ -360,7 +363,7 @@ func (bot *TipBot) cancelInlineReceiveHandler(ctx context.Context, c *tb.Callbac
 	if c.Sender.ID != inlineReceive.To.Telegram.ID {
 		return ctx, errors.Create(errors.UnknownError)
 	}
-	bot.tryEditMessage(c.Message, i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveCancelledMessage"), &tb.ReplyMarkup{})
+	bot.tryEditMessage(c, i18n.Translate(inlineReceive.LanguageCode, "inlineReceiveCancelledMessage"), &tb.ReplyMarkup{})
 	// set the inlineReceive inactive
 	inlineReceive.Active = false
 	return ctx, inlineReceive.Set(inlineReceive, bot.Bunt)

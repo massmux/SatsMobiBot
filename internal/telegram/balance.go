@@ -1,19 +1,20 @@
 package telegram
 
 import (
-	"context"
 	"fmt"
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	log "github.com/sirupsen/logrus"
 
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
-func (bot *TipBot) balanceHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) balanceHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
 	// check and print all commands
 	if len(m.Text) > 0 {
-		bot.anyTextHandler(ctx, m)
+		bot.anyTextHandler(ctx)
 	}
 
 	// reply only in private message
@@ -28,18 +29,18 @@ func (bot *TipBot) balanceHandler(ctx context.Context, m *tb.Message) (context.C
 	}
 
 	if !user.Initialized {
-		return bot.startHandler(ctx, m)
+		return bot.startHandler(ctx)
 	}
 
-	usrStr := GetUserStr(m.Sender)
+	usrStr := GetUserStr(ctx.Sender())
 	balance, err := bot.GetUserBalance(user)
 	if err != nil {
 		log.Errorf("[/balance] Error fetching %s's balance: %s", usrStr, err)
-		bot.trySendMessage(m.Sender, Translate(ctx, "balanceErrorMessage"))
+		bot.trySendMessage(ctx.Sender(), Translate(ctx, "balanceErrorMessage"))
 		return ctx, err
 	}
 
 	log.Infof("[/balance] %s's balance: %d sat\n", usrStr, balance)
-	bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "balanceMessage"), balance))
+	bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "balanceMessage"), balance))
 	return ctx, nil
 }

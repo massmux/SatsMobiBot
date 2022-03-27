@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"net/url"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
@@ -17,11 +18,11 @@ import (
 
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 var (
-	authConfirmationMenu = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	authConfirmationMenu = &tb.ReplyMarkup{ResizeKeyboard: true}
 	btnCancelAuth        = paymentConfirmationMenu.Data("🚫 Cancel", "cancel_login")
 	btnAuth              = paymentConfirmationMenu.Data("✅ Login", "confirm_login")
 )
@@ -69,7 +70,8 @@ func (bot *TipBot) lnurlAuthHandler(ctx context.Context, m *tb.Message, authPara
 	return ctx, nil
 }
 
-func (bot *TipBot) confirmLnurlAuthHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+func (bot *TipBot) confirmLnurlAuthHandler(ctx intercept.Context) (intercept.Context, error) {
+	c := ctx.Callback()
 	tx := &LnurlAuthState{Base: storage.New(storage.ID(c.Data))}
 	mutex.LockWithContext(ctx, tx.ID)
 	defer mutex.UnlockWithContext(ctx, tx.ID)
@@ -118,7 +120,7 @@ func (bot *TipBot) confirmLnurlAuthHandler(ctx context.Context, c *tb.Callback) 
 		return ctx, err
 	}
 	if sentsigres.Status == "ERROR" {
-		bot.tryEditMessage(c.Message, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), sentsigres.Reason))
+		bot.tryEditMessage(c, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), sentsigres.Reason))
 		return ctx, err
 	}
 	bot.editSingleButton(ctx, c.Message, lnurlAuthState.Message.Text, Translate(ctx, "lnurlSuccessfulLogin"))
@@ -126,7 +128,8 @@ func (bot *TipBot) confirmLnurlAuthHandler(ctx context.Context, c *tb.Callback) 
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
-func (bot *TipBot) cancelLnurlAuthHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+func (bot *TipBot) cancelLnurlAuthHandler(ctx intercept.Context) (intercept.Context, error) {
+	c := ctx.Callback()
 	tx := &LnurlAuthState{Base: storage.New(storage.ID(c.Data))}
 	mutex.LockWithContext(ctx, tx.ID)
 	defer mutex.UnlockWithContext(ctx, tx.ID)
@@ -143,7 +146,7 @@ func (bot *TipBot) cancelLnurlAuthHandler(ctx context.Context, c *tb.Callback) (
 		return ctx, errors.Create(errors.UnknownError)
 	}
 	// delete and send instead of edit for the keyboard to pop up after sending
-	bot.tryEditMessage(c.Message, i18n.Translate(lnurlAuthState.LanguageCode, "loginCancelledMessage"), &tb.ReplyMarkup{})
+	bot.tryEditMessage(c, i18n.Translate(lnurlAuthState.LanguageCode, "loginCancelledMessage"), &tb.ReplyMarkup{})
 	// bot.tryEditMessage(c.Message, i18n.Translate(payData.LanguageCode, "paymentCancelledMessage"), &tb.ReplyMarkup{})
 	return ctx, lnurlAuthState.Inactivate(lnurlAuthState, bot.Bunt)
 }

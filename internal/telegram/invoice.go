@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strings"
 	"time"
 
@@ -19,7 +20,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"github.com/skip2/go-qrcode"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 type InvoiceEventCallback map[int]EventHandler
@@ -102,9 +103,10 @@ func helpInvoiceUsage(ctx context.Context, errormsg string) string {
 	}
 }
 
-func (bot *TipBot) invoiceHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
 	// check and print all commands
-	bot.anyTextHandler(ctx, m)
+	bot.anyTextHandler(ctx)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)

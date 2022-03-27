@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/once"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -19,11 +21,11 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 var (
-	inlineFaucetMenu      = &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	inlineFaucetMenu      = &tb.ReplyMarkup{ResizeKeyboard: true}
 	btnCancelInlineFaucet = inlineFaucetMenu.Data("🚫 Cancel", "cancel_faucet_inline")
 	btnAcceptInlineFaucet = inlineFaucetMenu.Data("✅ Collect", "confirm_faucet_inline")
 )
@@ -136,28 +138,28 @@ func (bot TipBot) makeFaucet(ctx context.Context, m *tb.Message, query bool) (*I
 	return faucet, err
 }
 
-func (bot TipBot) makeQueryFaucet(ctx context.Context, q *tb.Query, query bool) (*InlineFaucet, error) {
-	faucet, err := bot.createFaucet(ctx, q.Text, &q.From)
+func (bot TipBot) makeQueryFaucet(ctx intercept.Context) (*InlineFaucet, error) {
+	faucet, err := bot.createFaucet(ctx, ctx.Query().Text, ctx.Query().Sender)
 	if err != nil {
 		switch err.(errors.TipBotError).Code {
 		case errors.DecodeAmountError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.DecodePerUserAmountError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.InvalidAmountError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineSendInvalidAmountMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.InvalidAmountPerUserError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineFaucetInvalidPeruserAmountMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineFaucetInvalidPeruserAmountMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.GetBalanceError:
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineQueryFaucetTitle"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		case errors.BalanceToLowError:
 			log.Errorf(err.Error())
-			bot.inlineQueryReplyWithError(q, TranslateUser(ctx, "inlineSendBalanceLowMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
+			bot.inlineQueryReplyWithError(ctx, TranslateUser(ctx, "inlineSendBalanceLowMessage"), fmt.Sprintf(TranslateUser(ctx, "inlineQueryFaucetDescription"), bot.Telegram.Me.Username))
 			return nil, err
 		}
 	}
@@ -165,7 +167,7 @@ func (bot TipBot) makeQueryFaucet(ctx context.Context, q *tb.Query, query bool) 
 }
 
 func (bot TipBot) makeFaucetKeyboard(ctx context.Context, id string) *tb.ReplyMarkup {
-	inlineFaucetMenu := &tb.ReplyMarkup{ResizeReplyKeyboard: true}
+	inlineFaucetMenu := &tb.ReplyMarkup{ResizeKeyboard: true}
 	acceptInlineFaucetButton := inlineFaucetMenu.Data(Translate(ctx, "collectButtonMessage"), "confirm_faucet_inline", id)
 	cancelInlineFaucetButton := inlineFaucetMenu.Data(Translate(ctx, "cancelButtonMessage"), "cancel_faucet_inline", id)
 	inlineFaucetMenu.Inline(
@@ -176,20 +178,20 @@ func (bot TipBot) makeFaucetKeyboard(ctx context.Context, id string) *tb.ReplyMa
 	return inlineFaucetMenu
 }
 
-func (bot TipBot) faucetHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
-	bot.anyTextHandler(ctx, m)
-	if m.Private() {
-		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "inlineFaucetHelpText"), Translate(ctx, "inlineFaucetHelpFaucetInGroup")))
+func (bot TipBot) faucetHandler(ctx intercept.Context) (intercept.Context, error) {
+	bot.anyTextHandler(ctx)
+	if ctx.Message().Private() {
+		bot.trySendMessage(ctx.Message().Sender, fmt.Sprintf(Translate(ctx, "inlineFaucetHelpText"), Translate(ctx, "inlineFaucetHelpFaucetInGroup")))
 		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
-	ctx = bot.mapFaucetLanguage(ctx, m.Text)
-	inlineFaucet, err := bot.makeFaucet(ctx, m, false)
+	ctx.Context = bot.mapFaucetLanguage(ctx, ctx.Text())
+	inlineFaucet, err := bot.makeFaucet(ctx, ctx.Message(), false)
 	if err != nil {
 		log.Warnf("[faucet] %s", err.Error())
 		return ctx, err
 	}
-	fromUserStr := GetUserStr(m.Sender)
-	mFaucet := bot.trySendMessage(m.Chat, inlineFaucet.Message, bot.makeFaucetKeyboard(ctx, inlineFaucet.ID))
+	fromUserStr := GetUserStr(ctx.Message().Sender)
+	mFaucet := bot.trySendMessage(ctx.Message().Chat, inlineFaucet.Message, bot.makeFaucetKeyboard(ctx, inlineFaucet.ID))
 	log.Infof("[faucet] %s created faucet %s: %d sat (%d per user)", fromUserStr, inlineFaucet.ID, inlineFaucet.Amount, inlineFaucet.PerUserAmount)
 
 	// log faucet link if possible
@@ -199,8 +201,8 @@ func (bot TipBot) faucetHandler(ctx context.Context, m *tb.Message) (context.Con
 	return ctx, inlineFaucet.Set(inlineFaucet, bot.Bunt)
 }
 
-func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) (context.Context, error) {
-	inlineFaucet, err := bot.makeQueryFaucet(ctx, q, false)
+func (bot TipBot) handleInlineFaucetQuery(ctx intercept.Context) (intercept.Context, error) {
+	inlineFaucet, err := bot.makeQueryFaucet(ctx)
 	if err != nil {
 		log.Errorf("[handleInlineFaucetQuery] %s", err.Error())
 		return ctx, err
@@ -218,7 +220,7 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) (con
 			// required for photos
 			ThumbURL: url,
 		}
-		result.ReplyMarkup = &tb.InlineKeyboardMarkup{InlineKeyboard: bot.makeFaucetKeyboard(ctx, inlineFaucet.ID).InlineKeyboard}
+		result.ReplyMarkup = &tb.ReplyMarkup{InlineKeyboard: bot.makeFaucetKeyboard(ctx, inlineFaucet.ID).InlineKeyboard}
 		results[i] = result
 		// needed to set a unique string ID for each result
 		results[i].SetResultID(inlineFaucet.ID)
@@ -227,7 +229,7 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) (con
 		log.Infof("[faucet] %s:%d created inline faucet %s: %d sat (%d per user)", GetUserStr(inlineFaucet.From.Telegram), inlineFaucet.From.Telegram.ID, inlineFaucet.ID, inlineFaucet.Amount, inlineFaucet.PerUserAmount)
 	}
 
-	err = bot.Telegram.Answer(q, &tb.QueryResponse{
+	err = bot.Telegram.Answer(ctx.Query(), &tb.QueryResponse{
 		Results:   results,
 		CacheTime: 1,
 	})
@@ -238,7 +240,8 @@ func (bot TipBot) handleInlineFaucetQuery(ctx context.Context, q *tb.Query) (con
 	return ctx, nil
 }
 
-func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
+func (bot *TipBot) acceptInlineFaucetHandler(ctx intercept.Context) (intercept.Context, error) {
+	c := ctx.Callback()
 	to := LoadUser(ctx)
 	tx := &InlineFaucet{Base: storage.New(storage.ID(c.Data))}
 	mutex.LockWithContext(ctx, tx.ID)
@@ -265,7 +268,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 	if from.Telegram.ID == to.Telegram.ID {
 		log.Debugf("[faucet] %s is the owner faucet %s", GetUserStr(to.Telegram), inlineFaucet.ID)
-		ctx = context.WithValue(ctx, "callback_response", Translate(ctx, "sendYourselfMessage"))
+		ctx.Context = context.WithValue(ctx, "callback_response", Translate(ctx, "sendYourselfMessage"))
 		return ctx, errors.Create(errors.SelfPaymentError)
 	}
 	// check if to user has already taken from the faucet
@@ -273,7 +276,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		if a.Telegram.ID == to.Telegram.ID {
 			// to user is already in To slice, has taken from facuet
 			log.Debugf("[faucet] %s:%d already took from faucet %s", GetUserStr(to.Telegram), to.Telegram.ID, inlineFaucet.ID)
-			ctx = context.WithValue(ctx, "callback_response", Translate(ctx, "inlineFaucetAlreadyTookMessage"))
+			ctx.Context = context.WithValue(ctx, "callback_response", Translate(ctx, "inlineFaucetAlreadyTookMessage"))
 			return ctx, errors.Create(errors.UnknownError)
 		}
 	}
@@ -310,7 +313,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 			// bot.trySendMessage(from.Telegram, Translate(ctx, "sendErrorMessage"))
 			errMsg := fmt.Sprintf("[faucet] Transaction failed: %s", err.Error())
 			log.Warnln(errMsg)
-			ctx = context.WithValue(ctx, "callback_response", Translate(ctx, "errorTryLaterMessage"))
+			ctx.Context = context.WithValue(ctx, "callback_response", Translate(ctx, "errorTryLaterMessage"))
 			// if faucet fails, cancel it:
 			// c.Sender.ID = inlineFaucet.From.Telegram.ID // overwrite the sender of the callback to be the faucet owner
 			// log.Debugf("[faucet] Canceling faucet %s...", inlineFaucet.ID)
@@ -325,7 +328,7 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 		inlineFaucet.RemainingAmount = inlineFaucet.RemainingAmount - inlineFaucet.PerUserAmount
 		go func() {
 			to_message := fmt.Sprintf(i18n.Translate(to.Telegram.LanguageCode, "inlineFaucetReceivedMessage"), fromUserStrMd, inlineFaucet.PerUserAmount)
-			ctx = context.WithValue(ctx, "callback_response", to_message)
+			ctx.Context = context.WithValue(ctx, "callback_response", to_message)
 			bot.trySendMessage(to.Telegram, to_message)
 			bot.trySendMessage(from.Telegram, fmt.Sprintf(i18n.Translate(from.Telegram.LanguageCode, "inlineFaucetSentMessage"), inlineFaucet.PerUserAmount, toUserStrMd))
 		}()
@@ -344,9 +347,8 @@ func (bot *TipBot) acceptInlineFaucetHandler(ctx context.Context, c *tb.Callback
 
 		// update the message if the faucet still has some sats left after this tx
 		if inlineFaucet.RemainingAmount >= inlineFaucet.PerUserAmount {
-			bot.tryEditStack(c.Message, inlineFaucet.ID, inlineFaucet.Message, bot.makeFaucetKeyboard(ctx, inlineFaucet.ID))
+			bot.tryEditStack(c, inlineFaucet.ID, inlineFaucet.Message, bot.makeFaucetKeyboard(ctx, inlineFaucet.ID))
 		}
-
 	}
 	if inlineFaucet.RemainingAmount < inlineFaucet.PerUserAmount {
 		log.Debugf(fmt.Sprintf("[faucet] faucet %s empty. Remaining: %d sat", inlineFaucet.ID, inlineFaucet.RemainingAmount))
@@ -369,7 +371,7 @@ func (bot *TipBot) cancelInlineFaucet(ctx context.Context, c *tb.Callback, ignor
 	inlineFaucet := fn.(*InlineFaucet)
 	if ignoreID || c.Sender.ID == inlineFaucet.From.Telegram.ID {
 		faucet_cancelled_message := i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCancelledMessage")
-		bot.tryEditStack(c.Message, inlineFaucet.ID, faucet_cancelled_message, &tb.ReplyMarkup{})
+		bot.tryEditStack(c, inlineFaucet.ID, faucet_cancelled_message, &tb.ReplyMarkup{})
 		ctx = context.WithValue(ctx, "callback_response", faucet_cancelled_message)
 		// set the inlineFaucet inactive
 		inlineFaucet.Active = false
@@ -389,7 +391,7 @@ func (bot *TipBot) finishFaucet(ctx context.Context, c *tb.Callback, inlineFauce
 	if inlineFaucet.UserNeedsWallet {
 		inlineFaucet.Message += "\n\n" + fmt.Sprintf(i18n.Translate(inlineFaucet.LanguageCode, "inlineFaucetCreateWalletMessage"), GetUserStrMd(bot.Telegram.Me))
 	}
-	bot.tryEditStack(c.Message, inlineFaucet.ID, inlineFaucet.Message, &tb.ReplyMarkup{})
+	bot.tryEditStack(c, inlineFaucet.ID, inlineFaucet.Message, &tb.ReplyMarkup{})
 
 	log.Debugf("[faucet] Faucet finished %s", inlineFaucet.ID)
 	once.Remove(inlineFaucet.ID)
@@ -411,6 +413,9 @@ func listFaucetTakers(inlineFaucet *InlineFaucet) string {
 	return to_str
 }
 
-func (bot *TipBot) cancelInlineFaucetHandler(ctx context.Context, c *tb.Callback) (context.Context, error) {
-	return bot.cancelInlineFaucet(ctx, c, false)
+func (bot *TipBot) cancelInlineFaucetHandler(ctx intercept.Context) (intercept.Context, error) {
+	var err error
+	ctx.Context, err = bot.cancelInlineFaucet(ctx, ctx.Callback(), false)
+	return ctx, err
+
 }

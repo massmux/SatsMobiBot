@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -14,7 +15,7 @@ import (
 
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
+	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
 // PLEASE DO NOT CHANGE THE CODE IN THIS FILE
@@ -34,9 +35,10 @@ func helpDonateUsage(ctx context.Context, errormsg string) string {
 	}
 }
 
-func (bot TipBot) donationHandler(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot TipBot) donationHandler(ctx intercept.Context) (intercept.Context, error) {
 	// check and print all commands
-	bot.anyTextHandler(ctx, m)
+	m := ctx.Message()
+	bot.anyTextHandler(ctx)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)
@@ -118,7 +120,8 @@ func (rot13 rot13Reader) Read(b []byte) (int, error) {
 	return n, err
 }
 
-func (bot TipBot) parseCmdDonHandler(ctx context.Context, m *tb.Message) error {
+func (bot TipBot) parseCmdDonHandler(ctx intercept.Context) error {
+	m := ctx.Message()
 	arg := ""
 	if strings.HasPrefix(strings.ToLower(m.Text), "/send") {
 		arg, _ = getArgumentFromCommand(m.Text, 2)
@@ -150,7 +153,7 @@ func (bot TipBot) parseCmdDonHandler(ctx context.Context, m *tb.Message) error {
 
 	bot.trySendMessage(m.Sender, str.MarkdownEscape(donationInterceptMessage))
 	m.Text = fmt.Sprintf("/donate %d", amount)
-	bot.donationHandler(ctx, m)
-	// returning nil here will abort the parent handler (/pay or /tip)
+	bot.donationHandler(ctx)
+	// returning nil here will abort the parent ctx (/pay or /tip)
 	return nil
 }

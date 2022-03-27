@@ -1,9 +1,9 @@
 package telegram
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"io/ioutil"
 	"net/url"
 	"strconv"
@@ -18,7 +18,6 @@ import (
 
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
-	tb "gopkg.in/lightningtipbot/telebot.v2"
 )
 
 // LnurlPayState saves the state of the user for an LNURL payment
@@ -34,7 +33,8 @@ type LnurlPayState struct {
 
 // lnurlPayHandler1 is invoked when the first lnurl response was a lnurlpay response
 // at this point, the user hans't necessarily entered an amount yet
-func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams *LnurlPayState) {
+func (bot *TipBot) lnurlPayHandler(ctx intercept.Context, payParams *LnurlPayState) {
+	m := ctx.Message()
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return
@@ -92,7 +92,7 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 		return
 	}
 
-	// We need to save the pay state in the user state so we can load the payment in the next handler
+	// We need to save the pay state in the user state so we can load the payment in the next ctx
 	paramsJson, err := json.Marshal(payParams)
 	if err != nil {
 		log.Errorf("[lnurlPayHandler] Error: %s", err.Error())
@@ -101,12 +101,13 @@ func (bot *TipBot) lnurlPayHandler(ctx context.Context, m *tb.Message, payParams
 	}
 	SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(paramsJson))
 	// directly go to confirm
-	bot.lnurlPayHandlerSend(ctx, m)
+	bot.lnurlPayHandlerSend(ctx)
 	return
 }
 
 // lnurlPayHandlerSend is invoked when the user has delivered an amount and is ready to pay
-func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) (context.Context, error) {
+func (bot *TipBot) lnurlPayHandlerSend(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)
@@ -194,10 +195,11 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx context.Context, m *tb.Message) (cont
 	runtime.IgnoreError(lnurlPayState.Set(lnurlPayState, bot.Bunt))
 	bot.Telegram.Delete(statusMsg)
 	m.Text = fmt.Sprintf("/pay %s", response2.PR)
-	return bot.payHandler(ctx, m)
+	return bot.payHandler(ctx)
 }
 
-func (bot *TipBot) sendToLightningAddress(ctx context.Context, m *tb.Message, address string, amount int64) (context.Context, error) {
+func (bot *TipBot) sendToLightningAddress(ctx intercept.Context, address string, amount int64) (intercept.Context, error) {
+	m := ctx.Message()
 	split := strings.Split(address, "@")
 	if len(split) != 2 {
 		return ctx, fmt.Errorf("lightning address format wrong")
@@ -232,6 +234,5 @@ func (bot *TipBot) sendToLightningAddress(ctx context.Context, m *tb.Message, ad
 		// this will invoke the "enter amount" dialog in the lnurl handler
 		m.Text = fmt.Sprintf("/lnurl %s", lnurl)
 	}
-	bot.lnurlHandler(ctx, m)
-	return ctx, nil
+	return bot.lnurlHandler(ctx)
 }
