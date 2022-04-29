@@ -20,15 +20,12 @@ import (
 	gocache "github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
-	"gorm.io/gorm"
 )
 
 type TipBot struct {
-	Database *gorm.DB
+	DB       *Databases
 	Bunt     *storage.DB
 	ShopBunt *storage.DB
-	GroupsDb *gorm.DB
-	logger   *gorm.DB
 	Telegram *tb.Bot
 	Client   *lnbits.Client
 	limiter  map[string]limiter.Limiter
@@ -48,17 +45,15 @@ func NewBot() TipBot {
 	gocacheClient := gocache.New(5*time.Minute, 10*time.Minute)
 	gocacheStore := store.NewGoCache(gocacheClient, nil)
 	// create sqlite databases
-	db, txLogger, groupsDb := AutoMigration()
+	dbs := AutoMigration()
 	limiter.Start()
 	return TipBot{
-		Database: db,
+		DB:       dbs,
 		Client:   lnbits.NewClient(internal.Configuration.Lnbits.AdminKey, internal.Configuration.Lnbits.Url),
-		logger:   txLogger,
 		Bunt:     createBunt(internal.Configuration.Database.BuntDbPath),
 		ShopBunt: createBunt(internal.Configuration.Database.ShopBuntDbPath),
 		Telegram: newTelegramBot(),
 		Cache:    Cache{GoCacheStore: gocacheStore},
-		GroupsDb: groupsDb,
 	}
 }
 

@@ -139,7 +139,7 @@ func (bot TipBot) groupRequestJoinHandler(ctx intercept.Context) (intercept.Cont
 	groupName := strings.ToLower(splits[splitIdx+1])
 
 	group := &Group{}
-	tx := bot.GroupsDb.Where("name = ? COLLATE NOCASE", groupName).First(group)
+	tx := bot.DB.Groups.Where("name = ? COLLATE NOCASE", groupName).First(group)
 	if tx.Error != nil {
 		bot.trySendMessage(ctx.Message().Chat, Translate(ctx, "groupNotFoundMessage"))
 		return ctx, fmt.Errorf("group not found")
@@ -401,7 +401,7 @@ func (bot TipBot) addGroupHandler(ctx intercept.Context) (intercept.Context, err
 	// check if the group with this name is already in db
 	// only if a group with this name is owned by this user, it can be overwritten
 	group := &Group{}
-	tx := bot.GroupsDb.Where("name = ? COLLATE NOCASE", groupName).First(group)
+	tx := bot.DB.Groups.Where("name = ? COLLATE NOCASE", groupName).First(group)
 	if tx.Error == nil {
 		// if it is already added, check if this user is the admin
 		if user.Telegram.ID != group.Owner.ID || group.ID != m.Chat.ID {
@@ -437,7 +437,7 @@ func (bot TipBot) addGroupHandler(ctx intercept.Context) (intercept.Context, err
 		Ticket: ticket,
 	}
 
-	bot.GroupsDb.Save(group)
+	bot.DB.Groups.Save(group)
 	log.Infof("[group] Ticket of %d sat added to group %s.", group.Ticket.Price, group.Name)
 	bot.trySendMessage(m.Chat, fmt.Sprintf(Translate(ctx, "groupAddedMessage"), str.MarkdownEscape(m.Chat.Title), group.Name, group.Ticket.Price, GetUserStrMd(bot.Telegram.Me), group.Name))
 
