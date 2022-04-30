@@ -5,10 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"math/bits"
 	"net/http"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/LightningTipBot/LightningTipBot/internal/str"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/fiatjaf/go-lnurl"
@@ -78,11 +80,20 @@ func (s Service) UserPageHandler(w http.ResponseWriter, r *http.Request) {
 		log.Errorln("[UserPage]", err)
 		image = "https://telegram.org/img/t_logo.png"
 	}
+
+	// generate random color
+	i := str.Int32Hash(username)
+	rgb_start := fmt.Sprintf("%d, %d, %d", i%256, bits.RotateLeft32(i, 1)%256, bits.RotateLeft32(i, 2)%256)
+	rgb_end := fmt.Sprintf("%d, %d, %d", bits.RotateLeft32(i, 3)%256, bits.RotateLeft32(i, 4)%256, bits.RotateLeft32(i, 5)%256)
+
+	log.Infof(rgb_start, rgb_end)
 	if err := tmpl.ExecuteTemplate(w, "userpage", struct {
 		Username string
 		Image    string
 		LNURLPay string
-	}{username, image, lnurlEncode}); err != nil {
+		RGBStart string
+		RGBEnd   string
+	}{username, image, lnurlEncode, rgb_start, rgb_end}); err != nil {
 		log.Errorf("failed to render template")
 	}
 }

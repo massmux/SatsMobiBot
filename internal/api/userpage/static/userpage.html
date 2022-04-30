@@ -15,8 +15,8 @@
 <script src="https://unpkg.com/kjua@0.6.0/dist/kjua.min.js"></script>
 <style>
   body {
-    background: rgb(36,71,247);
-    background: radial-gradient(circle, rgba(36,71,247,1) 0%, rgba(249,42,84,1) 100%);
+    background: rgb({{.RGBStart}});
+    background: radial-gradient(circle, rgba({{.RGBStart}},1) 0%, rgba({{.RGBEnd}},1) 100%);
     margin: auto;
     text-align: center;
     font-family: monospace;
