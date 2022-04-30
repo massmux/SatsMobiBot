@@ -37,6 +37,10 @@
   .white {
     color: #f3f3f3c5;
   }
+  .sm {
+    color: #f3f3f3c5;
+    font-size: 1rem;
+  }
   #qr {
     display: block;
     margin-top: 50px;
@@ -48,7 +52,7 @@
     white-space: pre-wrap;
     word-wrap: break-word;
     word-break: break-all;
-    font-size: 23px;
+    font-size: 1.5rem;
   }
 </style>
 
@@ -57,7 +61,7 @@
 
 <div><a href="lightning:{{.LNURLPay}}" id="qr"></a></div>
 <div class="white" id="invoice">{{.LNURLPay}}</div>
-
+<div class="sm">Get your own Lightning address here: <a class="sm" href="https://ln.tips">ln.tips</a></div>
 <script>
   qr.appendChild(
     kjua({
