@@ -2,6 +2,7 @@ package satdress
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
@@ -9,25 +10,24 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/LightningTipBot/LightningTipBot/internal/network"
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
+	"golang.org/x/net/proxy"
 )
 
 // Much of this is from github.com/fiatjaf/makeinvoice
 // but with added "checkInvoice" and http proxy support
 
-var HttpProxyURL = internal.Configuration.Bot.HttpProxy
-
-var Client = &http.Client{
-	Timeout: 10 * time.Second,
-}
+var Client, _ = network.GetSocksClient()
 
 type LNDParams struct {
 	Cert       []byte `json:"cert" gorm:"-"`
@@ -72,23 +72,15 @@ type CheckInvoiceParams struct {
 	Status  string
 }
 
-func MakeInvoice(params Params) (CheckInvoiceParams, error) {
-	defer func(prevTransport http.RoundTripper) {
-		Client.Transport = prevTransport
-	}(Client.Transport)
-
-	if params.Backend == nil {
-		return CheckInvoiceParams{}, errors.New("no backend specified")
-	}
-
+func SetupHttpClient(useProxy bool, cert []byte) (*http.Client, error) {
 	specialTransport := &http.Transport{}
 
 	// use a cert or skip TLS verification?
-	if len(params.Backend.getCert()) > 0 {
+	if len(cert) > 0 {
 		caCertPool := x509.NewCertPool()
-		ok := caCertPool.AppendCertsFromPEM([]byte(params.Backend.getCert()))
+		ok := caCertPool.AppendCertsFromPEM(cert)
 		if !ok {
-			return CheckInvoiceParams{}, fmt.Errorf("invalid root certificate")
+			return Client, fmt.Errorf("invalid root certificate")
 		}
 		specialTransport.TLSClientConfig = &tls.Config{RootCAs: caCertPool}
 	} else {
@@ -96,12 +88,41 @@ func MakeInvoice(params Params) (CheckInvoiceParams, error) {
 	}
 
 	// use a proxy?
-	if !params.Backend.isLocal() && len(HttpProxyURL) > 0 {
+	var HttpProxyURL = internal.Configuration.Bot.SocksProxy
+	if useProxy && len(HttpProxyURL) > 0 {
 		proxyURL, _ := url.Parse(HttpProxyURL)
 		specialTransport.Proxy = http.ProxyURL(proxyURL)
+		d, err := proxy.SOCKS5("tcp", HttpProxyURL, nil, &net.Dialer{
+			Timeout:   20 * time.Second,
+			Deadline:  time.Now().Add(time.Second * 10),
+			KeepAlive: -1,
+		})
+		if err != nil {
+			return Client, err
+		}
+		specialTransport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+			return d.Dial(network, addr)
+		}
+	}
+	Client.Transport = specialTransport
+	return Client, nil
+}
+
+func MakeInvoice(params Params) (CheckInvoiceParams, error) {
+	// defer func(prevTransport http.RoundTripper) {
+	// 	Client.Transport = prevTransport
+	// }(Client.Transport)
+
+	if params.Backend == nil {
+		return CheckInvoiceParams{}, errors.New("no backend specified")
 	}
 
-	Client.Transport = specialTransport
+	var err error
+	Client, err := SetupHttpClient(!params.Backend.isLocal(), params.Backend.getCert())
+	if err != nil {
+		log.Errorf(err.Error())
+		return CheckInvoiceParams{}, err
+	}
 
 	// description hash?
 	var hexh, b64h string
@@ -161,6 +182,9 @@ func MakeInvoice(params Params) (CheckInvoiceParams, error) {
 			Hash:    []byte(gjson.ParseBytes(b).Get("r_hash").String()),
 			Status:  "OPEN",
 		}
+		if len(checkInvoiceParams.PR) == 0 {
+			return CheckInvoiceParams{}, errors.New("could not create invoice")
+		}
 		return checkInvoiceParams, nil
 
 	case LNBitsParams:
@@ -211,6 +235,9 @@ func MakeInvoice(params Params) (CheckInvoiceParams, error) {
 			Hash:    []byte(gjson.ParseBytes(b).Get("payment_hash").String()),
 			Status:  "OPEN",
 		}
+		if len(checkInvoiceParams.PR) == 0 {
+			return CheckInvoiceParams{}, errors.New("could not create invoice")
+		}
 		return checkInvoiceParams, nil
 	default:
 		return CheckInvoiceParams{}, errors.New("wrong backend type")
@@ -218,34 +245,20 @@ func MakeInvoice(params Params) (CheckInvoiceParams, error) {
 }
 
 func CheckInvoice(params CheckInvoiceParams) (CheckInvoiceParams, error) {
-	defer func(prevTransport http.RoundTripper) {
-		Client.Transport = prevTransport
-	}(Client.Transport)
+	// defer func(prevTransport http.RoundTripper) {
+	// 	Client.Transport = prevTransport
+	// }(Client.Transport)
 
 	if params.Backend == nil {
 		return CheckInvoiceParams{}, errors.New("no backend specified")
 	}
-	specialTransport := &http.Transport{}
 
-	// use a cert or skip TLS verification?
-	if len(params.Backend.getCert()) > 0 {
-		caCertPool := x509.NewCertPool()
-		ok := caCertPool.AppendCertsFromPEM(params.Backend.getCert())
-		if !ok {
-			return CheckInvoiceParams{}, fmt.Errorf("invalid root certificate")
-		}
-		specialTransport.TLSClientConfig = &tls.Config{RootCAs: caCertPool}
-	} else {
-		specialTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	var err error
+	Client, err := SetupHttpClient(!params.Backend.isLocal(), params.Backend.getCert())
+	if err != nil {
+		log.Errorf(err.Error())
+		return CheckInvoiceParams{}, err
 	}
-
-	// use a proxy?
-	if !params.Backend.isLocal() && len(HttpProxyURL) > 0 {
-		proxyURL, _ := url.Parse(HttpProxyURL)
-		specialTransport.Proxy = http.ProxyURL(proxyURL)
-	}
-
-	Client.Transport = specialTransport
 
 	switch backend := params.Backend.(type) {
 	case LNDParams:
@@ -329,5 +342,4 @@ func CheckInvoice(params CheckInvoiceParams) (CheckInvoiceParams, error) {
 	default:
 		return CheckInvoiceParams{}, errors.New("missing backend params")
 	}
-	return CheckInvoiceParams{}, errors.New("missing backend params")
 }
