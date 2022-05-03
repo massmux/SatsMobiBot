@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
@@ -25,6 +26,8 @@ func New(b *telegram.TipBot) Service {
 		bot: b,
 	}
 }
+
+const botImage = "https://avatars.githubusercontent.com/u/88730856?v=7"
 
 //go:embed static
 var templates embed.FS
@@ -65,7 +68,7 @@ func (s Service) getTelegramUserPictureURL(username string) (string, error) {
 
 func (s Service) UserPageHandler(w http.ResponseWriter, r *http.Request) {
 	// https://ln.tips/.well-known/lnurlp/<username>
-	username := mux.Vars(r)["username"]
+	username := strings.ToLower(mux.Vars(r)["username"])
 	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, username)
 	log.Infof("[UserPage] rendering page of %s", username)
 	lnurlEncode, err := lnurl.LNURLEncode(callback)
@@ -74,10 +77,11 @@ func (s Service) UserPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	image, err := s.getTelegramUserPictureURL(username)
-	if err != nil {
-		log.Errorln("[UserPage]", err)
-		image = "https://telegram.org/img/t_logo.png"
+	if err != nil || image == "https://telegram.org/img/t_logo.png" {
+		// replace the default image
+		image = botImage
 	}
+
 	if err := tmpl.ExecuteTemplate(w, "userpage", struct {
 		Username string
 		Image    string
