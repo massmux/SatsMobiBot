@@ -3,8 +3,9 @@ package telegram
 import (
 	"bytes"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"time"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 
@@ -52,7 +53,7 @@ func (bot *TipBot) lndhubHandler(ctx intercept.Context) (intercept.Context, erro
 	go func() {
 		time.Sleep(time.Second * 60)
 		bot.tryDeleteMessage(linkmsg)
-		bot.trySendMessage(m.Sender, Translate(ctx, "linkHiddenMessage"))
+		bot.trySendMessage(m.Sender, Translate(ctx, "linkHiddenMessage"), tb.Silent)
 	}()
 	// auto delete the message
 	// NewMessage(linkmsg, WithDuration(time.Second*time.Duration(internal.Configuration.Telegram.MessageDisposeDuration), bot))
