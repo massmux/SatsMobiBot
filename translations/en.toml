@@ -267,7 +267,7 @@ walletConnectMessage = """🔗 *Link your wallet*
 ⚠️ Never share the URL or the QR code with anyone or they will be able to access your funds.
 
 - *BlueWallet:* Press *New wallet*, *Import wallet*, *Scan or import a file*, and scan the QR code.
-- *Zeus:* Copy the URL below, press *Add a new node*, *Import* (the URL), *Save Node Config*."""
+- *Zeus:* Copy the URL below, press *Add a new node*, select *LNDHub* as Node interface, enter the URL, *Save Node Config*."""
 couldNotLinkMessage             = """🚫 Couldn't link your wallet. Please try again later."""
 linkHiddenMessage               = """🔍 Link hidden. Enter /link to see it again."""
 
