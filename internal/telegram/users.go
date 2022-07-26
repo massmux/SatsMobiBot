@@ -71,6 +71,10 @@ func (bot *TipBot) GetUserBalanceCached(user *lnbits.User) (amount int64, err er
 }
 
 func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int64, err error) {
+	if user.Wallet == nil {
+		return 0, errors.New("User has no wallet")
+	}
+
 	wallet, err := bot.Client.Info(*user.Wallet)
 	if err != nil {
 		errmsg := fmt.Sprintf("[GetUserBalance] Error: Couldn't fetch user %s's info from LNbits: %s", GetUserStr(user.Telegram), err.Error())
