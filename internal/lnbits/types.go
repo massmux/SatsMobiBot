@@ -100,14 +100,11 @@ type TransferParams struct {
 }
 
 type Error struct {
-	Name    string `json:"name"`
-	Message string `json:"message"`
-	Code    int    `json:"code"`
-	Status  int    `json:"status"`
+	Detail string `json:"detail"`
 }
 
 func (err Error) Error() string {
-	return err.Message
+	return err.Detail
 }
 
 type Wallet struct {
