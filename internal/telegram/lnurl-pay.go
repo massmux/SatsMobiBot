@@ -212,11 +212,13 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx intercept.Context) (intercept.Context
 		return ctx, errors.New(errors.InvalidSyntaxError, err)
 	}
 
-	if bolt11.DescriptionHash != lnurlPayState.DescriptionHash {
-		log.Errorf("[lnurlPayHandlerSend] Error: description hash doesn't match")
-		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), "description hash doesn't match.\nExpected: `"+lnurlPayState.DescriptionHash+"` Received: `"+bolt11.DescriptionHash+"`"))
-		return ctx, fmt.Errorf("description hash doesn't match")
-	}
+	// todo: doesn't work with lnurls from lnbits??
+
+	// if bolt11.DescriptionHash != lnurlPayState.DescriptionHash {
+	// 	log.Errorf("[lnurlPayHandlerSend] Error: description hash doesn't match")
+	// 	bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), "description hash doesn't match.\nExpected: `"+lnurlPayState.DescriptionHash+"` Received: `"+bolt11.DescriptionHash+"`"))
+	// 	return ctx, fmt.Errorf("description hash doesn't match")
+	// }
 
 	// all good
 	lnurlPayState.LNURLPayValues = response2
