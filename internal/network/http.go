@@ -12,29 +12,19 @@ import (
 	"golang.org/x/net/proxy"
 )
 
-func GetHttpClient() (*http.Client, error) {
+func GetClient() (*http.Client, error) {
 	client := http.Client{
 		Timeout: 10 * time.Second,
 	}
-	if internal.Configuration.Bot.HttpProxy != "" {
-		proxyUrl, err := url.Parse(internal.Configuration.Bot.HttpProxy)
-		if err != nil {
-			log.Errorln(err)
-			return nil, err
-		}
-		client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
-	}
-	return &client, nil
-}
-func GetSocksClient() (*http.Client, error) {
-	client := http.Client{
-		Timeout: 10 * time.Second,
-	}
-	if internal.Configuration.Bot.SocksProxy != "" {
-		proxyURL, _ := url.Parse(internal.Configuration.Bot.SocksProxy)
+	if internal.Configuration.Bot.SocksProxy != nil {
+		proxyURL, _ := url.Parse(internal.Configuration.Bot.SocksProxy.Host)
 		specialTransport := &http.Transport{}
 		specialTransport.Proxy = http.ProxyURL(proxyURL)
-		d, err := proxy.SOCKS5("tcp", internal.Configuration.Bot.SocksProxy, nil, &net.Dialer{
+		var auth *proxy.Auth
+		if internal.Configuration.Bot.SocksProxy.Username != "" && internal.Configuration.Bot.SocksProxy.Password != "" {
+			auth = &proxy.Auth{User: internal.Configuration.Bot.SocksProxy.Username, Password: internal.Configuration.Bot.SocksProxy.Password}
+		}
+		d, err := proxy.SOCKS5("tcp", internal.Configuration.Bot.SocksProxy.Host, auth, &net.Dialer{
 			Timeout:   20 * time.Second,
 			Deadline:  time.Now().Add(time.Second * 10),
 			KeepAlive: -1,

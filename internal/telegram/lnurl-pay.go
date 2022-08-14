@@ -145,7 +145,7 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx intercept.Context) (intercept.Context
 
 	// LnurlPayState loaded
 
-	client, err := network.GetHttpClient()
+	client, err := network.GetClient()
 	if err != nil {
 		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))

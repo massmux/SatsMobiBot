@@ -2,32 +2,25 @@ package satdress
 
 import (
 	"bytes"
-	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net"
-	"net/http"
-	"net/url"
-	"strings"
-	"time"
-
-	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/network"
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
-	"golang.org/x/net/proxy"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strings"
+	"time"
 )
 
 // Much of this is from github.com/fiatjaf/makeinvoice
 // but with added "checkInvoice" and http proxy support
-
-var Client, _ = network.GetSocksClient()
 
 type LNDParams struct {
 	Cert       []byte `json:"cert" gorm:"-"`
@@ -73,39 +66,31 @@ type CheckInvoiceParams struct {
 }
 
 func SetupHttpClient(useProxy bool, cert []byte) (*http.Client, error) {
-	specialTransport := &http.Transport{}
+	var client *http.Client
+	if !useProxy {
+		client = &http.Client{
+			Timeout: 10 * time.Second,
+		}
+	} else {
+		var err error
+		client, err = network.GetClient()
+		if err != nil {
+			return nil, err
+		}
 
+	}
 	// use a cert or skip TLS verification?
 	if len(cert) > 0 {
 		caCertPool := x509.NewCertPool()
 		ok := caCertPool.AppendCertsFromPEM(cert)
 		if !ok {
-			return Client, fmt.Errorf("invalid root certificate")
+			return client, fmt.Errorf("invalid root certificate")
 		}
-		specialTransport.TLSClientConfig = &tls.Config{RootCAs: caCertPool}
+		client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{RootCAs: caCertPool}
 	} else {
-		specialTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
-
-	// use a proxy?
-	var HttpProxyURL = internal.Configuration.Bot.SocksProxy
-	if useProxy && len(HttpProxyURL) > 0 {
-		proxyURL, _ := url.Parse(HttpProxyURL)
-		specialTransport.Proxy = http.ProxyURL(proxyURL)
-		d, err := proxy.SOCKS5("tcp", HttpProxyURL, nil, &net.Dialer{
-			Timeout:   20 * time.Second,
-			Deadline:  time.Now().Add(time.Second * 10),
-			KeepAlive: -1,
-		})
-		if err != nil {
-			return Client, err
-		}
-		specialTransport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-			return d.Dial(network, addr)
-		}
-	}
-	Client.Transport = specialTransport
-	return Client, nil
+	return client, nil
 }
 
 func MakeInvoice(params Params) (CheckInvoiceParams, error) {

@@ -16,14 +16,20 @@ var Configuration = struct {
 	Lnbits   LnbitsConfiguration   `yaml:"lnbits"`
 }{}
 
+type SocksConfiguration struct {
+	Host     string `yaml:"host"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+}
+
 type BotConfiguration struct {
-	HttpProxy      string   `yaml:"http_proxy"`
-	SocksProxy     string   `yaml:"socks_proxy"`
-	LNURLServer    string   `yaml:"lnurl_server"`
-	LNURLServerUrl *url.URL `yaml:"-"`
-	LNURLHostName  string   `yaml:"lnurl_public_host_name"`
-	LNURLHostUrl   *url.URL `yaml:"-"`
-	LNURLSendImage bool     `yaml:"lnurl_image"`
+	HttpProxy      string              `yaml:"http_proxy"`
+	SocksProxy     *SocksConfiguration `yaml:"socks_proxy,omitempty"`
+	LNURLServer    string              `yaml:"lnurl_server"`
+	LNURLServerUrl *url.URL            `yaml:"-"`
+	LNURLHostName  string              `yaml:"lnurl_public_host_name"`
+	LNURLHostUrl   *url.URL            `yaml:"-"`
+	LNURLSendImage bool                `yaml:"lnurl_image"`
 }
 
 type TelegramConfiguration struct {
