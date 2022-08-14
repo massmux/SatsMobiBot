@@ -33,6 +33,9 @@ func GetClient(clientType ClientType) (*http.Client, error) {
 	default:
 		return nil, fmt.Errorf("[GetClient] invalid clientType")
 	}
+	if cfg == nil {
+		return &client, nil
+	}
 	proxyURL, _ := url.Parse(cfg.Host)
 	specialTransport := &http.Transport{}
 	specialTransport.Proxy = http.ProxyURL(proxyURL)

@@ -23,7 +23,6 @@ type SocksConfiguration struct {
 }
 
 type BotConfiguration struct {
-	HttpProxy      string              `yaml:"http_proxy"`
 	SocksProxy     *SocksConfiguration `yaml:"socks_proxy,omitempty"`
 	TorProxy       *SocksConfiguration `yaml:"tor_proxy,omitempty"`
 	LNURLServer    string              `yaml:"lnurl_server"`
