@@ -107,7 +107,7 @@ func (bot *TipBot) confirmLnurlAuthHandler(ctx intercept.Context) (intercept.Con
 	}
 
 	var sentsigres lnurl.LNURLResponse
-	client, err := network.GetClient()
+	client, err := network.GetClient(network.ClientTypeClearNet)
 	if err != nil {
 		return ctx, err
 	}

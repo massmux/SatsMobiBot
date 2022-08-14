@@ -73,7 +73,7 @@ func SetupHttpClient(useProxy bool, cert []byte) (*http.Client, error) {
 		}
 	} else {
 		var err error
-		client, err = network.GetClient()
+		client, err = network.GetClient(network.ClientTypeTor)
 		if err != nil {
 			return nil, err
 		}
