@@ -1,4 +1,10 @@
 bot:
+  socks_proxy:
+      host: 127.0.0.1:9996
+      username: test
+      password: username
+  tor_proxy:
+      host: 127.0.0.1:9050
   http_proxy: ""
   lnurl_public_host_name: "mylnurl.com"
   lnurl_server: "https://mylnurl.com"

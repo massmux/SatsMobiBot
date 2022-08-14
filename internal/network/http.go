@@ -2,6 +2,7 @@ package network
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"net/http"
 	"net/url"
@@ -12,41 +13,48 @@ import (
 	"golang.org/x/net/proxy"
 )
 
-func GetHttpClient() (*http.Client, error) {
+type ClientType string
+
+const (
+	ClientTypeClearNet = "clearnet"
+	ClientTypeTor      = "tor"
+)
+
+func GetClient(clientType ClientType) (*http.Client, error) {
 	client := http.Client{
 		Timeout: 10 * time.Second,
 	}
-	if internal.Configuration.Bot.HttpProxy != "" {
-		proxyUrl, err := url.Parse(internal.Configuration.Bot.HttpProxy)
-		if err != nil {
-			log.Errorln(err)
-			return nil, err
-		}
-		client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+	var cfg *internal.SocksConfiguration
+	switch clientType {
+	case ClientTypeClearNet:
+		cfg = internal.Configuration.Bot.SocksProxy
+	case ClientTypeTor:
+		cfg = internal.Configuration.Bot.TorProxy
+	default:
+		return nil, fmt.Errorf("[GetClient] invalid clientType")
 	}
-	return &client, nil
-}
-func GetSocksClient() (*http.Client, error) {
-	client := http.Client{
-		Timeout: 10 * time.Second,
+	if cfg == nil {
+		return &client, nil
 	}
-	if internal.Configuration.Bot.SocksProxy != "" {
-		proxyURL, _ := url.Parse(internal.Configuration.Bot.SocksProxy)
-		specialTransport := &http.Transport{}
-		specialTransport.Proxy = http.ProxyURL(proxyURL)
-		d, err := proxy.SOCKS5("tcp", internal.Configuration.Bot.SocksProxy, nil, &net.Dialer{
-			Timeout:   20 * time.Second,
-			Deadline:  time.Now().Add(time.Second * 10),
-			KeepAlive: -1,
-		})
-		if err != nil {
-			log.Errorln(err)
-			return &client, nil
-		}
-		specialTransport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-			return d.Dial(network, addr)
-		}
-		client.Transport = specialTransport
+	proxyURL, _ := url.Parse(cfg.Host)
+	specialTransport := &http.Transport{}
+	specialTransport.Proxy = http.ProxyURL(proxyURL)
+	var auth *proxy.Auth
+	if cfg.Username != "" && cfg.Password != "" {
+		auth = &proxy.Auth{User: cfg.Username, Password: cfg.Password}
 	}
+	d, err := proxy.SOCKS5("tcp", cfg.Host, auth, &net.Dialer{
+		Timeout:   20 * time.Second,
+		Deadline:  time.Now().Add(time.Second * 10),
+		KeepAlive: -1,
+	})
+	if err != nil {
+		log.Errorln(err)
+		return &client, nil
+	}
+	specialTransport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+		return d.Dial(network, addr)
+	}
+	client.Transport = specialTransport
 	return &client, nil
 }
