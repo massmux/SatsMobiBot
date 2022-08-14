@@ -20,7 +20,6 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 
 	lnurl "github.com/fiatjaf/go-lnurl"
-	decodepay "github.com/fiatjaf/ln-decodepay"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -202,18 +201,16 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx intercept.Context) (intercept.Context
 		return ctx, fmt.Errorf("error in LNURLPayValues: %s", error_reason)
 	}
 
+	// todo: doesn't work with lnurls from lnbits??
 	// check whether description hash matches with expected hash
 	// decode invoice
-	bolt11, err := decodepay.Decodepay(response2.PR)
-	if err != nil {
-		bot.trySendMessage(ctx.Sender(), helpPayInvoiceUsage(ctx, Translate(ctx, "invalidInvoiceHelpMessage")))
-		errmsg := fmt.Sprintf("[/pay] Error: Could not decode invoice: %s", err.Error())
-		log.Errorln(errmsg)
-		return ctx, errors.New(errors.InvalidSyntaxError, err)
-	}
-
-	// todo: doesn't work with lnurls from lnbits??
-
+	// bolt11, err := decodepay.Decodepay(response2.PR)
+	// if err != nil {
+	// 	bot.trySendMessage(ctx.Sender(), helpPayInvoiceUsage(ctx, Translate(ctx, "invalidInvoiceHelpMessage")))
+	// 	errmsg := fmt.Sprintf("[/pay] Error: Could not decode invoice: %s", err.Error())
+	// 	log.Errorln(errmsg)
+	// 	return ctx, errors.New(errors.InvalidSyntaxError, err)
+	// }
 	// if bolt11.DescriptionHash != lnurlPayState.DescriptionHash {
 	// 	log.Errorf("[lnurlPayHandlerSend] Error: description hash doesn't match")
 	// 	bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), "description hash doesn't match.\nExpected: `"+lnurlPayState.DescriptionHash+"` Received: `"+bolt11.DescriptionHash+"`"))
