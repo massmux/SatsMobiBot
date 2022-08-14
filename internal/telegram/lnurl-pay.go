@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -19,27 +20,29 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 
 	lnurl "github.com/fiatjaf/go-lnurl"
+	decodepay "github.com/fiatjaf/ln-decodepay"
 	log "github.com/sirupsen/logrus"
 )
 
 // LnurlPayState saves the state of the user for an LNURL payment
 type LnurlPayState struct {
 	*storage.Base
-	From           *lnbits.User         `json:"from"`
-	LNURLPayParams lnurl.LNURLPayParams `json:"LNURLPayParams"`
-	LNURLPayValues lnurl.LNURLPayValues `json:"LNURLPayValues"`
-	Amount         int64                `json:"amount"`
-	Comment        string               `json:"comment"`
-	LanguageCode   string               `json:"languagecode"`
+	From            *lnbits.User         `json:"from"`
+	LNURLPayParams  lnurl.LNURLPayParams `json:"LNURLPayParams"`
+	LNURLPayValues  lnurl.LNURLPayValues `json:"LNURLPayValues"`
+	Amount          int64                `json:"amount"`
+	Comment         string               `json:"comment"`
+	DescriptionHash string               `json:"descriptionHash,omitempty"`
+	LanguageCode    string               `json:"languagecode"`
 }
 
-// lnurlPayHandler1 is invoked when the first lnurl response was a lnurlpay response
+// lnurlPayHandler is invoked when the first lnurl response was a lnurlpay response
 // at this point, the user hans't necessarily entered an amount yet
-func (bot *TipBot) lnurlPayHandler(ctx intercept.Context, payParams *LnurlPayState) {
+func (bot *TipBot) lnurlPayHandler(ctx intercept.Context, payParams *LnurlPayState) (context.Context, error) {
 	m := ctx.Message()
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
-		return
+		return ctx, fmt.Errorf("user has no wallet")
 	}
 	// object that holds all information about the send payment
 	id := fmt.Sprintf("lnurlp-%d-%s", m.Sender.ID, RandStringRunes(5))
@@ -76,10 +79,17 @@ func (bot *TipBot) lnurlPayHandler(ctx intercept.Context, payParams *LnurlPaySta
 		log.Warnf("[lnurlPayHandler] Error: %s", err.Error())
 		bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "lnurlInvalidAmountRangeMessage"), payParams.LNURLPayParams.MinSendable/1000, payParams.LNURLPayParams.MaxSendable/1000))
 		ResetUserState(user, bot)
-		return
+		return ctx, err
 	}
 	// set also amount in the state of the user
 	payParams.Amount = amount * 1000 // save as mSat
+
+	// calculate description hash of the metadata and save it
+	descriptionHash, err := bot.DescriptionHash(payParams.LNURLPayParams.Metadata, "")
+	if err != nil {
+		return nil, err
+	}
+	payParams.DescriptionHash = descriptionHash
 
 	// add result to persistent struct
 	runtime.IgnoreError(payParams.Set(payParams, bot.Bunt))
@@ -91,7 +101,7 @@ func (bot *TipBot) lnurlPayHandler(ctx intercept.Context, payParams *LnurlPaySta
 	} else if amount_err != nil || amount < 1 {
 		// // no amount was entered, set user state and ask for amount
 		bot.askForAmount(ctx, id, "LnurlPayState", payParams.LNURLPayParams.MinSendable, payParams.LNURLPayParams.MaxSendable, m.Text)
-		return
+		return ctx, nil
 	}
 
 	// We need to save the pay state in the user state so we can load the payment in the next ctx
@@ -99,12 +109,12 @@ func (bot *TipBot) lnurlPayHandler(ctx intercept.Context, payParams *LnurlPaySta
 	if err != nil {
 		log.Errorf("[lnurlPayHandler] Error: %s", err.Error())
 		// bot.trySendMessage(m.Sender, err.Error())
-		return
+		return ctx, err
 	}
 	SetUserState(user, bot, lnbits.UserHasEnteredAmount, string(paramsJson))
 	// directly go to confirm
 	bot.lnurlPayHandlerSend(ctx)
-	return
+	return ctx, nil
 }
 
 // lnurlPayHandlerSend is invoked when the user has delivered an amount and is ready to pay
@@ -187,11 +197,28 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx intercept.Context) (intercept.Context
 		if len(response2.Reason) > 0 {
 			error_reason = response2.Reason
 		}
-		log.Errorf("[lnurlPayHandler] Error in LNURLPayValues: %s", error_reason)
+		log.Errorf("[lnurlPayHandlerSend] Error in LNURLPayValues: %s", error_reason)
 		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "lnurlPaymentFailed"), error_reason))
-		return ctx, fmt.Errorf("Error in LNURLPayValues: %s", error_reason)
+		return ctx, fmt.Errorf("error in LNURLPayValues: %s", error_reason)
 	}
 
+	// check whether description hash matches with expected hash
+	// decode invoice
+	bolt11, err := decodepay.Decodepay(response2.PR)
+	if err != nil {
+		bot.trySendMessage(ctx.Sender(), helpPayInvoiceUsage(ctx, Translate(ctx, "invalidInvoiceHelpMessage")))
+		errmsg := fmt.Sprintf("[/pay] Error: Could not decode invoice: %s", err.Error())
+		log.Errorln(errmsg)
+		return ctx, errors.New(errors.InvalidSyntaxError, err)
+	}
+
+	if bolt11.DescriptionHash != lnurlPayState.DescriptionHash {
+		log.Errorf("[lnurlPayHandlerSend] Error: description hash doesn't match")
+		bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), "description hash doesn't match.\nExpected: `"+lnurlPayState.DescriptionHash+"` Received: `"+bolt11.DescriptionHash+"`"))
+		return ctx, fmt.Errorf("description hash doesn't match")
+	}
+
+	// all good
 	lnurlPayState.LNURLPayValues = response2
 	// add result to persistent struct
 	runtime.IgnoreError(lnurlPayState.Set(lnurlPayState, bot.Bunt))

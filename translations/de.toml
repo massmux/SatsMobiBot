@@ -127,9 +127,10 @@ advancedMessage = """%s
 */shop* 🛍 Durchsuche shops: `/shop` oder `/shop <user/shop_id>`"""
 
 # GENERIC
-enterAmountRangeMessage        = """⌨️ Gebe einen Betrag zwischen %d und %d sat ein."""
-enterAmountMessage             = """⌨️ Gebe einen Betrag ein."""
-errorReasonMessage                  = """🚫 Fehler: %s"""
+enterAmountRangeMessage        = """💯 Gebe Betrag zwuschen %d und %d sat ein."""
+enterAmountMessage             = """💯 Gebe Betrag ein."""
+enterUserMessage               = """👤 Gebe Benutzernamen ein."""
+errorReasonMessage             = """🚫 Fehler: %s"""
 
 # START
 
