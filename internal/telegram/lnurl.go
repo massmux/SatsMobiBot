@@ -2,6 +2,8 @@ package telegram
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"net/url"
@@ -22,7 +24,7 @@ import (
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
-func (bot TipBot) cancelLnUrlHandler(c *tb.Callback) {
+func (bot *TipBot) cancelLnUrlHandler(c *tb.Callback) {
 }
 
 // lnurlHandler is invoked on /lnurl command
@@ -151,7 +153,7 @@ func UserGetAnonLNURL(user *lnbits.User) (string, error) {
 }
 
 // lnurlReceiveHandler outputs the LNURL of the user
-func (bot TipBot) lnurlReceiveHandler(ctx intercept.Context) (intercept.Context, error) {
+func (bot *TipBot) lnurlReceiveHandler(ctx intercept.Context) (intercept.Context, error) {
 	m := ctx.Message()
 	fromUser := LoadUser(ctx)
 	lnurlEncode, err := UserGetLNURL(fromUser)
@@ -176,7 +178,7 @@ func (bot TipBot) lnurlReceiveHandler(ctx intercept.Context) (intercept.Context,
 }
 
 // fiatjaf/go-lnurl 1.8.4 with proxy
-func (bot TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error) {
+func (bot *TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error) {
 	var err error
 	var rawurl string
 
@@ -275,4 +277,18 @@ func (bot TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, error
 	default:
 		return rawurl, nil, fmt.Errorf("Unkown LNURL response.")
 	}
+}
+
+// DescriptionHash is the SHA256 hash of the metadata
+func (bot *TipBot) DescriptionHash(metadata lnurl.Metadata, payerData string) (string, error) {
+	var hashString string
+	var hash [32]byte
+	if len(payerData) == 0 {
+		hash = sha256.Sum256([]byte(metadata.Encode()))
+		hashString = hex.EncodeToString(hash[:])
+	} else {
+		hash = sha256.Sum256([]byte(metadata.Encode() + payerData))
+		hashString = hex.EncodeToString(hash[:])
+	}
+	return hashString, nil
 }

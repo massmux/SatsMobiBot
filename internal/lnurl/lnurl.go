@@ -229,7 +229,7 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 		payerDataByte = []byte("")
 	}
 
-	descriptionHash, err := w.descriptionHash(metadata, string(payerDataByte))
+	descriptionHash, err := w.DescriptionHash(metadata, string(payerDataByte))
 	if err != nil {
 		return nil, err
 	}
@@ -281,8 +281,8 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 
 }
 
-// descriptionHash is the SHA256 hash of the metadata
-func (w Lnurl) descriptionHash(metadata lnurl.Metadata, payerData string) (string, error) {
+// DescriptionHash is the SHA256 hash of the metadata
+func (w Lnurl) DescriptionHash(metadata lnurl.Metadata, payerData string) (string, error) {
 	var hashString string
 	var hash [32]byte
 	if len(payerData) == 0 {
