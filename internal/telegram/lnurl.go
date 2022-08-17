@@ -67,7 +67,7 @@ func (bot *TipBot) lnurlHandler(ctx intercept.Context) (intercept.Context, error
 	// get rid of the URI prefix
 	lnurlSplit = strings.TrimPrefix(lnurlSplit, "lightning:")
 
-	log.Debugf("[lnurlHandler] lnurlSplit: %s", lnurlSplit)
+	// log.Debugf("[lnurlHandler] lnurlSplit: %s", lnurlSplit)
 	// HandleLNURL by fiatjaf/go-lnurl
 	_, params, err := bot.HandleLNURL(lnurlSplit)
 	if err != nil {
@@ -93,7 +93,7 @@ func (bot *TipBot) lnurlHandler(ctx intercept.Context) (intercept.Context, error
 		if len(payParams.LNURLPayParams.Metadata.Image.Bytes) > 0 {
 			bot.trySendMessage(m.Sender, &tb.Photo{
 				File:    tb.File{FileReader: bytes.NewReader(payParams.LNURLPayParams.Metadata.Image.Bytes)},
-				Caption: fmt.Sprintf("%s", payParams.LNURLPayParams.Metadata.Description)})
+				Caption: payParams.LNURLPayParams.Metadata.Description})
 		} else if len(payParams.LNURLPayParams.Metadata.Description) > 0 {
 			// display the metadata text from the first LNURL-p response
 			// if there was no photo in the last step
@@ -213,8 +213,13 @@ func (bot *TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, erro
 		if err != nil {
 			return "", nil, err
 		}
+		// rerun LNURLDecode to convert lnurlp/keyauth schemes to https://
+		rawurl, err = lnurl.LNURLDecode(rawurl)
+		if err != nil {
+			return "", nil, err
+		}
 	}
-
+	log.Debug("[HandleLNURL] rawurl: ", rawurl)
 	parsed, err := url.Parse(rawurl)
 	if err != nil {
 		return rawurl, nil, err
@@ -275,7 +280,7 @@ func (bot *TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, erro
 	// 	value, err := lnurl.HandleChannel(b)
 	// 	return rawurl, value, err
 	default:
-		return rawurl, nil, fmt.Errorf("Unkown LNURL response.")
+		return rawurl, nil, fmt.Errorf("unkown LNURL response")
 	}
 }
 
