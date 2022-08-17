@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/satdress"
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
 
 	"github.com/imroc/req"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
@@ -142,7 +143,7 @@ func (u User) LinkingKey(domain string) (*btcec.PrivateKey, *btcec.PublicKey) {
 	seedhash := sha256.Sum256([]byte(
 		fmt.Sprintf("lnurlkeyseed:%s:%s",
 			domain, u.ID)))
-	return btcec.PrivKeyFromBytes(btcec.S256(), seedhash[:])
+	return btcec.PrivKeyFromBytes(seedhash[:])
 }
 
 func (u User) SignKeyAuth(domain string, k1hex string) (key string, sig string, err error) {
@@ -154,12 +155,12 @@ func (u User) SignKeyAuth(domain string, k1hex string) (key string, sig string, 
 		return "", "", fmt.Errorf("invalid k1 hex '%s': %w", k1hex, err)
 	}
 
-	signature, err := sk.Sign(k1)
+	signatur := ecdsa.Sign(sk, k1)
 	if err != nil {
 		return "", "", fmt.Errorf("error signing k1: %w", err)
 	}
 
-	sig = hex.EncodeToString(signature.Serialize())
+	sig = hex.EncodeToString(signatur.Serialize())
 	key = hex.EncodeToString(pk.SerializeCompressed())
 
 	return key, sig, nil
