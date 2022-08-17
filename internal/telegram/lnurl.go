@@ -213,6 +213,11 @@ func (bot *TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, erro
 		if err != nil {
 			return "", nil, err
 		}
+		// rerun LNURLDecode to convert lnurlp/keyauth schemes to https://
+		rawurl, err = lnurl.LNURLDecode(rawurl)
+		if err != nil {
+			return "", nil, err
+		}
 	}
 
 	parsed, err := url.Parse(rawurl)
