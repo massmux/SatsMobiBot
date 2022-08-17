@@ -140,10 +140,10 @@ type BitInvoice struct {
 
 // from fiatjaf/lnurl-go
 func (u User) LinkingKey(domain string) (*btcec.PrivateKey, *btcec.PublicKey) {
-	seedhash := sha256.Sum256([]byte(
+	seedHash := sha256.Sum256([]byte(
 		fmt.Sprintf("lnurlkeyseed:%s:%s",
 			domain, u.ID)))
-	return btcec.PrivKeyFromBytes(seedhash[:])
+	return btcec.PrivKeyFromBytes(seedHash[:])
 }
 
 func (u User) SignKeyAuth(domain string, k1hex string) (key string, sig string, err error) {
@@ -155,12 +155,12 @@ func (u User) SignKeyAuth(domain string, k1hex string) (key string, sig string, 
 		return "", "", fmt.Errorf("invalid k1 hex '%s': %w", k1hex, err)
 	}
 
-	signatur := ecdsa.Sign(sk, k1)
+	signature := ecdsa.Sign(sk, k1)
 	if err != nil {
 		return "", "", fmt.Errorf("error signing k1: %w", err)
 	}
 
-	sig = hex.EncodeToString(signatur.Serialize())
+	sig = hex.EncodeToString(signature.Serialize())
 	key = hex.EncodeToString(pk.SerializeCompressed())
 
 	return key, sig, nil
