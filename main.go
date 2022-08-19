@@ -64,8 +64,13 @@ func startApiServer(bot *telegram.TipBot) {
 	s.AppendRoute(`/lndhub/ext/{.*}`, hub.Handle)
 	s.AppendRoute(`/lndhub/ext`, hub.Handle)
 
-	apiService := api.ApiService{}
-	s.AppendRoute(`/api`, apiService.Handler)
+	// starting api service
+	apiService := api.Service{}
+	s.AppendRoute(`/api/v1/paymentstatus/{payment_hash}`, apiService.PaymentStatus, http.MethodPost)
+	s.AppendRoute(`/api/v1/invoicestatus/{payment_hash}`, apiService.InvoiceStatus, http.MethodPost)
+	s.AppendRoute(`/api/v1/payinvoice`, apiService.PayInvoice, http.MethodPost)
+	s.AppendRoute(`/api/v1/createinvoice`, apiService.CreateInvoice, http.MethodPost)
+	s.AppendRoute(`/api/v1/balance`, apiService.Balance, http.MethodGet)
 
 	// start internal admin server
 	adminService := admin.New(bot)
