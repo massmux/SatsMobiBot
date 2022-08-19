@@ -66,7 +66,7 @@ func startApiServer(bot *telegram.TipBot) {
 	//s.AppendAuthorizedRoute(`/lndhub/ext`, api.AuthTypeBearer, bot.DB.Users, hub.Handle)
 
 	// starting api service
-	apiService := api.Service{}
+	apiService := api.Service{Bot: bot}
 	s.AppendAuthorizedRoute(`/api/v1/paymentstatus/{payment_hash}`, api.AuthTypeBasic, bot.DB.Users, apiService.PaymentStatus, http.MethodPost)
 	s.AppendAuthorizedRoute(`/api/v1/invoicestatus/{payment_hash}`, api.AuthTypeBasic, bot.DB.Users, apiService.InvoiceStatus, http.MethodPost)
 	s.AppendAuthorizedRoute(`/api/v1/payinvoice`, api.AuthTypeBasic, bot.DB.Users, apiService.PayInvoice, http.MethodPost)

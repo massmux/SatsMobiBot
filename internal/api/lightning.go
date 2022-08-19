@@ -10,12 +10,12 @@ import (
 )
 
 type Service struct {
-	bot *telegram.TipBot
+	Bot *telegram.TipBot
 }
 
 func (s Service) Balance(w http.ResponseWriter, r *http.Request) {
-	user := &lnbits.User{}
-	balance, err := s.bot.GetUserBalance(user)
+	user := telegram.LoadUser(r.Context())
+	balance, err := s.Bot.GetUserBalance(user)
 	if err != nil {
 		// return ctx, errors.Create("balance check failed")
 		return
@@ -40,7 +40,7 @@ func (s Service) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 			DescriptionHash:     createInvoiceRequest.DescriptionHash,
 			UnhashedDescription: createInvoiceRequest.UnhashedDescription,
 			Webhook:             internal.Configuration.Lnbits.WebhookServer},
-		s.bot.Client)
+		s.Bot.Client)
 	if err != nil {
 		return
 	}
