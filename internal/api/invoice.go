@@ -3,7 +3,7 @@ package api
 type InvoiceStatusResponse struct {
 	State       string `json:"state,omitempty"`
 	PaymentHash string `json:"payment_hash"`
-	PreiMage    int64  `json:"preiMage"`
+	Preimage    int64  `json:"preimage"`
 }
 
 type CreateInvoiceResponse struct {
@@ -18,6 +18,6 @@ type CreateInvoiceRequest struct {
 	UnhashedDescription string `json:"unhashed_description"`
 }
 
-type PayInvoice struct {
+type PayInvoiceRequest struct {
 	PayRequest string `json:"pay_request"`
 }

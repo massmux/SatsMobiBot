@@ -11,26 +11,26 @@ import (
 )
 
 type Transaction struct {
-	ID           uint              `gorm:"primarykey"`
-	Time         time.Time         `json:"time"`
-	Bot          *TipBot           `gorm:"-"`
-	From         *lnbits.User      `json:"from" gorm:"-"`
-	To           *lnbits.User      `json:"to" gorm:"-"`
-	FromId       int64             `json:"from_id" `
-	ToId         int64             `json:"to_id" `
-	FromUser     string            `json:"from_user"`
-	ToUser       string            `json:"to_user"`
-	Type         string            `json:"type"`
-	Amount       int64             `json:"amount"`
-	ChatID       int64             `json:"chat_id"`
-	ChatName     string            `json:"chat_name"`
-	Memo         string            `json:"memo"`
-	Success      bool              `json:"success"`
-	FromWallet   string            `json:"from_wallet"`
-	ToWallet     string            `json:"to_wallet"`
-	FromLNbitsID string            `json:"from_lnbits"`
-	ToLNbitsID   string            `json:"to_lnbits"`
-	Invoice      lnbits.BitInvoice `gorm:"embedded;embeddedPrefix:invoice_"`
+	ID           uint           `gorm:"primarykey"`
+	Time         time.Time      `json:"time"`
+	Bot          *TipBot        `gorm:"-"`
+	From         *lnbits.User   `json:"from" gorm:"-"`
+	To           *lnbits.User   `json:"to" gorm:"-"`
+	FromId       int64          `json:"from_id" `
+	ToId         int64          `json:"to_id" `
+	FromUser     string         `json:"from_user"`
+	ToUser       string         `json:"to_user"`
+	Type         string         `json:"type"`
+	Amount       int64          `json:"amount"`
+	ChatID       int64          `json:"chat_id"`
+	ChatName     string         `json:"chat_name"`
+	Memo         string         `json:"memo"`
+	Success      bool           `json:"success"`
+	FromWallet   string         `json:"from_wallet"`
+	ToWallet     string         `json:"to_wallet"`
+	FromLNbitsID string         `json:"from_lnbits"`
+	ToLNbitsID   string         `json:"to_lnbits"`
+	Invoice      lnbits.Invoice `gorm:"embedded;embeddedPrefix:invoice_"`
 }
 
 type TransactionOption func(t *Transaction)

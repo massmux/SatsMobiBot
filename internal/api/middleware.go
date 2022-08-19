@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
-	"gorm.io/gorm"
 	"net/http"
 	"net/http/httputil"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
+	"gorm.io/gorm"
 
 	log "github.com/sirupsen/logrus"
 )

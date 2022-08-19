@@ -85,7 +85,7 @@ func (c *Client) CreateWallet(userId, walletName, adminId string) (wal Wallet, e
 }
 
 // Invoice creates an invoice associated with this wallet.
-func (w Wallet) Invoice(params InvoiceParams, c *Client) (lntx BitInvoice, err error) {
+func (w Wallet) Invoice(params InvoiceParams, c *Client) (lntx Invoice, err error) {
 	// custom header with invoice key
 	invoiceHeader := req.Header{
 		"Content-Type": "application/json",
@@ -199,7 +199,7 @@ func (c Client) Wallets(w User) (wtx []Wallet, err error) {
 }
 
 // Pay pays a given invoice with funds from the wallet.
-func (w Wallet) Pay(params PaymentParams, c *Client) (wtx BitInvoice, err error) {
+func (w Wallet) Pay(params PaymentParams, c *Client) (wtx Invoice, err error) {
 	// custom header with admin key
 	adminHeader := req.Header{
 		"Content-Type": "application/json",
