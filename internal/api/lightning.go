@@ -7,6 +7,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
+	"github.com/gorilla/mux"
 )
 
 type Service struct {
@@ -80,9 +81,10 @@ func (s Service) PayInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	payment, err := s.Bot.Client.Payment(*user.Wallet, invoice.PaymentHash)
+	payment, _ := s.Bot.Client.Payment(*user.Wallet, invoice.PaymentHash)
 	if err != nil {
-		RespondError(w, "could not get payment")
+		// we assume that it's paid since thre was no error earlier
+		payment.Paid = true
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -92,9 +94,11 @@ func (s Service) PayInvoice(w http.ResponseWriter, r *http.Request) {
 
 func (s Service) PaymentStatus(w http.ResponseWriter, r *http.Request) {
 	user := telegram.LoadUser(r.Context())
-	payment, err := s.Bot.Client.Payment(*user.Wallet, "")
+	payment_hash := mux.Vars(r)["payment_hash"]
+	payment, err := s.Bot.Client.Payment(*user.Wallet, payment_hash)
 	if err != nil {
 		RespondError(w, "could not get payment")
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -104,10 +108,12 @@ func (s Service) PaymentStatus(w http.ResponseWriter, r *http.Request) {
 // InvoiceStatus
 func (s Service) InvoiceStatus(w http.ResponseWriter, r *http.Request) {
 	user := telegram.LoadUser(r.Context())
+	payment_hash := mux.Vars(r)["payment_hash"]
 	user.Wallet = &lnbits.Wallet{}
-	payment, err := s.Bot.Client.Payment(*user.Wallet, "")
+	payment, err := s.Bot.Client.Payment(*user.Wallet, payment_hash)
 	if err != nil {
-		RespondError(w, "could not get payment")
+		RespondError(w, "could not get invoice")
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

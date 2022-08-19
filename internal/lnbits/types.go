@@ -134,6 +134,12 @@ type Payment struct {
 	WebhookStatus interface{} `json:"webhook_status"`
 }
 
+type LNbitsPayment struct {
+	Paid     bool    `json:"paid"`
+	Preimage string  `json:"preimage"`
+	Details  Payment `json:"details,omitempty"`
+}
+
 type Payments []Payment
 
 type Invoice struct {

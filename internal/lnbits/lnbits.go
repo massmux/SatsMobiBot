@@ -157,7 +157,7 @@ func (c Client) Payments(w Wallet) (wtx Payments, err error) {
 }
 
 // Payment state of a payment
-func (c Client) Payment(w Wallet, payment_hash string) (payment Payment, err error) {
+func (c Client) Payment(w Wallet, payment_hash string) (payment LNbitsPayment, err error) {
 	// custom header with invoice key
 	invoiceHeader := req.Header{
 		"Content-Type": "application/json",
