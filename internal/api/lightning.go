@@ -70,7 +70,7 @@ func (s Service) PayInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := &lnbits.User{}
-	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: payInvoiceRequest.PayRequest}, s.bot.Client)
+	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: payInvoiceRequest.PayRequest}, s.Bot.Client)
 	if err != nil {
 		RespondError(w, "could not pay invoice: "+err.Error())
 		return
@@ -83,7 +83,7 @@ func (s Service) PayInvoice(w http.ResponseWriter, r *http.Request) {
 
 func (s Service) PaymentStatus(w http.ResponseWriter, r *http.Request) {
 	user := &lnbits.User{}
-	payment, err := s.bot.Client.Payment(*user.Wallet, "")
+	payment, err := s.Bot.Client.Payment(*user.Wallet, "")
 	if err != nil {
 		RespondError(w, "could not get payment")
 	}
