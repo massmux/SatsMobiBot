@@ -1,6 +1,7 @@
 package lnbits
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/imroc/req"
@@ -84,7 +85,7 @@ func (c *Client) CreateWallet(userId, walletName, adminId string) (wal Wallet, e
 }
 
 // Invoice creates an invoice associated with this wallet.
-func (w Wallet) Invoice(params InvoiceParams, c *Client) (lntx BitInvoice, err error) {
+func (w Wallet) Invoice(params InvoiceParams, c *Client) (lntx Invoice, err error) {
 	// custom header with invoice key
 	invoiceHeader := req.Header{
 		"Content-Type": "application/json",
@@ -131,7 +132,7 @@ func (c Client) Info(w Wallet) (wtx Wallet, err error) {
 	return
 }
 
-// Info returns wallet payments
+// Payments returns wallet payments
 func (c Client) Payments(w Wallet) (wtx Payments, err error) {
 	// custom header with invoice key
 	invoiceHeader := req.Header{
@@ -155,6 +156,30 @@ func (c Client) Payments(w Wallet) (wtx Payments, err error) {
 	return
 }
 
+// Payment state of a payment
+func (c Client) Payment(w Wallet, payment_hash string) (payment LNbitsPayment, err error) {
+	// custom header with invoice key
+	invoiceHeader := req.Header{
+		"Content-Type": "application/json",
+		"Accept":       "application/json",
+		"X-Api-Key":    w.Inkey,
+	}
+	resp, err := req.Get(c.url+fmt.Sprintf("/api/v1/payments/%s", payment_hash), invoiceHeader, nil)
+	if err != nil {
+		return
+	}
+
+	if resp.Response().StatusCode >= 300 {
+		var reqErr Error
+		resp.ToJSON(&reqErr)
+		err = reqErr
+		return
+	}
+
+	err = resp.ToJSON(&payment)
+	return
+}
+
 // Wallets returns all wallets belonging to an user
 func (c Client) Wallets(w User) (wtx []Wallet, err error) {
 	resp, err := req.Get(c.url+"/usermanager/api/v1/wallets/"+w.ID, c.header, nil)
@@ -174,7 +199,7 @@ func (c Client) Wallets(w User) (wtx []Wallet, err error) {
 }
 
 // Pay pays a given invoice with funds from the wallet.
-func (w Wallet) Pay(params PaymentParams, c *Client) (wtx BitInvoice, err error) {
+func (w Wallet) Pay(params PaymentParams, c *Client) (wtx Invoice, err error) {
 	// custom header with admin key
 	adminHeader := req.Header{
 		"Content-Type": "application/json",

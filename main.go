@@ -54,7 +54,6 @@ func startApiServer(bot *telegram.TipBot) {
 	// append lnurl ctx functions
 	lnUrl := lnurl.New(bot)
 	s.AppendRoute("/.well-known/lnurlp/{username}", lnUrl.Handle, http.MethodGet)
-
 	// userpage server
 	userpage := userpage.New(bot)
 	s.AppendRoute("/@{username}", userpage.UserPageHandler, http.MethodGet)
@@ -63,6 +62,16 @@ func startApiServer(bot *telegram.TipBot) {
 	hub := lndhub.New(bot)
 	s.AppendRoute(`/lndhub/ext/{.*}`, hub.Handle)
 	s.AppendRoute(`/lndhub/ext`, hub.Handle)
+	//s.AppendAuthorizedRoute(`/lndhub/ext/{.*}`, api.AuthTypeBearer, bot.DB.Users, hub.Handle)
+	//s.AppendAuthorizedRoute(`/lndhub/ext`, api.AuthTypeBearer, bot.DB.Users, hub.Handle)
+
+	// starting api service
+	apiService := api.Service{Bot: bot}
+	s.AppendAuthorizedRoute(`/api/v1/paymentstatus/{payment_hash}`, api.AuthTypeBasic, bot.DB.Users, apiService.PaymentStatus, http.MethodPost)
+	s.AppendAuthorizedRoute(`/api/v1/invoicestatus/{payment_hash}`, api.AuthTypeBasic, bot.DB.Users, apiService.InvoiceStatus, http.MethodPost)
+	s.AppendAuthorizedRoute(`/api/v1/payinvoice`, api.AuthTypeBasic, bot.DB.Users, apiService.PayInvoice, http.MethodPost)
+	s.AppendAuthorizedRoute(`/api/v1/createinvoice`, api.AuthTypeBasic, bot.DB.Users, apiService.CreateInvoice, http.MethodPost)
+	s.AppendAuthorizedRoute(`/api/v1/balance`, api.AuthTypeBasic, bot.DB.Users, apiService.Balance, http.MethodGet)
 
 	// start internal admin server
 	adminService := admin.New(bot)
@@ -75,6 +84,9 @@ func startApiServer(bot *telegram.TipBot) {
 
 }
 
+func withMiddleware(mw func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
+	return mw
+}
 func withRecovery() {
 	if r := recover(); r != nil {
 		log.Errorln("Recovered panic: ", r)
