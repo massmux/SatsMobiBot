@@ -1,5 +1,9 @@
 package api
 
+type BalanceResponse struct {
+	Balance int64 `json:"balance"`
+}
+
 type InvoiceStatusResponse struct {
 	State       string `json:"state,omitempty"`
 	PaymentHash string `json:"payment_hash"`

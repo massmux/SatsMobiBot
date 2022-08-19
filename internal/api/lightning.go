@@ -13,14 +13,14 @@ type Service struct {
 	Bot *telegram.TipBot
 }
 
-type ApiError struct {
+type ErrorResponse struct {
 	Message string `json:"error"`
 }
 
 func RespondError(w http.ResponseWriter, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusBadRequest)
-	json.NewEncoder(w).Encode(ApiError{Message: message})
+	json.NewEncoder(w).Encode(ErrorResponse{Message: message})
 }
 
 func (s Service) Balance(w http.ResponseWriter, r *http.Request) {
@@ -30,9 +30,14 @@ func (s Service) Balance(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, "balance check failed")
 		return
 	}
+
+	balanceResponse := BalanceResponse{
+		Balance: balance,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(balance)
+	json.NewEncoder(w).Encode(balanceResponse)
 }
 
 func (s Service) CreateInvoice(w http.ResponseWriter, r *http.Request) {
