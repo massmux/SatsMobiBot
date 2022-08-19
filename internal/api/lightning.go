@@ -13,11 +13,21 @@ type Service struct {
 	bot *telegram.TipBot
 }
 
+type ApiError struct {
+	Message string `json:"error"`
+}
+
+func RespondError(w http.ResponseWriter, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusBadRequest)
+	json.NewEncoder(w).Encode(ApiError{Message: message})
+}
+
 func (s Service) Balance(w http.ResponseWriter, r *http.Request) {
-	user := &lnbits.User{}
+	user := r.Context().Value("user").(*lnbits.User)
 	balance, err := s.bot.GetUserBalance(user)
 	if err != nil {
-		// return ctx, errors.Create("balance check failed")
+		RespondError(w, "balance check failed")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -42,6 +52,7 @@ func (s Service) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 			Webhook:             internal.Configuration.Lnbits.WebhookServer},
 		s.bot.Client)
 	if err != nil {
+		RespondError(w, "could not create invoice")
 		return
 	}
 
@@ -51,14 +62,45 @@ func (s Service) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s Service) PayInvoice(w http.ResponseWriter, r *http.Request) {
+	var payInvoiceRequest PayInvoiceRequest
+	err := json.NewDecoder(r.Body).Decode(&payInvoiceRequest)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
+	user := &lnbits.User{}
+	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: payInvoiceRequest.PayRequest}, s.bot.Client)
+	if err != nil {
+		RespondError(w, "could not pay invoice: "+err.Error())
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(invoice)
 }
 
 func (s Service) PaymentStatus(w http.ResponseWriter, r *http.Request) {
-
+	user := &lnbits.User{}
+	payment, err := s.bot.Client.Payment(*user.Wallet, "")
+	if err != nil {
+		RespondError(w, "could not get payment")
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(payment)
 }
 
 // InvoiceStatus
 func (s Service) InvoiceStatus(w http.ResponseWriter, r *http.Request) {
-
+	user := &lnbits.User{}
+	user.Wallet = &lnbits.Wallet{}
+	payment, err := s.bot.Client.Payment(*user.Wallet, "")
+	if err != nil {
+		RespondError(w, "could not get payment")
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(payment)
 }

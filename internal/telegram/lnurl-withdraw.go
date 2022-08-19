@@ -42,7 +42,7 @@ type LnurlWithdrawState struct {
 	Comment               string                      `json:"comment"`
 	LanguageCode          string                      `json:"languagecode"`
 	Success               bool                        `json:"success"`
-	Invoice               lnbits.BitInvoice           `json:"invoice"`
+	Invoice               lnbits.Invoice              `json:"invoice"`
 	Message               string                      `json:"message"`
 }
 
