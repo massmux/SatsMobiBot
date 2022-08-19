@@ -23,5 +23,5 @@ type CreateInvoiceRequest struct {
 }
 
 type PayInvoiceRequest struct {
-	PayRequest string `json:"pay_request"`
+	PayRequest string `json:"pay_req"`
 }

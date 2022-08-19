@@ -41,13 +41,13 @@ func (s Service) Balance(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s Service) CreateInvoice(w http.ResponseWriter, r *http.Request) {
+	user := telegram.LoadUser(r.Context())
 	var createInvoiceRequest CreateInvoiceRequest
 	err := json.NewDecoder(r.Body).Decode(&createInvoiceRequest)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	user := &lnbits.User{}
 	invoice, err := user.Wallet.Invoice(
 		lnbits.InvoiceParams{
 			Amount:              createInvoiceRequest.Amount,
@@ -67,27 +67,31 @@ func (s Service) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s Service) PayInvoice(w http.ResponseWriter, r *http.Request) {
+	user := telegram.LoadUser(r.Context())
 	var payInvoiceRequest PayInvoiceRequest
 	err := json.NewDecoder(r.Body).Decode(&payInvoiceRequest)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	user := &lnbits.User{}
 	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: payInvoiceRequest.PayRequest}, s.Bot.Client)
 	if err != nil {
 		RespondError(w, "could not pay invoice: "+err.Error())
 		return
 	}
 
+	payment, err := s.Bot.Client.Payment(*user.Wallet, invoice.PaymentHash)
+	if err != nil {
+		RespondError(w, "could not get payment")
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(invoice)
+	json.NewEncoder(w).Encode(payment)
 }
 
 func (s Service) PaymentStatus(w http.ResponseWriter, r *http.Request) {
-	user := &lnbits.User{}
+	user := telegram.LoadUser(r.Context())
 	payment, err := s.Bot.Client.Payment(*user.Wallet, "")
 	if err != nil {
 		RespondError(w, "could not get payment")
@@ -99,7 +103,7 @@ func (s Service) PaymentStatus(w http.ResponseWriter, r *http.Request) {
 
 // InvoiceStatus
 func (s Service) InvoiceStatus(w http.ResponseWriter, r *http.Request) {
-	user := &lnbits.User{}
+	user := telegram.LoadUser(r.Context())
 	user.Wallet = &lnbits.Wallet{}
 	payment, err := s.Bot.Client.Payment(*user.Wallet, "")
 	if err != nil {
