@@ -134,9 +134,7 @@ type Payment struct {
 	WebhookStatus interface{} `json:"webhook_status"`
 }
 
-type Payments []struct {
-	Payment
-}
+type Payments []Payment
 
 type BitInvoice struct {
 	PaymentHash    string `json:"payment_hash"`
