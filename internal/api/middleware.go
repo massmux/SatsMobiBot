@@ -23,47 +23,51 @@ func LoggingMiddleware(prefix string, next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-type AuthType string
+type AuthType struct {
+	Type    string
+	Decoder func(s string) ([]byte, error)
+}
 
-const (
-	AuthTypeBasic  AuthType = "Basic"
-	AuthTypeBearer AuthType = "Bearer"
-)
+var AuthTypeBasic = AuthType{Type: "Basic"}
+var AuthTypeBearerBase64 = AuthType{Type: "Basic", Decoder: base64.StdEncoding.DecodeString}
 
 func AuthorizationMiddleware(database *gorm.DB, authType AuthType, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
 		// check if the user is banned
-		if auth != "" {
-			_, password, ok := parseAuth(authType, auth)
-			if !ok {
-				return
-			}
-			// first we make sure that the password is not already "banned_"
-			if strings.Contains(password, "_") || strings.HasPrefix(password, "banned_") {
-				log.Warnf("[AuthorizationMiddleware] Banned user %s. Not forwarding request", password)
-				return
-			}
-			// then we check whether the "normal" password provided is in the database (it should be not if the user is banned)
-			user := &lnbits.User{}
-			tx := database.Where("wallet_adminkey = ? COLLATE NOCASE", password).First(user)
-			if tx.Error != nil {
-				tx = database.Where("wallet_inkey = ? COLLATE NOCASE", password).First(user)
-				log.Warnf("[AuthorizationMiddleware] Could not get wallet admin key %s: %v", password, tx.Error)
-				if tx.Error != nil {
-					log.Warnf("[AuthorizationMiddleware] need admin key to pay invoice %s: %v", password, tx.Error)
-					return
-				}
-				if r.URL.Path == "/api/v1/payinvoice" {
-					log.Warnf("[AuthorizationMiddleware] need admin key to pay invoice %s: %v", password, tx.Error)
-					return
-				}
-			}
-			r.Context()
-			log.Debugf("[AuthorizationMiddleware] User: %s", telegram.GetUserStr(user.Telegram))
-			r = r.WithContext(context.WithValue(r.Context(), "user", user))
+		if auth == "" {
+			w.WriteHeader(401)
+			log.Warn("[AuthorizationMiddleware] no auth")
+			return
 		}
-
+		_, password, ok := parseAuth(authType, auth)
+		if !ok {
+			w.WriteHeader(401)
+			return
+		}
+		// first we make sure that the password is not already "banned_"
+		if strings.Contains(password, "_") || strings.HasPrefix(password, "banned_") {
+			w.WriteHeader(401)
+			log.Warnf("[AuthorizationMiddleware] Banned user %s. Not forwarding request", password)
+			return
+		}
+		// then we check whether the "normal" password provided is in the database (it should be not if the user is banned)
+		user := &lnbits.User{}
+		tx := database.Where("wallet_adminkey = ? COLLATE NOCASE", password).First(user)
+		if tx.Error != nil {
+			tx = database.Where("wallet_inkey = ? COLLATE NOCASE", password).First(user)
+			log.Warnf("[AuthorizationMiddleware] Could not get wallet admin key %s: %v", password, tx.Error)
+			if tx.Error != nil {
+				log.Warnf("[AuthorizationMiddleware] need admin key to pay invoice %s: %v", password, tx.Error)
+				return
+			}
+			if r.URL.Path == "/api/v1/payinvoice" {
+				log.Warnf("[AuthorizationMiddleware] need admin key to pay invoice %s: %v", password, tx.Error)
+				return
+			}
+		}
+		log.Debugf("[AuthorizationMiddleware] User: %s", telegram.GetUserStr(user.Telegram))
+		r = r.WithContext(context.WithValue(r.Context(), "user", user))
 		next.ServeHTTP(w, r)
 	}
 }
@@ -76,18 +80,22 @@ func parseAuth(authType AuthType, auth string) (username, password string, ok bo
 		if len(auth) < len(prefix) || !strings.EqualFold(auth[:len(prefix)], prefix) {
 			return
 		}
-		c, err := base64.StdEncoding.DecodeString(auth[len(prefix):])
-		if err != nil {
-			return
+		if authType.Decoder != nil {
+			c, err := base64.StdEncoding.DecodeString(auth[len(prefix):])
+			if err != nil {
+				return
+			}
+			cs := string(c)
+			s := strings.IndexByte(cs, ':')
+			if s < 0 {
+				return
+			}
+			return cs[:s], cs[s+1:], true
 		}
-		cs := string(c)
-		s := strings.IndexByte(cs, ':')
-		if s < 0 {
-			return
-		}
-		return cs[:s], cs[s+1:], true
+		return auth[len(prefix):], auth[len(prefix):], true
+
 	}
-	return parse(fmt.Sprintf("%s ", authType))
+	return parse(fmt.Sprintf("%s ", authType.Type))
 
 }
 
