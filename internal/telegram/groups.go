@@ -324,7 +324,7 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 	bot.trySendMessage(ticketEvent.Payer.Telegram, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "groupClickToJoinMessage"), resp.Result.InviteLink, ticketEvent.Group.Title))
 
 	// send a notification to the group that sold the ticket
-	bot.trySendMessage(&tb.Chat{ID: ticketEvent.Group.ID}, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "groupTicketIssuedGroupMessage"), GetUserStr(ticketEvent.Payer.Telegram)))
+	bot.trySendMessage(&tb.Chat{ID: ticketEvent.Group.ID}, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "groupTicketIssuedGroupMessage"), GetUserStrMd(ticketEvent.Payer.Telegram)))
 
 	// take a commission
 	ticketSat := ticketEvent.Group.Ticket.Price
@@ -366,9 +366,9 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 			errmsg := fmt.Sprintf("could not get balance of user %s", GetUserStr(ticketEvent.Payer.Telegram))
 			log.Errorln(errmsg)
 		}
-		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "groupReceiveTicketInvoiceCommission"), ticketSat, commissionSat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
+		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "groupReceiveTicketInvoiceCommission"), ticketSat, commissionSat, ticketEvent.Group.Title, GetUserStrMd(ticketEvent.Payer.Telegram)))
 	} else {
-		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "groupReceiveTicketInvoice"), ticketSat, ticketEvent.Group.Title, GetUserStr(ticketEvent.Payer.Telegram)))
+		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "groupReceiveTicketInvoice"), ticketSat, ticketEvent.Group.Title, GetUserStrMd(ticketEvent.Payer.Telegram)))
 	}
 }
 
