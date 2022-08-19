@@ -64,6 +64,9 @@ func startApiServer(bot *telegram.TipBot) {
 	s.AppendRoute(`/lndhub/ext/{.*}`, hub.Handle)
 	s.AppendRoute(`/lndhub/ext`, hub.Handle)
 
+	apiService := api.ApiService{}
+	s.AppendRoute(`/api`, apiService.Handler)
+
 	// start internal admin server
 	adminService := admin.New(bot)
 	internalAdminServer := api.NewServer("0.0.0.0:6060")
