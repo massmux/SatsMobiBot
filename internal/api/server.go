@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"gorm.io/gorm"
 	"net/http"
 	"time"
 
@@ -41,6 +42,12 @@ func (w *Server) ListenAndServe() {
 }
 func (w *Server) PathPrefix(path string, handler http.Handler) {
 	w.router.PathPrefix(path).Handler(handler)
+}
+func (w *Server) AppendAuthorizedRoute(path string, authType AuthType, database *gorm.DB, handler func(http.ResponseWriter, *http.Request), methods ...string) {
+	r := w.router.HandleFunc(path, LoggingMiddleware("API", AuthorizationMiddleware(database, authType, handler)))
+	if len(methods) > 0 {
+		r.Methods(methods...)
+	}
 }
 func (w *Server) AppendRoute(path string, handler func(http.ResponseWriter, *http.Request), methods ...string) {
 	r := w.router.HandleFunc(path, LoggingMiddleware("API", handler))
