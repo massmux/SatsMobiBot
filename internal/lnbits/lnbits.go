@@ -1,6 +1,7 @@
 package lnbits
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/imroc/req"
@@ -131,7 +132,7 @@ func (c Client) Info(w Wallet) (wtx Wallet, err error) {
 	return
 }
 
-// Info returns wallet payments
+// Payments returns wallet payments
 func (c Client) Payments(w Wallet) (wtx Payments, err error) {
 	// custom header with invoice key
 	invoiceHeader := req.Header{
@@ -152,6 +153,30 @@ func (c Client) Payments(w Wallet) (wtx Payments, err error) {
 	}
 
 	err = resp.ToJSON(&wtx)
+	return
+}
+
+// Payment state of a payment
+func (c Client) Payment(w Wallet, payment_hash string) (payment Payment, err error) {
+	// custom header with invoice key
+	invoiceHeader := req.Header{
+		"Content-Type": "application/json",
+		"Accept":       "application/json",
+		"X-Api-Key":    w.Inkey,
+	}
+	resp, err := req.Get(c.url+fmt.Sprintf("/api/v1/payments/%s", payment_hash), invoiceHeader, nil)
+	if err != nil {
+		return
+	}
+
+	if resp.Response().StatusCode >= 300 {
+		var reqErr Error
+		resp.ToJSON(&reqErr)
+		err = reqErr
+		return
+	}
+
+	err = resp.ToJSON(&payment)
 	return
 }
 
