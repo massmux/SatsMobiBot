@@ -59,3 +59,14 @@ func (bot *TipBot) lndhubHandler(ctx intercept.Context) (intercept.Context, erro
 	// NewMessage(linkmsg, WithDuration(time.Second*time.Duration(internal.Configuration.Telegram.MessageDisposeDuration), bot))
 	return ctx, nil
 }
+
+func (bot *TipBot) apiHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
+	if internal.Configuration.Lnbits.LnbitsPublicUrl == "" {
+		bot.trySendMessage(m.Sender, Translate(ctx, "couldNotLinkMessage"))
+		return ctx, fmt.Errorf("invalid configuration")
+	}
+	// check and print all commands
+	bot.anyTextHandler(ctx)
+	return ctx, nil
+}

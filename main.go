@@ -70,6 +70,7 @@ func startApiServer(bot *telegram.TipBot) {
 	s.AppendAuthorizedRoute(`/api/v1/paymentstatus/{payment_hash}`, api.AuthTypeBasic, bot.DB.Users, apiService.PaymentStatus, http.MethodPost)
 	s.AppendAuthorizedRoute(`/api/v1/invoicestatus/{payment_hash}`, api.AuthTypeBasic, bot.DB.Users, apiService.InvoiceStatus, http.MethodPost)
 	s.AppendAuthorizedRoute(`/api/v1/payinvoice`, api.AuthTypeBasic, bot.DB.Users, apiService.PayInvoice, http.MethodPost)
+	s.AppendAuthorizedRoute(`/api/v1/invoicestream`, api.AuthTypeBasic, bot.DB.Users, apiService.InvoiceStream, http.MethodGet)
 	s.AppendAuthorizedRoute(`/api/v1/createinvoice`, api.AuthTypeBasic, bot.DB.Users, apiService.CreateInvoice, http.MethodPost)
 	s.AppendAuthorizedRoute(`/api/v1/balance`, api.AuthTypeBasic, bot.DB.Users, apiService.Balance, http.MethodGet)
 

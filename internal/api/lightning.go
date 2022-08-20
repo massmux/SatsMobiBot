@@ -2,12 +2,15 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	"github.com/gorilla/mux"
+	"github.com/r3labs/sse"
 )
 
 type Service struct {
@@ -118,4 +121,43 @@ func (s Service) InvoiceStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(payment)
+}
+
+type InvoiceStream struct {
+	CheckingID  string `json:"checking_id"`
+	Pending     bool   `json:"pending"`
+	Amount      int    `json:"amount"`
+	Fee         int    `json:"fee"`
+	Memo        string `json:"memo"`
+	Time        int    `json:"time"`
+	Bolt11      string `json:"bolt11"`
+	Preimage    string `json:"preimage"`
+	PaymentHash string `json:"payment_hash"`
+	Extra       struct {
+	} `json:"extra"`
+	WalletID      string      `json:"wallet_id"`
+	Webhook       string      `json:"webhook"`
+	WebhookStatus interface{} `json:"webhook_status"`
+}
+
+func (s Service) InvoiceStream(w http.ResponseWriter, r *http.Request) {
+	user := telegram.LoadUser(r.Context())
+	w.Header().Set("Content-Type", "application/stream+json")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	flusher, err := w.(http.Flusher)
+	if !err {
+		http.Error(w, "Streaming unsupported!", http.StatusInternalServerError)
+		return
+	}
+
+	client := sse.NewClient(fmt.Sprintf("%s/api/v1/payments/sse", internal.Configuration.Lnbits.Url))
+	client.Headers = map[string]string{"X-Api-Key": user.Wallet.Inkey}
+	client.Subscribe("", func(msg *sse.Event) {
+		if msg.Data != nil {
+			fmt.Fprintf(w, "%s\n", string(msg.Data))
+			flusher.Flush()
+		}
+	})
+	time.Sleep(time.Second * 5)
 }

@@ -24,8 +24,8 @@ func NewServer(address string) *Server {
 	srv := &http.Server{
 		Addr: address,
 		// Good practice: enforce timeouts for servers you create!
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 90 * time.Second,
+		ReadTimeout:  90 * time.Second,
 	}
 	apiServer := &Server{
 		httpServer: srv,

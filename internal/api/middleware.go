@@ -53,13 +53,13 @@ func AuthorizationMiddleware(database *gorm.DB, authType AuthType, next http.Han
 			return
 		}
 		// then we check whether the "normal" password provided is in the database (it should be not if the user is banned)
+
 		user := &lnbits.User{}
 		tx := database.Where("wallet_adminkey = ? COLLATE NOCASE", password).First(user)
 		if tx.Error != nil {
 			tx = database.Where("wallet_inkey = ? COLLATE NOCASE", password).First(user)
-			log.Warnf("[AuthorizationMiddleware] Could not get wallet admin key %s: %v", password, tx.Error)
 			if tx.Error != nil {
-				log.Warnf("[AuthorizationMiddleware] need admin key to pay invoice %s: %v", password, tx.Error)
+				log.Warnf("[AuthorizationMiddleware] could not load key: %v", tx.Error)
 				return
 			}
 			if r.URL.Path == "/api/v1/payinvoice" {
@@ -67,7 +67,8 @@ func AuthorizationMiddleware(database *gorm.DB, authType AuthType, next http.Han
 				return
 			}
 		}
-		log.Debugf("[AuthorizationMiddleware] User: %s", telegram.GetUserStr(user.Telegram))
+
+		log.Debugf("[AuthorizationMiddleware] User: %s Path: %s", telegram.GetUserStr(user.Telegram), r.URL.Path)
 		r = r.WithContext(context.WithValue(r.Context(), "user", user))
 		next.ServeHTTP(w, r)
 	}
