@@ -123,44 +123,41 @@ func (s Service) InvoiceStatus(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(payment)
 }
 
+type InvoiceStream struct {
+	CheckingID  string `json:"checking_id"`
+	Pending     bool   `json:"pending"`
+	Amount      int    `json:"amount"`
+	Fee         int    `json:"fee"`
+	Memo        string `json:"memo"`
+	Time        int    `json:"time"`
+	Bolt11      string `json:"bolt11"`
+	Preimage    string `json:"preimage"`
+	PaymentHash string `json:"payment_hash"`
+	Extra       struct {
+	} `json:"extra"`
+	WalletID      string      `json:"wallet_id"`
+	Webhook       string      `json:"webhook"`
+	WebhookStatus interface{} `json:"webhook_status"`
+}
+
 func (s Service) InvoiceStream(w http.ResponseWriter, r *http.Request) {
 	user := telegram.LoadUser(r.Context())
-
-	q := r.URL.Query()
-	q.Add("stream", user.Wallet.Inkey)
-	r.URL.RawQuery = q.Encode()
-	client := sse.NewClient("http://localhost:5050/api/v1/payments/sse")
-	// custom header with invoice key
-	// invoiceHeader := req.Header{
-	// 	"X-Api-Key": user.Wallet.Inkey,
-	// }
-	client.Headers = map[string]string{"X-Api-Key": user.Wallet.Inkey}
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		return
-	}
-	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Content-Type", "application/stream+json")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
+	flusher, err := w.(http.Flusher)
+	if !err {
+		http.Error(w, "Streaming unsupported!", http.StatusInternalServerError)
+		return
+	}
 
+	client := sse.NewClient("http://localhost:5050/api/v1/payments/sse")
+	client.Headers = map[string]string{"X-Api-Key": user.Wallet.Inkey}
 	client.Subscribe("", func(msg *sse.Event) {
-		// Got some data!
-
-		if msg.ID != nil && len(msg.ID) > 0 {
-			fmt.Fprintf(w, "id: %s\n", msg.ID)
-		}
-		if msg.Event != nil {
-			n, err := fmt.Fprintf(w, "event: %s\n", msg.Event)
-			if err != nil {
-				fmt.Println(err)
-				fmt.Println(n)
-				return
-			}
-		}
 		if msg.Data != nil {
-			fmt.Fprintf(w, "data: %s\n", msg.Event)
+			fmt.Fprintf(w, "%s\n", string(msg.Data))
+			flusher.Flush()
 		}
-		flusher.Flush()
 	})
 	time.Sleep(time.Second * 5)
 }
