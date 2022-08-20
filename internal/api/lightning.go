@@ -151,7 +151,7 @@ func (s Service) InvoiceStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := sse.NewClient("http://localhost:5050/api/v1/payments/sse")
+	client := sse.NewClient(fmt.Sprintf("%s/api/v1/payments/sse", internal.Configuration.Lnbits.Url))
 	client.Headers = map[string]string{"X-Api-Key": user.Wallet.Inkey}
 	client.Subscribe("", func(msg *sse.Event) {
 		if msg.Data != nil {
