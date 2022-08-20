@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -125,26 +126,39 @@ func (s Service) InvoiceStatus(w http.ResponseWriter, r *http.Request) {
 func (s Service) InvoiceStream(w http.ResponseWriter, r *http.Request) {
 	user := telegram.LoadUser(r.Context())
 
-	events := make(chan *sse.Event)
-
-	client := sse.NewClient("https://localhost:5002/api/v1/payments/sse")
+	q := r.URL.Query()
+	q.Add("stream", user.Wallet.Inkey)
+	r.URL.RawQuery = q.Encode()
+	client := sse.NewClient("http://localhost:5050/api/v1/payments/sse")
 	// custom header with invoice key
 	// invoiceHeader := req.Header{
 	// 	"X-Api-Key": user.Wallet.Inkey,
 	// }
 	client.Headers = map[string]string{"X-Api-Key": user.Wallet.Inkey}
-
-	client.Subscribe("ping", func(msg *sse.Event) {
-		// Got some data!
-		fmt.Println(msg.Data)
-	})
-
-	go client.SubscribeChan("payment-received", events)
-
-	event := <-events
-	fmt.Println("Event", event)
-
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		return
+	}
 	w.Header().Set("Content-Type", "text/event-stream")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(event)
+	flusher.Flush()
+	client.Subscribe("", func(msg *sse.Event) {
+		// Got some data!
+
+		if msg.ID != nil && len(msg.ID) > 0 {
+			fmt.Fprintf(w, "id: %s\n", msg.ID)
+		}
+		if msg.Event != nil {
+			n, err := fmt.Fprintf(w, "event: %s\n", msg.Event)
+			if err != nil {
+				fmt.Println(err)
+				fmt.Println(n)
+				return
+			}
+		}
+		if msg.Data != nil {
+			fmt.Fprintf(w, "%s", string(msg.Data))
+		}
+		flusher.Flush()
+	})
+	time.Sleep(time.Second * 5)
 }
