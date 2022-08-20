@@ -140,7 +140,9 @@ func (s Service) InvoiceStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "text/event-stream")
-	flusher.Flush()
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
 	client.Subscribe("", func(msg *sse.Event) {
 		// Got some data!
 
@@ -156,7 +158,7 @@ func (s Service) InvoiceStream(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if msg.Data != nil {
-			fmt.Fprintf(w, "%s", string(msg.Data))
+			fmt.Fprintf(w, "data: %s\n", msg.Event)
 		}
 		flusher.Flush()
 	})
