@@ -2,12 +2,14 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	"github.com/gorilla/mux"
+	"github.com/r3labs/sse"
 )
 
 type Service struct {
@@ -118,4 +120,31 @@ func (s Service) InvoiceStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(payment)
+}
+
+func (s Service) InvoiceStream(w http.ResponseWriter, r *http.Request) {
+	user := telegram.LoadUser(r.Context())
+
+	events := make(chan *sse.Event)
+
+	client := sse.NewClient("https://localhost:5002/api/v1/payments/sse")
+	// custom header with invoice key
+	// invoiceHeader := req.Header{
+	// 	"X-Api-Key": user.Wallet.Inkey,
+	// }
+	client.Headers = map[string]string{"X-Api-Key": user.Wallet.Inkey}
+
+	client.Subscribe("ping", func(msg *sse.Event) {
+		// Got some data!
+		fmt.Println(msg.Data)
+	})
+
+	go client.SubscribeChan("payment-received", events)
+
+	event := <-events
+	fmt.Println("Event", event)
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(event)
 }
