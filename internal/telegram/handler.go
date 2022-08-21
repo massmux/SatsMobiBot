@@ -321,7 +321,6 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			Endpoints: []interface{}{"/tipjar", "/spendendose"},
 			Handler:   bot.tipjarHandler,
 			Interceptor: &Interceptor{
-
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -337,7 +336,6 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			Endpoints: []interface{}{"/help", &btnHelpMainMenu},
 			Handler:   bot.helpHandler,
 			Interceptor: &Interceptor{
-
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
@@ -385,8 +383,8 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			Endpoints: []interface{}{"/advanced"},
 			Handler:   bot.advancedHelpHandler,
 			Interceptor: &Interceptor{
-
 				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
@@ -401,8 +399,24 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			Endpoints: []interface{}{"/link"},
 			Handler:   bot.lndhubHandler,
 			Interceptor: &Interceptor{
-
 				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{"/api"},
+			Handler:   bot.apiHandler,
+			Interceptor: &Interceptor{
+				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
@@ -417,8 +431,8 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			Endpoints: []interface{}{"/lnurl"},
 			Handler:   bot.lnurlHandler,
 			Interceptor: &Interceptor{
-
 				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
@@ -434,7 +448,6 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			Endpoints: []interface{}{"/group"},
 			Handler:   bot.groupHandler,
 			Interceptor: &Interceptor{
-
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,

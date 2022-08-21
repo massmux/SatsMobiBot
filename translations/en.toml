@@ -264,12 +264,22 @@ lnurlWithdrawSuccess             = """✅ Withdrawal requested."""
 
 walletConnectMessage = """🔗 *Link your wallet*
 
-⚠️ Never share the URL or the QR code with anyone or they will be able to access your funds.
+⚠️ Never share the URL or the QR code with anyone or they will be able to access your funds. Use /api for your API keys.
 
 - *BlueWallet:* Press *New wallet*, *Import wallet*, *Scan or import a file*, and scan the QR code.
 - *Zeus:* Copy the URL below, press *Add a new node*, select *LNDHub* as Node interface, enter the URL, *Save Node Config*."""
 couldNotLinkMessage             = """🚫 Couldn't link your wallet. Please try again later."""
 linkHiddenMessage               = """🔍 Link hidden. Enter /link to see it again."""
+
+# API
+
+apiConnectMessage = """🔗 *Your API keys*
+
+⚠️ Never share these keys with anyone or they will be able to access your funds. Use /link to link your wallet.
+
+- *Admin key:* `%s`
+- *Invoice key:* `%s`"""
+apiHiddenMessage               = """🔍 Keys hidden. Enter /api to see them again."""
 
 # FAUCET
 
