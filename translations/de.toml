@@ -260,11 +260,22 @@ lnurlWithdrawSuccess             = """✅ Abhebung angefordert."""
 
 walletConnectMessage = """🔗 *Verbinde dein Wallet*
 
-⚠️ Teile diese URL und den QR code mit niemandem! Jeder, der darauf Zugriff hat, hat auch Zugriff auf dein Konto.
+⚠️ Teile diese URL und den QR code mit niemandem! Jeder, der darauf Zugriff hat, hat auch Zugriff auf dein Konto. Nutze /api für deine API keys.
 
 - *BlueWallet:* Drücke *New wallet*, *Import wallet*, *Scan or import a file*, und scanne den QR Code.
 - *Zeus:* Kopiere die URL unten, drücke *Add a new node*, *Import* (die URL), *Save Node Config*."""
 couldNotLinkMessage = """🚫 Konnte dein Wallet nicht verbinden. Bitte versuche es später noch einmal."""
+linkHiddenMessage               = """🔍 Link versteckt. Gebe /link ein um ihn wieder zu sehen."""
+
+# API
+
+walletConnectMessage = """🔗 *Deine API Keys*
+
+⚠️ Teile diese Key mit niemandem! Jeder, der darauf Zugriff hat, hat auch Zugriff auf dein Konto. Nutze /link um dein Wallet zu verbinden.
+
+- *Admin key:* `%s`
+- *Invoice key:* `%s`"""
+apiHiddenMessage               = """🔍 Keys versteckt. Gebe /api ein um sie wieder zu sehen."""
 
 # FAUCET
 

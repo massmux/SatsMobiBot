@@ -20,22 +20,9 @@ func (bot *TipBot) lndhubHandler(ctx intercept.Context) (intercept.Context, erro
 		bot.trySendMessage(m.Sender, Translate(ctx, "couldNotLinkMessage"))
 		return ctx, fmt.Errorf("invalid configuration")
 	}
-	// check and print all commands
-	bot.anyTextHandler(ctx)
-	// reply only in private message
-	if m.Chat.Type != tb.ChatPrivate {
-		// delete message
-		bot.tryDeleteMessage(m)
-	}
 	// first check whether the user is initialized
 	fromUser := LoadUser(ctx)
-	bot.trySendMessage(m.Sender, Translate(ctx, "walletConnectMessage"))
-
-	// do not respond to banned users
-	if bot.UserIsBanned(fromUser) {
-		log.Warnln("[lndhubHandler] user is banned. not responding.")
-		return ctx, fmt.Errorf("user is banned")
-	}
+	linkmsg := bot.trySendMessageEditable(m.Sender, Translate(ctx, "walletConnectMessage"))
 
 	lndhubUrl := fmt.Sprintf("lndhub://admin:%s@%slndhub/ext/", fromUser.Wallet.Adminkey, internal.Configuration.Lnbits.LnbitsPublicUrl)
 
@@ -48,25 +35,24 @@ func (bot *TipBot) lndhubHandler(ctx intercept.Context) (intercept.Context, erro
 	}
 
 	// send the link to the user
-	linkmsg := bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lndhubUrl)})
-
+	qrmsg := bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lndhubUrl)})
+	// auto delete
 	go func() {
 		time.Sleep(time.Second * 60)
-		bot.tryDeleteMessage(linkmsg)
-		bot.trySendMessage(m.Sender, Translate(ctx, "linkHiddenMessage"), tb.Silent)
+		bot.tryDeleteMessage(qrmsg)
+		bot.tryEditMessage(linkmsg, Translate(ctx, "linkHiddenMessage"), tb.Silent)
 	}()
-	// auto delete the message
-	// NewMessage(linkmsg, WithDuration(time.Second*time.Duration(internal.Configuration.Telegram.MessageDisposeDuration), bot))
 	return ctx, nil
 }
 
 func (bot *TipBot) apiHandler(ctx intercept.Context) (intercept.Context, error) {
 	m := ctx.Message()
-	if internal.Configuration.Lnbits.LnbitsPublicUrl == "" {
-		bot.trySendMessage(m.Sender, Translate(ctx, "couldNotLinkMessage"))
-		return ctx, fmt.Errorf("invalid configuration")
-	}
-	// check and print all commands
-	bot.anyTextHandler(ctx)
+	fromUser := LoadUser(ctx)
+	apimesg := bot.trySendMessageEditable(m.Sender, fmt.Sprintf(Translate(ctx, "apiConnectMessage"), fromUser.Wallet.Adminkey, fromUser.Wallet.Inkey))
+	// auto delete
+	go func() {
+		time.Sleep(time.Second * 60)
+		bot.tryEditMessage(apimesg, Translate(ctx, "apiHiddenMessage"))
+	}()
 	return ctx, nil
 }
