@@ -58,7 +58,7 @@ You can either use your own LNbits instance (recommended) or create an account a
 - `lnbits_webhook_server`: URL that lnbits can reach the bot with. This is used for creating webhooks from LNbits to receive notifications about payments (optional).
 - `message_dispose_duration`: Duration in seconds after which `/tip` are deleted from a channel (only if the bot is channel admin).
 - `http_proxy` uses a proxy for all LNURL-related outbound requests (optional).
-- `lnurl_public_host_name` is the public URL of your lnbits/LndHub (for BlueWallet/Zap support, optional).
+- `lnurl_public_host_name` is the public URL of your lnbits/LndHub (for BlueWallet/Zeus support, optional).
 - `lnurl_server` is the public URL for inbound LNURL payments and your lightning address host (optional).
 
 ## Features
@@ -116,7 +116,7 @@ Users can send and receive via . For this to work, you need to set the `lnurl_pu
 
 Every user has a [Lightning Address](https://lightningaddress.com/) a la `username@host.com` with which they can send to via `/send <amount> <user@domain.com>` and receive from other wallets.
 
-### Link to BlueWallet or Zap
+### Link to BlueWallet or Zeus
 
 Every user can link their wallet to an external app like [Bluewallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/) by using the command `/link`. If you host the bot, you will have to enable the LndHub extension in LNbits. You also need to edit the `lnbits_public_url` entry in `config.yaml` accordingly to an address that can be reached by the user's wallet (Tor should be fine as well).
 
