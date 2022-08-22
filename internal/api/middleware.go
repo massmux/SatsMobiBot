@@ -95,7 +95,7 @@ func parseAuth(authType AuthType, auth string) (username, password string, ok bo
 			return
 		}
 		if authType.Decoder != nil {
-			c, err := base64.StdEncoding.DecodeString(auth[len(prefix):])
+			c, err := authType.Decoder(auth[len(prefix):])
 			if err != nil {
 				return
 			}
