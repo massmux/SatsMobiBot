@@ -85,7 +85,7 @@ func AuthorizationMiddleware(database *gorm.DB, authType AuthType, accessType Ac
 			return
 		}
 
-		log.Debugf("[api] User: %s Endpoint: %s %s", telegram.GetUserStr(user.Telegram), r.Method, r.URL.Path)
+		log.Debugf("[api] User: %s Endpoint: %s %s %s", telegram.GetUserStr(user.Telegram), r.Method, r.URL.Path, r.URL.RawQuery)
 		r = r.WithContext(context.WithValue(r.Context(), "user", user))
 		next.ServeHTTP(w, r)
 	}
