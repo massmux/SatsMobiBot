@@ -60,8 +60,7 @@ func startApiServer(bot *telegram.TipBot) {
 
 	// append lndhub ctx functions
 	hub := lndhub.New(bot)
-	//s.AppendRoute(`/lndhub/ext/{.*}`, hub.Handle)
-	// s.AppendRoute(`/lndhub/ext`, hub.Handle)
+	s.AppendAuthorizedRoute(`/lndhub/ext/auth`, api.AuthTypeNone, api.AccessKeyTypeNone, bot.DB.Users, hub.Handle)
 	s.AppendAuthorizedRoute(`/lndhub/ext/{.*}`, api.AuthTypeBearerBase64, api.AccessKeyTypeAdmin, bot.DB.Users, hub.Handle)
 	s.AppendAuthorizedRoute(`/lndhub/ext`, api.AuthTypeBearerBase64, api.AccessKeyTypeAdmin, bot.DB.Users, hub.Handle)
 

@@ -31,6 +31,7 @@ type AuthType struct {
 
 var AuthTypeBasic = AuthType{Type: "Basic"}
 var AuthTypeBearerBase64 = AuthType{Type: "Bearer", Decoder: base64.StdEncoding.DecodeString}
+var AuthTypeNone = AuthType{}
 
 // invoice key or admin key requirement
 type AccessKeyType struct {
@@ -43,6 +44,10 @@ var AccessKeyTypeNone = AccessKeyType{Type: "none"} // no authorization required
 
 func AuthorizationMiddleware(database *gorm.DB, authType AuthType, accessType AccessKeyType, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if accessType.Type == "none" {
+			next.ServeHTTP(w, r)
+			return
+		}
 		auth := r.Header.Get("Authorization")
 		// check if the user is banned
 		if auth == "" {
