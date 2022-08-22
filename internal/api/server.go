@@ -2,9 +2,10 @@ package api
 
 import (
 	"encoding/json"
-	"gorm.io/gorm"
 	"net/http"
 	"time"
+
+	"gorm.io/gorm"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -33,7 +34,7 @@ func NewServer(address string) *Server {
 	apiServer.router = mux.NewRouter()
 	apiServer.httpServer.Handler = apiServer.router
 	go apiServer.httpServer.ListenAndServe()
-	log.Infof("[API] Server started at %s", address)
+	log.Infof("[api] Server started at %s", address)
 	return apiServer
 }
 
@@ -43,8 +44,8 @@ func (w *Server) ListenAndServe() {
 func (w *Server) PathPrefix(path string, handler http.Handler) {
 	w.router.PathPrefix(path).Handler(handler)
 }
-func (w *Server) AppendAuthorizedRoute(path string, authType AuthType, database *gorm.DB, handler func(http.ResponseWriter, *http.Request), methods ...string) {
-	r := w.router.HandleFunc(path, LoggingMiddleware("API", AuthorizationMiddleware(database, authType, handler)))
+func (w *Server) AppendAuthorizedRoute(path string, authType AuthType, accessType AccessKeyType, database *gorm.DB, handler func(http.ResponseWriter, *http.Request), methods ...string) {
+	r := w.router.HandleFunc(path, LoggingMiddleware("API", AuthorizationMiddleware(database, authType, accessType, handler)))
 	if len(methods) > 0 {
 		r.Methods(methods...)
 	}

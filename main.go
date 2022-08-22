@@ -60,23 +60,23 @@ func startApiServer(bot *telegram.TipBot) {
 
 	// append lndhub ctx functions
 	hub := lndhub.New(bot)
-	s.AppendRoute(`/lndhub/ext/{.*}`, hub.Handle)
-	s.AppendRoute(`/lndhub/ext`, hub.Handle)
-	//s.AppendAuthorizedRoute(`/lndhub/ext/{.*}`, api.AuthTypeBearer, bot.DB.Users, hub.Handle)
-	//s.AppendAuthorizedRoute(`/lndhub/ext`, api.AuthTypeBearer, bot.DB.Users, hub.Handle)
+	//s.AppendRoute(`/lndhub/ext/{.*}`, hub.Handle)
+	// s.AppendRoute(`/lndhub/ext`, hub.Handle)
+	s.AppendAuthorizedRoute(`/lndhub/ext/{.*}`, api.AuthTypeBearerBase64, api.AccessKeyTypeAdmin, bot.DB.Users, hub.Handle)
+	s.AppendAuthorizedRoute(`/lndhub/ext`, api.AuthTypeBearerBase64, api.AccessKeyTypeAdmin, bot.DB.Users, hub.Handle)
 
 	// starting api service
 	apiService := api.Service{Bot: bot}
-	s.AppendAuthorizedRoute(`/api/v1/paymentstatus/{payment_hash}`, api.AuthTypeBasic, bot.DB.Users, apiService.PaymentStatus, http.MethodPost)
-	s.AppendAuthorizedRoute(`/api/v1/invoicestatus/{payment_hash}`, api.AuthTypeBasic, bot.DB.Users, apiService.InvoiceStatus, http.MethodPost)
-	s.AppendAuthorizedRoute(`/api/v1/payinvoice`, api.AuthTypeBasic, bot.DB.Users, apiService.PayInvoice, http.MethodPost)
-	s.AppendAuthorizedRoute(`/api/v1/invoicestream`, api.AuthTypeBasic, bot.DB.Users, apiService.InvoiceStream, http.MethodGet)
-	s.AppendAuthorizedRoute(`/api/v1/createinvoice`, api.AuthTypeBasic, bot.DB.Users, apiService.CreateInvoice, http.MethodPost)
-	s.AppendAuthorizedRoute(`/api/v1/balance`, api.AuthTypeBasic, bot.DB.Users, apiService.Balance, http.MethodGet)
+	s.AppendAuthorizedRoute(`/api/v1/paymentstatus/{payment_hash}`, api.AuthTypeBasic, api.AccessKeyTypeInvoice, bot.DB.Users, apiService.PaymentStatus, http.MethodPost)
+	s.AppendAuthorizedRoute(`/api/v1/invoicestatus/{payment_hash}`, api.AuthTypeBasic, api.AccessKeyTypeInvoice, bot.DB.Users, apiService.InvoiceStatus, http.MethodPost)
+	s.AppendAuthorizedRoute(`/api/v1/payinvoice`, api.AuthTypeBasic, api.AccessKeyTypeAdmin, bot.DB.Users, apiService.PayInvoice, http.MethodPost)
+	s.AppendAuthorizedRoute(`/api/v1/invoicestream`, api.AuthTypeBasic, api.AccessKeyTypeInvoice, bot.DB.Users, apiService.InvoiceStream, http.MethodGet)
+	s.AppendAuthorizedRoute(`/api/v1/createinvoice`, api.AuthTypeBasic, api.AccessKeyTypeInvoice, bot.DB.Users, apiService.CreateInvoice, http.MethodPost)
+	s.AppendAuthorizedRoute(`/api/v1/balance`, api.AuthTypeBasic, api.AccessKeyTypeInvoice, bot.DB.Users, apiService.Balance, http.MethodGet)
 
 	// start internal admin server
 	adminService := admin.New(bot)
-	internalAdminServer := api.NewServer("0.0.0.0:6060")
+	internalAdminServer := api.NewServer(internal.Configuration.Bot.AdminAPIHost)
 	internalAdminServer.AppendRoute("/mutex", mutex.ServeHTTP)
 	internalAdminServer.AppendRoute("/mutex/unlock/{id}", mutex.UnlockHTTP)
 	internalAdminServer.AppendRoute("/admin/ban/{id}", adminService.BanUser)
@@ -85,9 +85,6 @@ func startApiServer(bot *telegram.TipBot) {
 
 }
 
-func withMiddleware(mw func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
-	return mw
-}
 func withRecovery() {
 	if r := recover(); r != nil {
 		log.Errorln("Recovered panic: ", r)

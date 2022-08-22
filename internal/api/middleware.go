@@ -30,15 +30,24 @@ type AuthType struct {
 }
 
 var AuthTypeBasic = AuthType{Type: "Basic"}
-var AuthTypeBearerBase64 = AuthType{Type: "Basic", Decoder: base64.StdEncoding.DecodeString}
+var AuthTypeBearerBase64 = AuthType{Type: "Bearer", Decoder: base64.StdEncoding.DecodeString}
 
-func AuthorizationMiddleware(database *gorm.DB, authType AuthType, next http.HandlerFunc) http.HandlerFunc {
+// invoice key or admin key requirement
+type AccessKeyType struct {
+	Type string
+}
+
+var AccessKeyTypeInvoice = AccessKeyType{Type: "invoice"}
+var AccessKeyTypeAdmin = AccessKeyType{Type: "admin"}
+var AccessKeyTypeNone = AccessKeyType{Type: "none"} // no authorization required
+
+func AuthorizationMiddleware(database *gorm.DB, authType AuthType, accessType AccessKeyType, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
 		// check if the user is banned
 		if auth == "" {
 			w.WriteHeader(401)
-			log.Warn("[AuthorizationMiddleware] no auth")
+			log.Warn("[api] no auth")
 			return
 		}
 		_, password, ok := parseAuth(authType, auth)
@@ -49,26 +58,29 @@ func AuthorizationMiddleware(database *gorm.DB, authType AuthType, next http.Han
 		// first we make sure that the password is not already "banned_"
 		if strings.Contains(password, "_") || strings.HasPrefix(password, "banned_") {
 			w.WriteHeader(401)
-			log.Warnf("[AuthorizationMiddleware] Banned user %s. Not forwarding request", password)
+			log.Warnf("[api] Banned user %s. Not forwarding request", password)
 			return
 		}
 		// then we check whether the "normal" password provided is in the database (it should be not if the user is banned)
 
 		user := &lnbits.User{}
-		tx := database.Where("wallet_adminkey = ? COLLATE NOCASE", password).First(user)
-		if tx.Error != nil {
+		var tx *gorm.DB
+		if accessType.Type == "admin" {
+			tx = database.Where("wallet_adminkey = ? COLLATE NOCASE", password).First(user)
+		} else if accessType.Type == "invoice" {
 			tx = database.Where("wallet_inkey = ? COLLATE NOCASE", password).First(user)
-			if tx.Error != nil {
-				log.Warnf("[AuthorizationMiddleware] could not load key: %v", tx.Error)
-				return
-			}
-			if r.URL.Path == "/api/v1/payinvoice" {
-				log.Warnf("[AuthorizationMiddleware] need admin key to pay invoice %s: %v", password, tx.Error)
-				return
-			}
+		} else {
+			log.Errorf("[api] route without access type")
+			w.WriteHeader(401)
+			return
+		}
+		if tx.Error != nil {
+			log.Warnf("[api] could not load access key: %v", tx.Error)
+			w.WriteHeader(401)
+			return
 		}
 
-		log.Debugf("[AuthorizationMiddleware] User: %s Path: %s", telegram.GetUserStr(user.Telegram), r.URL.Path)
+		log.Debugf("[api] User: %s Endpoint: %s %s", telegram.GetUserStr(user.Telegram), r.Method, r.URL.Path)
 		r = r.WithContext(context.WithValue(r.Context(), "user", user))
 		next.ServeHTTP(w, r)
 	}

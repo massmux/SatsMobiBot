@@ -30,6 +30,7 @@ type BotConfiguration struct {
 	LNURLHostName  string              `yaml:"lnurl_public_host_name"`
 	LNURLHostUrl   *url.URL            `yaml:"-"`
 	LNURLSendImage bool                `yaml:"lnurl_image"`
+	AdminAPIHost   string              `yaml:"admin_api_host"`
 }
 
 type TelegramConfiguration struct {
