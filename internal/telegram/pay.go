@@ -3,8 +3,9 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 
@@ -195,7 +196,7 @@ func (bot *TipBot) confirmPayHandler(ctx intercept.Context) (intercept.Context, 
 		payData.Message,
 		&tb.ReplyMarkup{
 			InlineKeyboard: [][]tb.InlineButton{
-				{tb.InlineButton{Text: i18n.Translate(payData.LanguageCode, "lnurlGettingUserMessage")}},
+				{tb.InlineButton{Unique: "attempt_payment", Text: i18n.Translate(payData.LanguageCode, "lnurlGettingUserMessage")}},
 			},
 		},
 	)
