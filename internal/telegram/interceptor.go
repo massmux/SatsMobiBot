@@ -59,10 +59,9 @@ func (bot TipBot) idInterceptor(ctx intercept.Context) (intercept.Context, error
 }
 
 // answerCallbackInterceptor will answer the callback with the given text in the context
-func (bot TipBot) answerCallbackInterceptor(ctx context.Context, i interface{}) (context.Context, error) {
-	switch i.(type) {
-	case *tb.Callback:
-		c := i.(*tb.Callback)
+func (bot TipBot) answerCallbackInterceptor(ctx intercept.Context) (intercept.Context, error) {
+	c := ctx.Callback()
+	if c != nil {
 		ctxcr := ctx.Value("callback_response")
 		var res []*tb.CallbackResponse
 		if ctxcr != nil {
