@@ -59,7 +59,7 @@
         }
 
         section {
-            padding: 15px 15px 65px;
+            padding: 5px 5px 65px;
             text-align: center;
         }
 
@@ -170,6 +170,13 @@
             font-size: 12px;
         }
 
+        h1 { 
+            font-size: 120%; 
+            word-wrap: break-word;
+            margin: 0.1em;
+            margin-bottom: 0.3em;
+        }
+
         .qr-container {
         position: relative;
         display: flex;
@@ -199,7 +206,7 @@
 <body>
 
 <section>
-    <h2>{{.Username}}@ln.tips</h2>
+    <h1>{{.Username}}@ln.tips</h1>
 
     <div class="qr-container">
         <div class="qr" id="qr">
