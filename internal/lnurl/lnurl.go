@@ -184,7 +184,7 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 		return &lnurl.LNURLPayValues{
 			LNURLResponse: lnurl.LNURLResponse{
 				Status: api.StatusError,
-				Reason: fmt.Sprintf("Amount out of bounds (min: %d mSat, max: %d mSat).", MinSendable, MinSendable)},
+				Reason: fmt.Sprintf("Amount out of bounds (min: %d sat, max: %d sat).", MinSendable/1000, MaxSendable/1000)},
 		}, fmt.Errorf("amount out of bounds")
 	}
 	// check comment length
