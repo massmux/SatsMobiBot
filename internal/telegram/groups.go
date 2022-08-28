@@ -412,7 +412,7 @@ func (bot TipBot) addGroupHandler(ctx intercept.Context) (intercept.Context, err
 
 	amount := int64(0) // default amount is zero
 	if amount_str, err := getArgumentFromCommand(m.Text, 3); err == nil {
-		amount, err = getAmount(amount_str)
+		amount, err = GetAmount(amount_str)
 		if err != nil {
 			bot.trySendMessage(m.Sender, Translate(ctx, "lnurlInvalidAmountMessage"))
 			return ctx, err
