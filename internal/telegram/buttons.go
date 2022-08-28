@@ -13,10 +13,11 @@ import (
 
 // we can't use space in the label of buttons, because string splitting will mess everything up.
 const (
-	MainMenuCommandWebApp  = "⬇️ LNURL"
+	MainMenuCommandWebApp  = "⤵️ Receive"
 	MainMenuCommandBalance = "Balance"
 	MainMenuCommandInvoice = "⚡️ Invoice"
 	MainMenuCommandHelp    = "📖 Help"
+	MainMenuCommandSend    = "⤴️ Send"
 	SendMenuCommandEnter   = "👤 Enter"
 )
 
@@ -24,6 +25,7 @@ var (
 	mainMenu           = &tb.ReplyMarkup{ResizeKeyboard: true}
 	btnHelpMainMenu    = mainMenu.Text(MainMenuCommandHelp)
 	btnWebAppMainMenu  = mainMenu.Text(MainMenuCommandWebApp)
+	btnSendMainMenu    = mainMenu.Text(MainMenuCommandSend)
 	btnBalanceMainMenu = mainMenu.Text(MainMenuCommandBalance)
 	btnInvoiceMainMenu = mainMenu.Text(MainMenuCommandInvoice)
 
@@ -36,7 +38,7 @@ func init() {
 	btnBalanceMainMenu = mainMenu.Text(MainMenuCommandBalance)
 	mainMenu.Reply(
 		mainMenu.Row(btnBalanceMainMenu),
-		mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnHelpMainMenu),
+		mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnSendMainMenu),
 	)
 }
 
@@ -98,7 +100,7 @@ func (bot *TipBot) mainMenuBalanceButtonUpdate(to int64) {
 		bot.appendWebAppLinkToButton(&btnWebAppMainMenu, user)
 		mainMenu.Reply(
 			mainMenu.Row(btnBalanceMainMenu),
-			mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnHelpMainMenu),
+			mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnSendMainMenu),
 		)
 	}
 }
