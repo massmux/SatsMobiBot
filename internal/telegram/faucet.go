@@ -62,7 +62,7 @@ func (bot TipBot) createFaucet(ctx context.Context, text string, sender *tb.User
 	if err != nil {
 		return nil, errors.New(errors.DecodePerUserAmountError, err)
 	}
-	perUserAmount, err := getAmount(peruserStr)
+	perUserAmount, err := GetAmount(peruserStr)
 	if err != nil {
 		return nil, errors.New(errors.InvalidAmountError, err)
 	}

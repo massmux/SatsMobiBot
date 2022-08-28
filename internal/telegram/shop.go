@@ -166,7 +166,7 @@ func (bot *TipBot) enterShopItemPriceHandler(ctx intercept.Context) (intercept.C
 	if m.Text == "0" {
 		amount = 0
 	} else {
-		amount, err = getAmount(m.Text)
+		amount, err = GetAmount(m.Text)
 		if err != nil {
 			log.Warnf("[enterShopItemPriceHandler] %s", err.Error())
 			bot.trySendMessage(m.Sender, Translate(ctx, "lnurlInvalidAmountMessage"))

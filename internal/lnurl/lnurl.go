@@ -81,11 +81,13 @@ func (w Lnurl) Handle(writer http.ResponseWriter, request *http.Request) {
 			api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Form value 'amount' is not set"))
 			return
 		}
-		amount, parseError := strconv.Atoi(stringAmount)
-		if parseError != nil {
-			api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Couldn't cast amount to int %v", parseError))
+		amount, err := telegram.GetAmount(stringAmount)
+		if err != nil {
+			api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Couldn't cast amount to int: %v", err))
 			return
 		}
+		amount = amount * 1000 // msat
+
 		comment := request.FormValue("comment")
 		if len(comment) > CommentAllowed {
 			api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Comment is too long"))
@@ -95,7 +97,7 @@ func (w Lnurl) Handle(writer http.ResponseWriter, request *http.Request) {
 		// payer data
 		payerdata := request.FormValue("payerdata")
 		var payerData lnurl.PayerDataValues
-		err := json.Unmarshal([]byte(payerdata), &payerData)
+		err = json.Unmarshal([]byte(payerdata), &payerData)
 		if err != nil {
 			// api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Couldn't parse payerdata: %v", err))
 			fmt.Errorf("[handleLnUrl] Couldn't parse payerdata: %v", err)

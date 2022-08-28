@@ -35,11 +35,11 @@ func decodeAmountFromCommand(input string) (amount int64, err error) {
 		// log.Errorln(errmsg)
 		return 0, fmt.Errorf(errmsg)
 	}
-	amount, err = getAmount(strings.Split(input, " ")[1])
+	amount, err = GetAmount(strings.Split(input, " ")[1])
 	return amount, err
 }
 
-func getAmount(input string) (amount int64, err error) {
+func GetAmount(input string) (amount int64, err error) {
 	// convert something like 1.2k into 1200
 	if strings.HasSuffix(strings.ToLower(input), "k") {
 		fmount, err := strconv.ParseFloat(strings.TrimSpace(input[:len(input)-1]), 64)
@@ -141,7 +141,7 @@ func (bot *TipBot) enterAmountHandler(ctx intercept.Context) (intercept.Context,
 		return ctx, err
 	}
 
-	amount, err := getAmount(ctx.Message().Text)
+	amount, err := GetAmount(ctx.Message().Text)
 	if err != nil {
 		log.Warnf("[enterAmountHandler] %s", err.Error())
 		bot.trySendMessage(ctx.Message().Sender, Translate(ctx, "lnurlInvalidAmountMessage"))
