@@ -2,9 +2,10 @@ package rate
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"strconv"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 
 	"golang.org/x/time/rate"
 	tb "gopkg.in/lightningtipbot/telebot.v3"

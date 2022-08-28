@@ -31,7 +31,8 @@ const botImage = "https://avatars.githubusercontent.com/u/88730856?v=7"
 
 //go:embed static
 var templates embed.FS
-var tmpl = template.Must(template.ParseFS(templates, "static/userpage.html"))
+var userpage_tmpl = template.Must(template.ParseFS(templates, "static/userpage.html"))
+var qr_tmpl = template.Must(template.ParseFS(templates, "static/webapp.html"))
 
 var Client = &http.Client{
 	Timeout: 10 * time.Second,
@@ -67,7 +68,7 @@ func (s Service) getTelegramUserPictureURL(username string) (string, error) {
 }
 
 func (s Service) UserPageHandler(w http.ResponseWriter, r *http.Request) {
-	// https://ln.tips/.well-known/lnurlp/<username>
+	// https://ln.tips/@<username>
 	username := strings.ToLower(mux.Vars(r)["username"])
 	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, username)
 	log.Infof("[UserPage] rendering page of %s", username)
@@ -82,11 +83,29 @@ func (s Service) UserPageHandler(w http.ResponseWriter, r *http.Request) {
 		image = botImage
 	}
 
-	if err := tmpl.ExecuteTemplate(w, "userpage", struct {
+	if err := userpage_tmpl.ExecuteTemplate(w, "userpage", struct {
 		Username string
 		Image    string
 		LNURLPay string
 	}{username, image, lnurlEncode}); err != nil {
+		log.Errorf("failed to render template")
+	}
+}
+
+func (s Service) UserWebAppHandler(w http.ResponseWriter, r *http.Request) {
+	// https://ln.tips/app/<username>
+	username := strings.ToLower(mux.Vars(r)["username"])
+	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, username)
+	log.Infof("[UserPage] rendering webapp of %s", username)
+	lnurlEncode, err := lnurl.LNURLEncode(callback)
+	if err != nil {
+		log.Errorln("[UserPage]", err)
+		return
+	}
+	if err := qr_tmpl.ExecuteTemplate(w, "webapp", struct {
+		Username string
+		LNURLPay string
+	}{username, lnurlEncode}); err != nil {
 		log.Errorf("failed to render template")
 	}
 }

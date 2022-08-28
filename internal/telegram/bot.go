@@ -63,6 +63,7 @@ func newTelegramBot() *tb.Bot {
 		Token:     internal.Configuration.Telegram.ApiKey,
 		Poller:    &tb.LongPoller{Timeout: 60 * time.Second},
 		ParseMode: tb.ModeMarkdown,
+		Verbose:   false,
 	})
 	if err != nil {
 		panic(err)

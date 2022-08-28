@@ -245,23 +245,25 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 				},
 			},
 		},
-		{
-			Endpoints: []interface{}{&btnSendMainMenu},
-			Handler:   bot.keyboardSendHandler,
-			Interceptor: &Interceptor{
+		// previously, this was the send menu but it
+		// was replaced with the webapp
+		// {
+		// 	Endpoints: []interface{}{&btnWebAppMainMenu},
+		// 	Handler:   bot.keyboardSendHandler,
+		// 	Interceptor: &Interceptor{
 
-				Before: []intercept.Func{
-					bot.localizerInterceptor,
-					bot.logMessageInterceptor,
-					bot.requireUserInterceptor,
-					bot.loadReplyToInterceptor,
-					bot.lockInterceptor,
-				},
-				OnDefer: []intercept.Func{
-					bot.unlockInterceptor,
-				},
-			},
-		},
+		// 		Before: []intercept.Func{
+		// 			bot.localizerInterceptor,
+		// 			bot.logMessageInterceptor,
+		// 			bot.requireUserInterceptor,
+		// 			bot.loadReplyToInterceptor,
+		// 			bot.lockInterceptor,
+		// 		},
+		// 		OnDefer: []intercept.Func{
+		// 			bot.unlockInterceptor,
+		// 		},
+		// 	},
+		// },
 		{
 			Endpoints: []interface{}{"/transactions"},
 			Handler:   bot.transactionsHandler,
