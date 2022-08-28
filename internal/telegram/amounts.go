@@ -39,6 +39,8 @@ func decodeAmountFromCommand(input string) (amount int64, err error) {
 	return amount, err
 }
 
+// GetAmount parses an amount from a string like 1.2k or 3.50€
+// and returns the value in satoshis
 func GetAmount(input string) (amount int64, err error) {
 	// convert something like 1.2k into 1200
 	if strings.HasSuffix(strings.ToLower(input), "k") {

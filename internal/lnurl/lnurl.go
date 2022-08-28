@@ -81,12 +81,18 @@ func (w Lnurl) Handle(writer http.ResponseWriter, request *http.Request) {
 			api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Form value 'amount' is not set"))
 			return
 		}
-		amount, err := telegram.GetAmount(stringAmount)
-		if err != nil {
-			api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Couldn't cast amount to int: %v", err))
-			return
+
+		var amount int64
+		if amount, err = strconv.ParseInt(stringAmount, 10, 64); err != nil {
+			// if the value wasn't a clean msat denomination, parse it
+			amount, err = telegram.GetAmount(stringAmount)
+			if err != nil {
+				api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Couldn't cast amount to int: %v", err))
+				return
+			}
+			// GetAmount returns sat, we need msat
+			amount *= 1000
 		}
-		amount = amount * 1000 // msat
 
 		comment := request.FormValue("comment")
 		if len(comment) > CommentAllowed {
@@ -100,8 +106,8 @@ func (w Lnurl) Handle(writer http.ResponseWriter, request *http.Request) {
 		err = json.Unmarshal([]byte(payerdata), &payerData)
 		if err != nil {
 			// api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Couldn't parse payerdata: %v", err))
-			fmt.Errorf("[handleLnUrl] Couldn't parse payerdata: %v", err)
-			fmt.Errorf("[handleLnUrl] payerdata: %v", payerdata)
+			log.Errorf("[handleLnUrl] Couldn't parse payerdata: %v", err)
+			// log.Errorf("[handleLnUrl] payerdata: %v", payerdata)
 		}
 
 		response, err = w.serveLNURLpSecond(username, int64(amount), comment, payerData)
