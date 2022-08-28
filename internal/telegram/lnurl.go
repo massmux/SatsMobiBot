@@ -144,7 +144,7 @@ func UserGetLNURL(user *lnbits.User) (string, error) {
 }
 
 func UserGetAnonLNURL(user *lnbits.User) (string, error) {
-	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, fmt.Sprint(user.AnonIDSha256))
+	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, user.AnonIDSha256)
 	lnurlEncode, err := lnurl.LNURLEncode(callback)
 	if err != nil {
 		return "", err

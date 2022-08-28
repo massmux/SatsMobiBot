@@ -2,6 +2,8 @@ package telegram
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
@@ -10,7 +12,6 @@ import (
 	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
-	"time"
 )
 
 func (bot TipBot) shopsMainMenu(ctx intercept.Context, shops *Shops) *tb.ReplyMarkup {

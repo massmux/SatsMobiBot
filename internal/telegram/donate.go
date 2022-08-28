@@ -3,11 +3,12 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 

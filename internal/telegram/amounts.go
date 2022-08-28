@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	"strconv"
 	"strings"
+
+	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 

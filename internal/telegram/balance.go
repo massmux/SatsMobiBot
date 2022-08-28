@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 

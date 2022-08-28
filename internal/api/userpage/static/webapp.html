@@ -1,0 +1,247 @@
+<!-- @format -->
+
+{{define "webapp"}}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="MobileOptimized" content="176" />
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>LNURL</title>
+    <script src="https://unpkg.com/kjua@0.6.0/dist/kjua.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js?1"></script>
+    <script>
+        function setThemeClass() {
+            document.documentElement.className = Telegram.WebApp.colorScheme;
+        }
+        Telegram.WebApp.onEvent('themeChanged', setThemeClass);
+        setThemeClass();
+
+    </script>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #222222);
+            font-size: 16px;
+            margin: 0;
+            padding: 0;
+            color-scheme: var(--tg-color-scheme);
+        }
+
+        a {
+            color: var(--tg-theme-link-color, #2678b6);
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            font-size: 14px;
+            margin: 15px 0;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--tg-theme-button-color, #50a8eb);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            cursor: pointer;
+        }
+
+        button[disabled] {
+            opacity: 0.6;
+            cursor: auto;
+            pointer-events: none;
+        }
+
+        section {
+            padding: 15px 15px 65px;
+            text-align: center;
+        }
+
+        p {
+            margin: 40px 0 15px;
+        }
+
+        ul {
+            text-align: left;
+        }
+
+        li {
+            color: var(--tg-theme-hint-color, #a8a8a8);
+        }
+
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 7px;
+        }
+
+        pre {
+            background: rgba(0, 0, 0, .07);
+            border-radius: 4px;
+            padding: 4px;
+            margin: 7px 0;
+            word-break: break-all;
+            word-break: break-word;
+            white-space: pre-wrap;
+            text-align: left;
+        }
+
+        .dark pre {
+            background: rgba(255, 255, 255, .15);
+        }
+
+        .hint {
+            font-size: .8em;
+            color: var(--tg-theme-hint-color, #a8a8a8);
+        }
+
+        .ok {
+            color: green;
+        }
+
+        .err {
+            color: red;
+        }
+
+        #fixed_wrap {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            transform: translateY(100vh);
+        }
+
+        .viewport_border,
+        .viewport_stable_border {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: var(--tg-viewport-height, 100vh);
+            pointer-events: none;
+        }
+
+        .viewport_stable_border {
+            height: var(--tg-viewport-stable-height, 100vh);
+        }
+
+        .viewport_border:before,
+        .viewport_stable_border:before {
+            content: attr(text);
+            display: inline-block;
+            position: absolute;
+            background: gray;
+            right: 0;
+            top: 0;
+            font-size: 7px;
+            padding: 2px 4px;
+            vertical-align: top;
+        }
+
+        .viewport_stable_border:before {
+            background: green;
+            left: 0;
+            right: auto;
+        }
+
+        .viewport_border:after,
+        .viewport_stable_border:after {
+            content: '';
+            display: block;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            border: 2px dashed gray;
+        }
+
+        .viewport_stable_border:after {
+            border-color: green;
+        }
+
+        small {
+            font-size: 12px;
+        }
+
+        .qr-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        }
+
+        .qr {
+        display: flex;
+        justify-content: center;
+        margin: 0px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        }
+
+        .qr > canvas {
+        max-height: 800px;
+        max-width: 800px;
+        width: 100% !important;
+        height: 100% !important;
+        }
+    </style>
+</head>
+
+<body>
+
+<section>
+    <h2>{{.Username}}@ln.tips</h2>
+
+    <div class="qr-container">
+        <div class="qr" id="qr">
+        </div>
+    </div>
+
+    <div id="buttons">
+        <button onclick="webviewClose();">Close</button>
+    </div>
+</section>
+
+<script type="application/javascript">
+    Telegram.WebApp.ready();
+
+    const qr = document.getElementById('qr');
+    if ( qr ) {
+    const qrGfx = kjua({
+        text: {{.LNURLPay}},
+        rounded: 50,
+        size: 500,
+        render: 'canvas',
+    });
+    qr.appendChild( qrGfx );
+    }
+
+    const initData = Telegram.WebApp.initData || '';
+    const initDataUnsafe = Telegram.WebApp.initDataUnsafe || {};
+
+    document.querySelector('#greeting').innerHTML = `Hi, ${initDataUnsafe.user.first_name}!`;
+    document.querySelector('#initData').innerHTML = JSON.stringify(initData, null, 2);
+    document.querySelector('#initDataUnsafe').innerHTML = JSON.stringify(initDataUnsafe, null, 2);
+    document.querySelector('#themeData').html(JSON.stringify(Telegram.WebApp.themeParams, null, 2));
+
+    Telegram.WebApp.onEvent('themeChanged', function() {
+        document.querySelector('#themeData').innerHTML = JSON.stringify(Telegram.WebApp.themeParams, null, 2);
+    });
+
+    function webviewClose() {
+        Telegram.WebApp.close();
+    }
+</script>
+</body>
+</html>
+
+{{end}}
