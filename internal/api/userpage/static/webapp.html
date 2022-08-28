@@ -65,7 +65,7 @@
             margin: 15px 0;
             border: none;
             border-radius: 4px;
-            background-color: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            background-color: var(--tg-theme-bg-color, #f5f5f5);
             color: var(--tg-theme-text-color, #1a1a1a);
         }
 
@@ -239,7 +239,7 @@
                 <input type="number" id="invoiceAmount" placeholder="amount in sat" style="width: 80%"></input>
             </div>
             <div>
-                <button onclick="getInvoice(this, {{.Callback}});" style="display: inline;" id="requestInvoice">Invoice</button>
+                <button onclick="invoiceButtonClick();" style="display: inline;" id="requestInvoice">Invoice</button>
             </div>
         </div>
     </div>
@@ -283,6 +283,14 @@
     });
 
     // ------------------ functions ------------------
+
+    function invoiceButtonClick() {
+        var c = "{{.Callback}}";
+        getInvoice(this, c);
+        // hide keyboard and scroll up
+        document.getElementById("invoiceAmount").blur();
+        window.scrollTo(0, 0);
+    }
 
     function webviewClose() {
         Telegram.WebApp.close();
