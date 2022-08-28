@@ -275,7 +275,6 @@
 
     // listen for enter in input field
     var el = document.getElementById("invoiceAmount");
-    console.log("Element:" + el)
     el.addEventListener("keydown", function(event) {
         if (event.key === "Enter") {
             document.getElementById("requestInvoice").click();
