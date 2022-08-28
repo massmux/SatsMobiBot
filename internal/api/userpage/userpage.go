@@ -105,7 +105,8 @@ func (s Service) UserWebAppHandler(w http.ResponseWriter, r *http.Request) {
 	if err := qr_tmpl.ExecuteTemplate(w, "webapp", struct {
 		Username string
 		LNURLPay string
-	}{username, lnurlEncode}); err != nil {
+		Callback string
+	}{username, lnurlEncode, callback}); err != nil {
 		log.Errorf("failed to render template")
 	}
 }
