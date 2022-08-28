@@ -236,7 +236,7 @@
         <!-- <button onclick="webviewClose();">Close</button> -->
         <div class="wrapper">
             <div>
-                <input type="number" id="invoiceAmount" placeholder="amount in sat" style="width: 80%"></input>
+                <input type="number" min="1" inputmode="numeric" pattern="[0-9]*" id="invoiceAmount" placeholder="amount in sat" style="width: 80%"></input>
             </div>
             <div>
                 <button onclick="invoiceButtonClick();" style="display: inline;" id="requestInvoice">Invoice</button>
@@ -317,10 +317,10 @@
         })
         .then(r => {
             console.log(r);
-            var invoiceAmount = document.getElementById("invoiceAmount").value;
-            if (invoiceAmount == "") {
-                invoiceAmount = 1000; 
-                console.warn("overwriting invoiceAmount with " + invoiceAmount);
+            var invoiceAmount = Number(document.getElementById("invoiceAmount").value);
+            if (!Number.isInteger(invoiceAmount) || invoiceAmount < 1) {
+                document.getElementById("requestInvoice").innerHTML = "Error"
+                return true;
             }
             console.log("requesting invoice with amount " + invoiceAmount);
             fetch(r.callback + '?amount='+ invoiceAmount * 1000).then(data => {
