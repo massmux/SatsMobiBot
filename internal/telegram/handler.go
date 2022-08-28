@@ -433,22 +433,6 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			},
 		},
 		{
-			Endpoints: []interface{}{&btnWebAppStart},
-			Handler:   bot.webAppButtonHandler,
-			Interceptor: &Interceptor{
-
-				Before: []intercept.Func{
-					bot.localizerInterceptor,
-					bot.requireUserInterceptor,
-					bot.answerCallbackInterceptor,
-					bot.lockInterceptor,
-				},
-				OnDefer: []intercept.Func{
-					bot.unlockInterceptor,
-				},
-			},
-		},
-		{
 			Endpoints: []interface{}{"/lnurl"},
 			Handler:   bot.lnurlHandler,
 			Interceptor: &Interceptor{
