@@ -58,6 +58,17 @@
             pointer-events: none;
         }
 
+        input {
+            font-size: 14px;
+            text-align: center; 
+            padding: 12px 20px;
+            margin: 15px 0;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            color: var(--tg-theme-text-color, #1a1a1a);
+        }
+
         section {
             padding: 5px 5px 65px;
             text-align: center;
@@ -200,13 +211,21 @@
         width: 100% !important;
         height: 100% !important;
         }
+
+        .wrapper {
+        display: grid;
+        grid-template-columns: 3fr 2fr;
+        padding: 12px 20px;
+        column-gap: 10px;
+        row-gap: 1em;
+        }
     </style>
 </head>
 
 <body>
 
 <section>
-    <h1>{{.Username}}@ln.tips</h1>
+    <h1 id="greeting"></h1>
 
     <div class="qr-container">
         <div class="qr" id="qr">
@@ -214,38 +233,103 @@
     </div>
 
     <div id="buttons">
-        <button onclick="webviewClose();">Close</button>
+        <!-- <button onclick="webviewClose();">Close</button> -->
+        <div class="wrapper">
+            <div>
+                <input type="number" id="invoiceAmount" placeholder="amount in sat" style="width: 80%"></input>
+            </div>
+            <div>
+                <button onclick="getInvoice(this, {{.Callback}});" style="display: inline;" id="requestInvoice">Invoice</button>
+            </div>
+        </div>
     </div>
 </section>
 
 <script type="application/javascript">
     Telegram.WebApp.ready();
 
-    const qr = document.getElementById('qr');
-    if ( qr ) {
-    const qrGfx = kjua({
-        text: {{.LNURLPay}},
-        rounded: 50,
-        size: 500,
-        render: 'canvas',
-    });
-    qr.appendChild( qrGfx );
-    }
-
+    // render the LNURL pay QR code
+    var s = "{{.LNURLPay}}";
+    renderQr(s);
+    
+    // data passed form telegram server
     const initData = Telegram.WebApp.initData || '';
     const initDataUnsafe = Telegram.WebApp.initDataUnsafe || {};
 
-    document.querySelector('#greeting').innerHTML = `Hi, ${initDataUnsafe.user.first_name}!`;
-    document.querySelector('#initData').innerHTML = JSON.stringify(initData, null, 2);
-    document.querySelector('#initDataUnsafe').innerHTML = JSON.stringify(initDataUnsafe, null, 2);
-    document.querySelector('#themeData').html(JSON.stringify(Telegram.WebApp.themeParams, null, 2));
+    document.querySelector('#greeting').innerHTML = "{{.Username}}@ln.tips";
+    // document.querySelector('#initData').innerHTML = JSON.stringify(initData, null, 2);
+    // document.querySelector('#initDataUnsafe').innerHTML = JSON.stringify(initDataUnsafe, null, 2);
 
-    Telegram.WebApp.onEvent('themeChanged', function() {
-        document.querySelector('#themeData').innerHTML = JSON.stringify(Telegram.WebApp.themeParams, null, 2);
+    // react to theme changes
+    try {
+        document.querySelector('#themeData').html(JSON.stringify(Telegram.WebApp.themeParams, null, 2));
+        Telegram.WebApp.onEvent('themeChanged', function() {
+            document.querySelector('#themeData').innerHTML = JSON.stringify(Telegram.WebApp.themeParams, null, 2);
+        });
+    } catch (error) {
+        console.error(error);
+    }
+
+
+
+
+    // listen for enter in input field
+    var el = document.getElementById("invoiceAmount");
+    el.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            document.getElementById("requestInvoice").click();
+        }
+        document.getElementById("requestInvoice").innerHTML = "Invoice"
     });
+
+    // ------------------ functions ------------------
 
     function webviewClose() {
         Telegram.WebApp.close();
+    }
+
+    function renderQr(payload) {
+        const qr = document.getElementById('qr');
+        qr.innerHTML = '';
+        if ( qr ) {
+        const qrGfx = kjua({
+            text: payload,
+            rounded: 50,
+            size: 500,
+            render: 'canvas',
+        });
+        qr.appendChild( qrGfx );
+        }
+    }
+
+    function getInvoice(el, callback) {
+        fetch(callback)
+        .then(data => {
+            return data.json();
+        })
+        .then(r => {
+            console.log(r);
+            var invoiceAmount = document.getElementById("invoiceAmount").value;
+            if (invoiceAmount == "") {
+                invoiceAmount = 1000; 
+                console.warn("overwriting invoiceAmount with " + invoiceAmount);
+            }
+            console.log("requesting invoice with amount " + invoiceAmount);
+            fetch(r.callback + '?amount='+ invoiceAmount * 1000).then(data => {
+            return data.json();
+            })
+            .then(r => { 
+                console.log(r);
+                if (r.status == "OK"){
+                    // update qr code
+                    renderQr(r.pr);
+                    document.querySelector('#greeting').innerHTML = "Pay " + invoiceAmount + " sat";
+                } else {
+                    document.getElementById("requestInvoice").innerHTML = "Error"
+                }
+
+            })
+        })
     }
 </script>
 </body>
