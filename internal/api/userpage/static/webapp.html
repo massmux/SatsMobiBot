@@ -345,7 +345,7 @@
         .then(r => {
             console.log(r);
             var invoiceAmount = Number(document.getElementById("invoiceAmount").value);
-            if (!Number.isInteger(invoiceAmount) || invoiceAmount < 1) {
+            if ((currencies[currency_idx] == "sat" && !Number.isInteger(invoiceAmount)) || invoiceAmount < 1) {
                 invoiceButtonDisplayError("Invalid")
                 return false;
             }
