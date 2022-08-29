@@ -245,7 +245,7 @@
             <div class="input-group">
                 <input type="number" class="form-control" min="1" inputmode="numeric" pattern="[0-9]*" id="invoiceAmount" placeholder="amount">
                 <div class="input-group-append">
-                    <div class="input-group-text">sat</div>
+                    <div class="input-group-text" id="inputCurrency"></div>
                 </div>
             </div>
             <div>
@@ -260,6 +260,10 @@
 
     // render the LNURL pay QR code
     var s = "{{.LNURLPay}}";
+    const currencies = ["sat", "USD", "EUR"];
+    var currency_idx = 0;
+    document.getElementById("inputCurrency").innerHTML = currencies[0];
+
     renderQr(s);
     
     // data passed form telegram server
@@ -290,6 +294,12 @@
         document.getElementById("requestInvoice").innerHTML = "Invoice"
         // revert color of button
         $('#requestInvoice').removeClass('btn-danger').addClass('btn-primary');
+    });
+
+    var el = document.getElementById("inputCurrency");
+    el.addEventListener("click", function(event) {
+        currency_idx += 1;
+        $(this).html(currencies[currency_idx%(currencies.length)]);
     });
 
     // ------------------ functions ------------------
@@ -339,8 +349,14 @@
                 invoiceButtonDisplayError("Invalid")
                 return false;
             }
-            console.log("requesting invoice with amount " + invoiceAmount);
-            fetch(r.callback + '?amount='+ invoiceAmount * 1000).then(data => {
+            var amountQueryParam;
+            if (currencies[currency_idx] == "sat") {
+                amountQueryParam = invoiceAmount * 1000 // sat to msat
+            } else {
+                amountQueryParam = invoiceAmount + currencies[currency_idx]
+            }
+            console.log("requesting invoice with amount " + amountQueryParam);
+            fetch(r.callback + '?amount='+ amountQueryParam).then(data => {
             return data.json();
             })
             .then(r => { 
@@ -348,7 +364,7 @@
                 if (r.status == "OK"){
                     // update qr code
                     renderQr(r.pr);
-                    document.querySelector('#greeting').innerHTML = "Pay " + invoiceAmount + " sat";
+                    document.querySelector('#greeting').innerHTML = "Pay " + invoiceAmount + " " + currencies[currency_idx];
                 } else {
                     invoiceButtonDisplayError("Error")
                     return false;
