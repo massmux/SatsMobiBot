@@ -300,6 +300,7 @@
     el.addEventListener("click", function(event) {
         currency_idx += 1;
         $(this).html(currencies[currency_idx%(currencies.length)]);
+        $('#requestInvoice').removeClass('btn-danger').addClass('btn-primary');
     });
 
     // ------------------ functions ------------------
@@ -338,23 +339,24 @@
     }
 
     function getInvoice(el, callback) {
+        curr_idx = currency_idx%currencies.length
+        var invoiceAmount = Number(document.getElementById("invoiceAmount").value);
+        if ((currencies[curr_idx] == "sat" && !Number.isInteger(invoiceAmount)) || invoiceAmount < 1) {
+            invoiceButtonDisplayError("Invalid")
+            return false;
+        }
+        var amountQueryParam;
+        if (currencies[curr_idx] == "sat") {
+            amountQueryParam = invoiceAmount * 1000 // sat to msat
+        } else {
+            amountQueryParam = invoiceAmount + currencies[curr_idx]
+        }
         fetch(callback)
         .then(data => {
             return data.json();
         })
         .then(r => {
             console.log(r);
-            var invoiceAmount = Number(document.getElementById("invoiceAmount").value);
-            if ((currencies[currency_idx] == "sat" && !Number.isInteger(invoiceAmount)) || invoiceAmount < 1) {
-                invoiceButtonDisplayError("Invalid")
-                return false;
-            }
-            var amountQueryParam;
-            if (currencies[currency_idx] == "sat") {
-                amountQueryParam = invoiceAmount * 1000 // sat to msat
-            } else {
-                amountQueryParam = invoiceAmount + currencies[currency_idx]
-            }
             console.log("requesting invoice with amount " + amountQueryParam);
             fetch(r.callback + '?amount='+ amountQueryParam).then(data => {
             return data.json();
@@ -364,7 +366,7 @@
                 if (r.status == "OK"){
                     // update qr code
                     renderQr(r.pr);
-                    document.querySelector('#greeting').innerHTML = "Pay " + invoiceAmount + " " + currencies[currency_idx];
+                    document.querySelector('#greeting').innerHTML = "Pay " + invoiceAmount + " " + currencies[curr_idx];
                 } else {
                     invoiceButtonDisplayError("Error")
                     return false;
