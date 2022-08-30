@@ -104,6 +104,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			Handler:   bot.generateImages,
 			Interceptor: &Interceptor{
 				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
 					bot.loadUserInterceptor,
