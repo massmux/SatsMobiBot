@@ -106,11 +106,12 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		log.Errorf("[generateDalleImages] invalid user")
 		return
 	}
-	bot.trySendMessage(user.Telegram, "Your images are being generated. Please wait...")
+	bot.trySendMessage(user.Telegram, "🔄 Your images are being generated. Please wait a few moments.")
 
 	// we can have only one user using dalle
 	mutex.Lock("dalle-image-task")
 	defer mutex.Unlock("dalle-image-task")
+	time.Sleep(time.Second * 1)
 
 	// create the client with the bearer token api key
 	dalleClient, err := dalle.NewHTTPClient(internal.Configuration.Generate.DalleKey)
@@ -218,7 +219,7 @@ func (bot *TipBot) dalleRefundUser(user *lnbits.User) error {
 		log.Errorln(err)
 		return err
 	}
-
-	bot.trySendMessage(user.Telegram, "You have been refunded.")
+	log.Warnf("[DALLE] refunding user %s with %d sat", GetUserStr(user.Telegram), internal.Configuration.Generate.DallePrice)
+	bot.trySendMessage(user.Telegram, "🚫 Something went wrong. You have been refunded.")
 	return nil
 }
