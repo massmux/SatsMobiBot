@@ -122,7 +122,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*3)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*10)
 	defer cancel()
 	// generate a task to create an image with a prompt
 	task, err := dalleClient.Generate(ctx, invoiceEvent.CallbackData)
