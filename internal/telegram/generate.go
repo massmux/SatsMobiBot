@@ -97,6 +97,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 	invoiceEvent := event.(*InvoiceEvent)
 	user := invoiceEvent.Payer
 	if user == nil || user.Wallet == nil {
+		log.Errorf("[generateDalleImages] invalid user")
 		return
 	}
 	// create the client with the bearer token api key
@@ -104,6 +105,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 	dalleClient, err := dalle.NewHTTPClient(internal.Configuration.Generate.DalleKey)
 	// handle err
 	if err != nil {
+		log.Errorf("[generateDalleImages] %v", err.Error())
 		return
 	}
 
@@ -112,7 +114,8 @@ func (bot *TipBot) generateDalleImages(event Event) {
 	// generate a task to create an image with a prompt
 	task, err := dalleClient.Generate(ctx, invoiceEvent.CallbackData)
 	if err != nil {
-
+		log.Errorf("[generateDalleImages] %v", err.Error())
+		return
 	}
 
 	// poll the task.ID until status is succeeded
@@ -127,7 +130,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 			fmt.Println("task succeeded")
 			break
 		} else if t.Status == dalle.StatusRejected {
-			log.Fatal("rejected: ", t.ID)
+			log.Errorf("rejected: %s", t.ID)
 		}
 
 		fmt.Println("task still pending")
@@ -135,28 +138,33 @@ func (bot *TipBot) generateDalleImages(event Event) {
 
 	// download the first generated image
 	for _, data := range t.Generations.Data {
-
-		reader, err := dalleClient.Download(ctx, data.ID)
-		if err != nil {
-			return
-		}
-		defer reader.Close()
-
-		file, err := os.Create("data/dalle/" + data.ID + ".png")
-		if err != nil {
-			return
-		}
-		defer file.Close()
-		_, err = io.Copy(file, reader)
-		if err != nil {
-			return
-		}
-		f, err := os.OpenFile("data/dalle/"+data.ID+".png", 0, os.ModePerm)
-		if err != nil {
-			return
-		}
-		bot.trySendMessage(invoiceEvent.Payer.Telegram, &tb.Photo{File: tb.File{FileReader: f}})
+		downloadAndSendImages(ctx, bot, dalleClient, data, invoiceEvent)
 	}
 
 	// handle err and close readCloser
+}
+
+// downloadAndSendImages will download dalle images and send them to the payer.
+func downloadAndSendImages(ctx context.Context, bot *TipBot, dalleClient dalle.Client, data dalle.GenerationData, event *InvoiceEvent) {
+	reader, err := dalleClient.Download(ctx, data.ID)
+	if err != nil {
+		return
+	}
+	defer reader.Close()
+	image := "data/dalle/" + data.ID + ".png"
+	file, err := os.Create(image)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+	_, err = io.Copy(file, reader)
+	if err != nil {
+		return
+	}
+	f, err := os.OpenFile(image, 0, os.ModePerm)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	bot.trySendMessage(event.Payer.Telegram, &tb.Photo{File: tb.File{FileReader: f}})
 }
