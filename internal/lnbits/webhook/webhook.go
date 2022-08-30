@@ -113,7 +113,7 @@ func (w *Server) receive(writer http.ResponseWriter, request *http.Request) {
 				log.Errorln(err)
 				return
 			}
-			c.Function(txInvoiceEvent)
+			go c.Function(txInvoiceEvent)
 			return
 		}
 	}
