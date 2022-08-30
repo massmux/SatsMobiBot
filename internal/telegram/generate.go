@@ -13,6 +13,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/dalle"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
@@ -105,8 +106,11 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		log.Errorf("[generateDalleImages] invalid user")
 		return
 	}
-
 	bot.trySendMessage(user.Telegram, "Your images are being generated. Please wait...")
+
+	// we can have only one user using dalle
+	mutex.Lock("dalle-image-task")
+	defer mutex.Unlock("dalle-image-task")
 
 	// create the client with the bearer token api key
 	dalleClient, err := dalle.NewHTTPClient(internal.Configuration.Generate.DalleKey)
