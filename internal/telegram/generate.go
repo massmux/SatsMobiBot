@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/dalle"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
@@ -17,8 +18,6 @@ import (
 	"github.com/skip2/go-qrcode"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
-
-const DALLE2PRICE = 100 // satoshis
 
 // generateImages is called when the user enters /generate or /generate <prompt>
 // asks the user for a prompt if not given
@@ -57,7 +56,7 @@ func (bot *TipBot) confirmGenerateImages(ctx intercept.Context) (intercept.Conte
 	if err != nil {
 		return ctx, err
 	}
-	invoice, err := bot.createInvoiceWithEvent(ctx, me, DALLE2PRICE, fmt.Sprintf("DALLE2 %s", GetUserStr(user.Telegram)), InvoiceCallbackGenerateDalle, prompt)
+	invoice, err := bot.createInvoiceWithEvent(ctx, me, internal.Configuration.Generate.DallePrice, fmt.Sprintf("DALLE2 %s", GetUserStr(user.Telegram)), InvoiceCallbackGenerateDalle, prompt)
 	invoice.Payer = user
 	if err != nil {
 		return ctx, err
@@ -74,7 +73,7 @@ func (bot *TipBot) confirmGenerateImages(ctx intercept.Context) (intercept.Conte
 	bot.trySendMessage(ctx.Message().Sender, Translate(ctx, "generateDallePayInvoiceMessage"))
 
 	// invoke internal pay if enough balance
-	if balance > DALLE2PRICE {
+	if balance >= internal.Configuration.Generate.DallePrice {
 		m.Text = fmt.Sprintf("/pay %s", invoice.PaymentRequest)
 		return bot.payHandler(ctx)
 	}
@@ -102,7 +101,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 	}
 	// create the client with the bearer token api key
 
-	dalleClient, err := dalle.NewHTTPClient("API KEY")
+	dalleClient, err := dalle.NewHTTPClient(internal.Configuration.Generate.DalleKey)
 	// handle err
 	if err != nil {
 		return
