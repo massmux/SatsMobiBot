@@ -14,7 +14,13 @@ var Configuration = struct {
 	Telegram TelegramConfiguration `yaml:"telegram"`
 	Database DatabaseConfiguration `yaml:"database"`
 	Lnbits   LnbitsConfiguration   `yaml:"lnbits"`
+	Generate GenerateConfiguration `yaml:"generate"`
 }{}
+
+type GenerateConfiguration struct {
+	DalleKey   string `yaml:"dalle_key"`
+	DallePrice int64  `yaml:"dalle_price"`
+}
 
 type SocksConfiguration struct {
 	Host     string `yaml:"host"`
