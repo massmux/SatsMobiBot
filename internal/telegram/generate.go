@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/LightningTipBot/LightningTipBot/internal/dalle"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
-	"github.com/dillonstreator/dalle"
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
+	"io"
 	"os"
 	"time"
 )
@@ -24,7 +25,7 @@ func (bot *TipBot) generateImages(ctx intercept.Context) (intercept.Context, err
 		return ctx, err
 	}
 	invoice, err := bot.createInvoiceWithEvent(ctx, me, 1, fmt.Sprintf("DALLE2 %s", GetUserStr(user.Telegram)), InvoiceCallbackGenerateDalle, "")
-
+	invoice.Payer = user
 	if err != nil {
 		return ctx, err
 	}
@@ -44,20 +45,22 @@ func (bot *TipBot) generateImages(ctx intercept.Context) (intercept.Context, err
 
 func (bot *TipBot) generateDalleImages(event Event) {
 	invoiceEvent := event.(*InvoiceEvent)
-	user := invoiceEvent.User
+	user := invoiceEvent.Payer
 	if user.Wallet == nil {
 		return
 	}
 	// create the client with the bearer token api key
+
 	dalleClient, err := dalle.NewHTTPClient("")
 	// handle err
 	if err != nil {
 		return
 	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 	// generate a task to create an image with a prompt
-	task, err := dalleClient.Generate(ctx, "monkey printing bitcoin with money printing machine, cyberpunk")
+	task, err := dalleClient.Generate(ctx, "dogs fighting for bitcoin on sunny island, van gogh style")
 	// handle err
 
 	// poll the task.ID until status is succeeded
@@ -67,7 +70,6 @@ func (bot *TipBot) generateDalleImages(event Event) {
 
 		t, err = dalleClient.GetTask(ctx, task.ID)
 		// handle err
-		t.Status = dalle.StatusSucceeded
 
 		if t.Status == dalle.StatusSucceeded {
 			fmt.Println("task succeeded")
@@ -78,19 +80,31 @@ func (bot *TipBot) generateDalleImages(event Event) {
 
 		fmt.Println("task still pending")
 	}
-	/*
-		// download the first generated image
-		for _, data := range t.Generations.Data {
-			reader, err := dalleClient.Download(ctx, data.ID)
-			if err != nil {
-				continue
-			}
-			bot.trySendMessage(user.Telegram, &tb.Photo{File: tb.File{FileReader: reader}, Caption: fmt.Sprintf("Result")})
-		}*/
-	reader, err := os.OpenFile("image", 0, os.ModePerm)
-	if err != nil {
-		panic(err)
+
+	// download the first generated image
+	for _, data := range t.Generations.Data {
+
+		reader, err := dalleClient.Download(ctx, data.ID)
+		if err != nil {
+			return
+		}
+		defer reader.Close()
+
+		file, err := os.Create("images/" + data.ID + ".png")
+		if err != nil {
+			return
+		}
+		defer file.Close()
+		_, err = io.Copy(file, reader)
+		if err != nil {
+			return
+		}
+		f, err := os.OpenFile("images/"+data.ID+".png", 0, os.ModePerm)
+		if err != nil {
+			return
+		}
+		bot.trySendMessage(invoiceEvent.Payer.Telegram, &tb.Photo{File: tb.File{FileReader: f}, Caption: fmt.Sprintf("Result")})
 	}
-	bot.trySendMessage(user.Telegram, &tb.Photo{File: tb.File{FileReader: reader}, Caption: fmt.Sprintf("Result")})
+
 	// handle err and close readCloser
 }
