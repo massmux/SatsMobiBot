@@ -22,6 +22,7 @@ import (
 // generateImages is called when the user enters /generate or /generate <prompt>
 // asks the user for a prompt if not given
 func (bot *TipBot) generateImages(ctx intercept.Context) (intercept.Context, error) {
+	bot.anyTextHandler(ctx)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return ctx, fmt.Errorf("user has no wallet")
@@ -141,7 +142,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 			log.Errorf("rejected: %s", t.ID)
 		}
 
-		fmt.Println("task still pending")
+		log.Debugln("task still pending")
 	}
 
 	// download the first generated image
