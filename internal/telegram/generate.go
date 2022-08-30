@@ -100,8 +100,10 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		log.Errorf("[generateDalleImages] invalid user")
 		return
 	}
-	// create the client with the bearer token api key
 
+	bot.trySendMessage(user.Telegram, "Your images are being generated. Please wait...")
+
+	// create the client with the bearer token api key
 	dalleClient, err := dalle.NewHTTPClient(internal.Configuration.Generate.DalleKey)
 	// handle err
 	if err != nil {
@@ -117,7 +119,6 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		log.Errorf("[Generate] %v", err.Error())
 		return
 	}
-
 	// poll the task.ID until status is succeeded
 	var t *dalle.Task
 	for {

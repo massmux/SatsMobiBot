@@ -401,4 +401,4 @@ To join a group, talk to %s and write in a private message `/join <mygroup>`.
 # DALLE GENERATE
 generateDalleHelpMessage        = """Generate images using OpenAI DALLE 2.\nUsage: `/generate <prompt>`\nPrice: 1000 sat"""
 generateDallePayInvoiceMessage  = """Pay this invoice to generate four images 👇"""
-generateDalleGeneratingMessage  = """Your images are being generated..."""
+generateDalleGeneratingMessage  = """Your images are being generated. Please wait..."""
