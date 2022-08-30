@@ -105,7 +105,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 	dalleClient, err := dalle.NewHTTPClient(internal.Configuration.Generate.DalleKey)
 	// handle err
 	if err != nil {
-		log.Errorf("[generateDalleImages] %v", err.Error())
+		log.Errorf("[NewHTTPClient] %v", err.Error())
 		return
 	}
 
@@ -114,7 +114,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 	// generate a task to create an image with a prompt
 	task, err := dalleClient.Generate(ctx, invoiceEvent.CallbackData)
 	if err != nil {
-		log.Errorf("[generateDalleImages] %v", err.Error())
+		log.Errorf("[Generate] %v", err.Error())
 		return
 	}
 
@@ -125,7 +125,10 @@ func (bot *TipBot) generateDalleImages(event Event) {
 
 		t, err = dalleClient.GetTask(ctx, task.ID)
 		// handle err
-
+		if err != nil {
+			log.Errorf("[GetTask] %v", err.Error())
+			return
+		}
 		if t.Status == dalle.StatusSucceeded {
 			fmt.Println("task succeeded")
 			break
