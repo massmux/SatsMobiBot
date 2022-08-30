@@ -218,5 +218,7 @@ func (bot *TipBot) dalleRefundUser(user *lnbits.User) error {
 		log.Errorln(err)
 		return err
 	}
+
+	bot.trySendMessage(user.Telegram, "You have been refunded.")
 	return nil
 }
