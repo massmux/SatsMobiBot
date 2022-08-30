@@ -138,33 +138,37 @@ func (bot *TipBot) generateDalleImages(event Event) {
 
 	// download the first generated image
 	for _, data := range t.Generations.Data {
-		downloadAndSendImages(ctx, bot, dalleClient, data, invoiceEvent)
+		err = downloadAndSendImages(ctx, bot, dalleClient, data, invoiceEvent)
+		if err != nil {
+			log.Errorf("[downloadAndSendImages] %v", err.Error())
+		}
 	}
 
 	// handle err and close readCloser
 }
 
 // downloadAndSendImages will download dalle images and send them to the payer.
-func downloadAndSendImages(ctx context.Context, bot *TipBot, dalleClient dalle.Client, data dalle.GenerationData, event *InvoiceEvent) {
+func downloadAndSendImages(ctx context.Context, bot *TipBot, dalleClient dalle.Client, data dalle.GenerationData, event *InvoiceEvent) error {
 	reader, err := dalleClient.Download(ctx, data.ID)
 	if err != nil {
-		return
+		return err
 	}
 	defer reader.Close()
 	image := "data/dalle/" + data.ID + ".png"
 	file, err := os.Create(image)
 	if err != nil {
-		return
+		return err
 	}
 	defer file.Close()
 	_, err = io.Copy(file, reader)
 	if err != nil {
-		return
+		return err
 	}
 	f, err := os.OpenFile(image, 0, os.ModePerm)
 	if err != nil {
-		return
+		return err
 	}
 	defer f.Close()
 	bot.trySendMessage(event.Payer.Telegram, &tb.Photo{File: tb.File{FileReader: f}})
+	return nil
 }
