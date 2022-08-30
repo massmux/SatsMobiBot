@@ -13,6 +13,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/dalle"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
+	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
@@ -22,6 +23,7 @@ import (
 // generateImages is called when the user enters /generate or /generate <prompt>
 // asks the user for a prompt if not given
 func (bot *TipBot) generateImages(ctx intercept.Context) (intercept.Context, error) {
+	bot.anyTextHandler(ctx)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
 		return ctx, fmt.Errorf("user has no wallet")
@@ -104,59 +106,79 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		log.Errorf("[generateDalleImages] invalid user")
 		return
 	}
+	bot.trySendMessage(user.Telegram, "🔄 Your images are being generated. Please wait a few moments.")
 
-	bot.trySendMessage(user.Telegram, "Your images are being generated. Please wait...")
+	// we can have only one user using dalle
+	mutex.Lock("dalle-image-task")
+	defer mutex.Unlock("dalle-image-task")
+	time.Sleep(time.Second * 1)
 
 	// create the client with the bearer token api key
 	dalleClient, err := dalle.NewHTTPClient(internal.Configuration.Generate.DalleKey)
 	// handle err
 	if err != nil {
 		log.Errorf("[NewHTTPClient] %v", err.Error())
+		bot.dalleRefundUser(user)
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*3)
 	defer cancel()
 	// generate a task to create an image with a prompt
 	task, err := dalleClient.Generate(ctx, invoiceEvent.CallbackData)
 	if err != nil {
 		log.Errorf("[Generate] %v", err.Error())
+		bot.dalleRefundUser(user)
 		return
 	}
 	// poll the task.ID until status is succeeded
 	var t *dalle.Task
+	timeout := time.After(90 * time.Second)
+	ticker := time.Tick(5 * time.Second)
+	// Keep trying until we're timed out or get a result/error
 	for {
-		time.Sleep(time.Second * 3)
-
-		t, err = dalleClient.GetTask(ctx, task.ID)
-		// handle err
-		if err != nil {
-			log.Errorf("[GetTask] %v", err.Error())
+		select {
+		case <-ctx.Done():
+			bot.dalleRefundUser(user)
+			log.Errorf("[DALLE] ctx done")
 			return
-		}
-		if t.Status == dalle.StatusSucceeded {
-			fmt.Println("task succeeded")
-			break
-		} else if t.Status == dalle.StatusRejected {
-			log.Errorf("rejected: %s", t.ID)
-		}
+		// Got a timeout! fail with a timeout error
+		case <-timeout:
+			bot.dalleRefundUser(user)
+			log.Errorf("[DALLE] timeout")
+			return
+		// Got a tick, we should check on checkSomething()
+		case <-ticker:
+			t, err = dalleClient.GetTask(ctx, task.ID)
+			// handle err
+			if err != nil {
+				log.Errorf("[GetTask] %v", err.Error())
+				bot.dalleRefundUser(user)
+				return
+			}
+			if t.Status == dalle.StatusSucceeded {
+				fmt.Printf("[DALLE] task succeeded for user %s", GetUserStr(user.Telegram))
+				// download the first generated image
+				for _, data := range t.Generations.Data {
+					err = bot.downloadAndSendImages(ctx, dalleClient, data, invoiceEvent)
+					if err != nil {
+						log.Errorf("[downloadAndSendImages] %v", err.Error())
+					}
+				}
+				return
 
-		fmt.Println("task still pending")
+			} else if t.Status == dalle.StatusRejected {
+				log.Errorf("[DALLE] rejected: %s", t.ID)
+				bot.dalleRefundUser(user)
+				return
+			}
+			log.Debugf("[DALLE] pending for user %s", GetUserStr(user.Telegram))
+		}
 	}
-
-	// download the first generated image
-	for _, data := range t.Generations.Data {
-		err = downloadAndSendImages(ctx, bot, dalleClient, data, invoiceEvent)
-		if err != nil {
-			log.Errorf("[downloadAndSendImages] %v", err.Error())
-		}
-	}
-
-	// handle err and close readCloser
 }
 
 // downloadAndSendImages will download dalle images and send them to the payer.
-func downloadAndSendImages(ctx context.Context, bot *TipBot, dalleClient dalle.Client, data dalle.GenerationData, event *InvoiceEvent) error {
+func (bot *TipBot) downloadAndSendImages(ctx context.Context, dalleClient dalle.Client, data dalle.GenerationData, event *InvoiceEvent) error {
 	reader, err := dalleClient.Download(ctx, data.ID)
 	if err != nil {
 		return err
@@ -178,5 +200,37 @@ func downloadAndSendImages(ctx context.Context, bot *TipBot, dalleClient dalle.C
 	}
 	defer f.Close()
 	bot.trySendMessage(event.Payer.Telegram, &tb.Photo{File: tb.File{FileReader: f}})
+	return nil
+}
+
+func (bot *TipBot) dalleRefundUser(user *lnbits.User) error {
+	if user.Wallet == nil {
+		return fmt.Errorf("user has no wallet")
+	}
+	me, err := GetUser(bot.Telegram.Me, *bot)
+	if err != nil {
+		return err
+	}
+
+	// create invioce for user
+	invoice, err := user.Wallet.Invoice(
+		lnbits.InvoiceParams{
+			Out:     false,
+			Amount:  int64(internal.Configuration.Generate.DallePrice),
+			Memo:    "Refund for /generate",
+			Webhook: internal.Configuration.Lnbits.WebhookServer},
+		bot.Client)
+	if err != nil {
+		return err
+	}
+
+	// pay invoice
+	_, err = me.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoice.PaymentRequest}, bot.Client)
+	if err != nil {
+		log.Errorln(err)
+		return err
+	}
+	log.Warnf("[DALLE] refunding user %s with %d sat", GetUserStr(user.Telegram), internal.Configuration.Generate.DallePrice)
+	bot.trySendMessage(user.Telegram, "🚫 Something went wrong. You have been refunded.")
 	return nil
 }
