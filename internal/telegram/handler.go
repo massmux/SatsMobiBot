@@ -99,20 +99,20 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 				},
 			},
 		},
-		{
-			Endpoints: []interface{}{"/generate"},
-			Handler:   bot.generateImages,
-			Interceptor: &Interceptor{
-				Before: []intercept.Func{
-					bot.localizerInterceptor,
-					bot.loadUserInterceptor,
-					bot.lockInterceptor,
-				},
-				OnDefer: []intercept.Func{
-					bot.unlockInterceptor,
-				},
-			},
-		},
+		// {
+		// 	Endpoints: []interface{}{"/generate"},
+		// 	Handler:   bot.generateImages,
+		// 	Interceptor: &Interceptor{
+		// 		Before: []intercept.Func{
+		// 			bot.localizerInterceptor,
+		// 			bot.loadUserInterceptor,
+		// 			bot.lockInterceptor,
+		// 		},
+		// 		OnDefer: []intercept.Func{
+		// 			bot.unlockInterceptor,
+		// 		},
+		// 	},
+		// },
 		{
 			Endpoints: []interface{}{"/tip", "/t", "/honk"},
 			Handler:   bot.tipHandler,
