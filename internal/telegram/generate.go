@@ -142,7 +142,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		}
 		defer reader.Close()
 
-		file, err := os.Create("images/" + data.ID + ".png")
+		file, err := os.Create("data/dalle/" + data.ID + ".png")
 		if err != nil {
 			return
 		}
@@ -151,7 +151,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		if err != nil {
 			return
 		}
-		f, err := os.OpenFile("images/"+data.ID+".png", 0, os.ModePerm)
+		f, err := os.OpenFile("data/dalle/"+data.ID+".png", 0, os.ModePerm)
 		if err != nil {
 			return
 		}
