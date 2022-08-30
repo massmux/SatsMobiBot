@@ -121,7 +121,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*3)
 	defer cancel()
 	// generate a task to create an image with a prompt
 	task, err := dalleClient.Generate(ctx, invoiceEvent.CallbackData)
@@ -132,37 +132,48 @@ func (bot *TipBot) generateDalleImages(event Event) {
 	}
 	// poll the task.ID until status is succeeded
 	var t *dalle.Task
+	timeout := time.After(90 * time.Second)
+	ticker := time.Tick(5 * time.Second)
+	// Keep trying until we're timed out or get a result/error
 	for {
-		time.Sleep(time.Second * 3)
-
-		t, err = dalleClient.GetTask(ctx, task.ID)
-		// handle err
-		if err != nil {
-			log.Errorf("[GetTask] %v", err.Error())
+		select {
+		case <-ctx.Done():
 			bot.dalleRefundUser(user)
+			log.Errorf("[DALLE] ctx done")
 			return
-		}
-		if t.Status == dalle.StatusSucceeded {
-			fmt.Printf("[DALLE] task succeeded for user %s", GetUserStr(user.Telegram))
-			break
-		} else if t.Status == dalle.StatusRejected {
-			log.Errorf("[DALLE] rejected: %s", t.ID)
+		// Got a timeout! fail with a timeout error
+		case <-timeout:
 			bot.dalleRefundUser(user)
-			break
+			log.Errorf("[DALLE] timeout")
+			return
+		// Got a tick, we should check on checkSomething()
+		case <-ticker:
+			t, err = dalleClient.GetTask(ctx, task.ID)
+			// handle err
+			if err != nil {
+				log.Errorf("[GetTask] %v", err.Error())
+				bot.dalleRefundUser(user)
+				return
+			}
+			if t.Status == dalle.StatusSucceeded {
+				fmt.Printf("[DALLE] task succeeded for user %s", GetUserStr(user.Telegram))
+				// download the first generated image
+				for _, data := range t.Generations.Data {
+					err = bot.downloadAndSendImages(ctx, dalleClient, data, invoiceEvent)
+					if err != nil {
+						log.Errorf("[downloadAndSendImages] %v", err.Error())
+					}
+				}
+				return
+
+			} else if t.Status == dalle.StatusRejected {
+				log.Errorf("[DALLE] rejected: %s", t.ID)
+				bot.dalleRefundUser(user)
+				return
+			}
+			log.Debugf("[DALLE] pending for user %s", GetUserStr(user.Telegram))
 		}
-
-		log.Debugf("[DALLE] pending for user %s", GetUserStr(user.Telegram))
 	}
-
-	// download the first generated image
-	for _, data := range t.Generations.Data {
-		err = bot.downloadAndSendImages(ctx, dalleClient, data, invoiceEvent)
-		if err != nil {
-			log.Errorf("[downloadAndSendImages] %v", err.Error())
-		}
-	}
-
-	// handle err and close readCloser
 }
 
 // downloadAndSendImages will download dalle images and send them to the payer.
