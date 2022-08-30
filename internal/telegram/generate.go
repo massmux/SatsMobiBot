@@ -133,7 +133,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 	}
 	// poll the task.ID until status is succeeded
 	var t *dalle.Task
-	timeout := time.After(90 * time.Second)
+	timeout := time.After(5 * time.Minute)
 	ticker := time.Tick(5 * time.Second)
 	// Keep trying until we're timed out or get a result/error
 	for {
