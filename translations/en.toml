@@ -133,6 +133,7 @@ advancedMessage = """%s
 enterAmountRangeMessage        = """💯 Enter an amount between %d and %d sat."""
 enterAmountMessage             = """💯 Enter an amount."""
 enterUserMessage               = """👤 Enter a user."""
+enterTextMessage               = """⌨️ Enter text."""
 errorReasonMessage             = """🚫 Error: %s"""
 
 # START
@@ -394,3 +395,8 @@ To join a group, talk to %s and write in a private message `/join <mygroup>`.
 📖 *Usage:*
 *For admins (in group chat):* `/group add <group_name> [<ticket_price>]`\nExample: `/group add TheBestBitcoinGroup 1000`
 *For users (in private chat):* `/join <group_name>`\nExample: `/join TheBestBitcoinGroup`"""
+
+# DALLE GENERATE
+generateDalleHelpMessage        = """Generate images using OpenAI DALLE 2.\nUsage: `/generate <prompt>`\nPrice: 1000 sat"""
+generateDallePayInvoiceMessage  = """Pay this invoice to generate four images 👇"""
+generateDalleGeneratingMessage  = """Your images are being generated..."""
