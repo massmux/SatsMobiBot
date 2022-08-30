@@ -98,6 +98,8 @@ func (bot *TipBot) confirmGenerateImages(ctx intercept.Context) (intercept.Conte
 	return ctx, nil
 }
 
+var mutexStates = map[int]bool{0: false, 1: false}
+
 // generateDalleImages is called by the invoice event when the user has paid
 func (bot *TipBot) generateDalleImages(event Event) {
 	invoiceEvent := event.(*InvoiceEvent)
@@ -107,10 +109,22 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		return
 	}
 	bot.trySendMessage(user.Telegram, "🔄 Your images are being generated. Please wait a few moments.")
-
-	// we can have only one user using dalle
-	mutex.Lock("dalle-image-task")
-	defer mutex.Unlock("dalle-image-task")
+	locker := -1
+	for i := 0; i < 2; i++ {
+		if mutexStates[i] == false {
+			mutexStates[i] = true
+			locker = i
+			mutex.Lock(fmt.Sprintf("dalle-image-task-%d", i))
+			break
+		}
+		if i == len(mutexStates)-1 {
+			time.Sleep(time.Second * 1)
+			i = 0
+		}
+	}
+	if locker > 0 {
+		defer mutex.Unlock(fmt.Sprintf("dalle-image-task-%d", locker))
+	}
 	time.Sleep(time.Second * 1)
 
 	// create the client with the bearer token api key
