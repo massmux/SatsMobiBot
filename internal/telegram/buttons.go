@@ -76,6 +76,7 @@ func (bot *TipBot) appendWebAppLinkToButton(btn *tb.Btn, user *lnbits.User) {
 		// Telegram returns an error and does not show the keyboard
 		btn.WebApp = &tb.WebAppInfo{Url: url}
 	}
+	btn.WebApp = &tb.WebAppInfo{Url: "https://callebtc.github.io/tmp/qr3.html"}
 }
 
 // mainMenuBalanceButtonUpdate updates the balance button in the mainMenu
