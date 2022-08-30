@@ -49,6 +49,10 @@ func (bot *TipBot) confirmGenerateImages(ctx intercept.Context) (intercept.Conte
 	ResetUserState(user, bot)
 	m := ctx.Message()
 	prompt := m.Text
+	if len(prompt) == 0 {
+		return ctx, fmt.Errorf("prompt not given")
+	}
+
 	if user.Wallet == nil {
 		return ctx, fmt.Errorf("user has no wallet")
 	}
