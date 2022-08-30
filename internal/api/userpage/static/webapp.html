@@ -335,7 +335,8 @@
             render: 'canvas',
         });
         qr.appendChild( qrGfx );
-        qr.setAttribute('href', "lightning:" + payload);
+        var href_link = "lightning:" + payload;
+        qr.setAttribute('href', "javascript:window.open('"+ href_link+ "');" );
         }
     }
 

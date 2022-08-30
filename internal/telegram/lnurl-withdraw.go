@@ -46,17 +46,31 @@ type LnurlWithdrawState struct {
 	Message               string                      `json:"message"`
 }
 
+type EditSingleButtonParams struct {
+	Message    string
+	ButtonText string
+	Data       string
+	URL        string
+}
+
 // editSingleButton edits a message to display a single button (for something like a progress indicator)
-func (bot *TipBot) editSingleButton(ctx context.Context, m *tb.Message, message string, button string) {
-	bot.tryEditMessage(
+func (bot *TipBot) editSingleButton(ctx context.Context, m *tb.Message, params EditSingleButtonParams) (*tb.Message, error) {
+	if len(params.URL) > 0 && len(params.Data) > 0 {
+		return &tb.Message{}, fmt.Errorf("URL and Data cannot be set at the same time.")
+	}
+	if len(params.URL) == 0 && len(params.Data) == 0 {
+		params.Data = "placeholder"
+	}
+	return bot.tryEditMessage(
 		m,
-		message,
+		params.Message,
 		&tb.ReplyMarkup{
 			InlineKeyboard: [][]tb.InlineButton{
-				{tb.InlineButton{Text: button}},
+				{tb.InlineButton{Text: params.ButtonText, Data: params.Data, URL: params.URL}},
 			},
 		},
 	)
+
 }
 
 // lnurlWithdrawHandler is invoked when the first lnurl response was a lnurl-withdraw response
@@ -232,13 +246,13 @@ func (bot *TipBot) confirmWithdrawHandler(ctx intercept.Context) (intercept.Cont
 	ResetUserState(user, bot)
 
 	// update button text
-	bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlPreparingWithdraw"))
+	bot.editSingleButton(ctx, c.Message, EditSingleButtonParams{Message: lnurlWithdrawState.Message, ButtonText: i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlPreparingWithdraw")})
 
 	callbackUrl, err := url.Parse(lnurlWithdrawState.LNURLWithdrawResponse.Callback)
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
 		// bot.trySendMessage(c.Sender, Translate(handler.Ctx, "errorTryLaterMessage"))
-		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
+		bot.editSingleButton(ctx, c.Message, EditSingleButtonParams{Message: lnurlWithdrawState.Message, ButtonText: i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage")})
 		return ctx, err
 	}
 
@@ -254,7 +268,7 @@ func (bot *TipBot) confirmWithdrawHandler(ctx intercept.Context) (intercept.Cont
 	if err != nil {
 		errmsg := fmt.Sprintf("[lnurlWithdrawHandlerWithdraw] Could not create an invoice: %s", err.Error())
 		log.Errorln(errmsg)
-		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
+		bot.editSingleButton(ctx, c.Message, EditSingleButtonParams{Message: lnurlWithdrawState.Message, ButtonText: i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage")})
 		return ctx, err
 	}
 	lnurlWithdrawState.Invoice = invoice
@@ -270,21 +284,21 @@ func (bot *TipBot) confirmWithdrawHandler(ctx intercept.Context) (intercept.Cont
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
 		// bot.trySendMessage(c.Sender, Translate(ctx, "errorTryLaterMessage"))
-		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
+		bot.editSingleButton(ctx, c.Message, EditSingleButtonParams{Message: lnurlWithdrawState.Message, ButtonText: i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage")})
 		return ctx, err
 	}
 	res, err := client.Get(callbackUrl.String())
 	if err != nil || res.StatusCode >= 300 {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Failed.")
 		// bot.trySendMessage(c.Sender, Translate(handler.Ctx, "errorTryLaterMessage"))
-		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
+		bot.editSingleButton(ctx, c.Message, EditSingleButtonParams{Message: lnurlWithdrawState.Message, ButtonText: i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage")})
 		return ctx, errors.New(errors.UnknownError, err)
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
 		// bot.trySendMessage(c.Sender, Translate(handler.Ctx, "errorTryLaterMessage"))
-		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage"))
+		bot.editSingleButton(ctx, c.Message, EditSingleButtonParams{Message: lnurlWithdrawState.Message, ButtonText: i18n.Translate(lnurlWithdrawState.LanguageCode, "errorTryLaterMessage")})
 		return ctx, err
 	}
 
@@ -293,12 +307,12 @@ func (bot *TipBot) confirmWithdrawHandler(ctx intercept.Context) (intercept.Cont
 	json.Unmarshal(body, &response2)
 	if response2.Status == "OK" {
 		// update button text
-		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawSuccess"))
+		bot.editSingleButton(ctx, c.Message, EditSingleButtonParams{Message: lnurlWithdrawState.Message, ButtonText: i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawSuccess")})
 
 	} else {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] LNURLWithdraw failed.")
 		// update button text
-		bot.editSingleButton(ctx, c.Message, lnurlWithdrawState.Message, i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawFailed"))
+		bot.editSingleButton(ctx, c.Message, EditSingleButtonParams{Message: lnurlWithdrawState.Message, ButtonText: i18n.Translate(lnurlWithdrawState.LanguageCode, "lnurlWithdrawFailed")})
 		return ctx, errors.New(errors.UnknownError, fmt.Errorf("LNURLWithdraw failed"))
 	}
 
