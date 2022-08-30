@@ -97,7 +97,7 @@ func (bot *TipBot) confirmLnurlAuthHandler(ctx intercept.Context) (intercept.Con
 	// statusMsg := bot.trySendMessageEditable(c.Sender,
 	// 	Translate(ctx, "lnurlResolvingUrlMessage"),
 	// )
-	bot.editSingleButton(ctx, c.Message, lnurlAuthState.Message.Text, Translate(ctx, "lnurlResolvingUrlMessage"))
+	bot.editSingleButton(ctx, c.Message, EditSingleButtonParams{Message: lnurlAuthState.Message.Text, ButtonText: Translate(ctx, "lnurlResolvingUrlMessage")})
 
 	// from fiatjaf/go-lnurl
 	p := lnurlAuthState.LNURLAuthParams
@@ -125,7 +125,11 @@ func (bot *TipBot) confirmLnurlAuthHandler(ctx intercept.Context) (intercept.Con
 		bot.tryEditMessage(c, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), sentsigres.Reason))
 		return ctx, err
 	}
-	bot.editSingleButton(ctx, c.Message, lnurlAuthState.Message.Text, Translate(ctx, "lnurlSuccessfulLogin"))
+	bot.editSingleButton(ctx, c.Message, EditSingleButtonParams{
+		Message:    lnurlAuthState.Message.Text,
+		ButtonText: Translate(ctx, "lnurlSuccessfulLogin"),
+		URL:        fmt.Sprintf("https://%s", lnurlAuthState.LNURLAuthParams.Host),
+	})
 	return ctx, lnurlAuthState.Inactivate(lnurlAuthState, bot.Bunt)
 }
 
