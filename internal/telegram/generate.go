@@ -60,7 +60,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 	// generate a task to create an image with a prompt
-	task, err := dalleClient.Generate(ctx, "dogs fighting for bitcoin on sunny island, van gogh style")
+	task, err := dalleClient.Generate(ctx, "humanoid robot standing on a skyscraper at night looking down on the dark rainy metropolis in vaporware style oil painting")
 	// handle err
 
 	// poll the task.ID until status is succeeded

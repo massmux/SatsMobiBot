@@ -194,23 +194,6 @@ func (c *HTTPClient) createRequest(ctx context.Context, path, method string, val
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Set("User-Agent", c.userAgent)
 
-	req.Header.Set("Authority", "labs.openai.com")
-	req.Header.Set("Accept", "*/*")
-	req.Header.Set("Accept-Language", "en-US,en;q=0.9,de;q=0.8")
-	req.Header.Set("Cache-Control", "no-cache")
-	req.Header.Set("Content-Length", "0")
-	req.Header.Set("Cookie", "")
-	req.Header.Set("Dnt", "1")
-	req.Header.Set("Origin", "https://labs.openai.com")
-	req.Header.Set("Pragma", "no-cache")
-	req.Header.Set("Sec-Ch-Ua", "\"Chromium\";v=\"104\", \" Not A;Brand\";v=\"99\", \"Google Chrome\";v=\"104\"")
-	req.Header.Set("Sec-Ch-Ua-Mobile", "?0")
-	req.Header.Set("Sec-Ch-Ua-Platform", "\"macOS\"")
-	req.Header.Set("Sec-Fetch-Dest", "empty")
-	req.Header.Set("Sec-Fetch-Mode", "cors")
-	req.Header.Set("Sec-Fetch-Site", "same-origin")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
-
 	return req, nil
 }
 
