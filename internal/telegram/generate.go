@@ -125,7 +125,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		// handle err
 		if err != nil {
 			log.Errorf("[NewHTTPClient] %v", err.Error())
-			bot.dalleRefundUser(user)
+			bot.dalleRefundUser(user, "")
 			return
 		}
 
@@ -135,7 +135,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		task, err := dalleClient.Generate(ctx, invoiceEvent.CallbackData)
 		if err != nil {
 			log.Errorf("[Generate] %v", err.Error())
-			bot.dalleRefundUser(user)
+			bot.dalleRefundUser(user, "")
 			return
 		}
 		// poll the task.ID until status is succeeded
@@ -146,12 +146,12 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		for {
 			select {
 			case <-ctx.Done():
-				bot.dalleRefundUser(user)
-				log.Errorf("[DALLE] ctx done")
+				bot.dalleRefundUser(user, "")
+				log.Errorf("[DALLE] ctx done", "")
 				return
 			// Got a timeout! fail with a timeout error
 			case <-timeout:
-				bot.dalleRefundUser(user)
+				bot.dalleRefundUser(user, "Timeout. Please try again later.")
 				log.Errorf("[DALLE] timeout")
 				return
 			// Got a tick, we should check on checkSomething()
@@ -160,7 +160,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 				// handle err
 				if err != nil {
 					log.Errorf("[GetTask] %v", err.Error())
-					bot.dalleRefundUser(user)
+					bot.dalleRefundUser(user, "")
 					return
 				}
 				if t.Status == dalle.StatusSucceeded {
@@ -176,7 +176,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 
 				} else if t.Status == dalle.StatusRejected {
 					log.Errorf("[DALLE] rejected: %s", t.ID)
-					bot.dalleRefundUser(user)
+					bot.dalleRefundUser(user, "Your prompt has been rejected by OpenAI. Do not use celebrity names, sexual expressions, or any other harmful content as prompt.")
 					return
 				}
 				log.Debugf("[DALLE] pending for user %s", GetUserStr(user.Telegram))
@@ -212,7 +212,7 @@ func (bot *TipBot) downloadAndSendImages(ctx context.Context, dalleClient dalle.
 	return nil
 }
 
-func (bot *TipBot) dalleRefundUser(user *lnbits.User) error {
+func (bot *TipBot) dalleRefundUser(user *lnbits.User, message string) error {
 	if user.Wallet == nil {
 		return fmt.Errorf("user has no wallet")
 	}
@@ -240,6 +240,13 @@ func (bot *TipBot) dalleRefundUser(user *lnbits.User) error {
 		return err
 	}
 	log.Warnf("[DALLE] refunding user %s with %d sat", GetUserStr(user.Telegram), internal.Configuration.Generate.DallePrice)
-	bot.trySendMessage(user.Telegram, "🚫 Something went wrong. You have been refunded.")
+
+	var err_reason string
+	if len(message) > 0 {
+		err_reason = message
+	} else {
+		err_reason = "Something went wrong."
+	}
+	bot.trySendMessage(user.Telegram, fmt.Sprintf("🚫 %s You have been refunded.", err_reason))
 	return nil
 }
