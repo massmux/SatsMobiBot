@@ -13,11 +13,17 @@ import (
 
 // we can't use space in the label of buttons, because string splitting will mess everything up.
 const (
-	MainMenuCommandWebApp  = "⤵️ Recv"
+	// MainMenuCommandWebApp  = "⤵️ Recv"
+	// MainMenuCommandBalance = "Balance"
+	// MainMenuCommandInvoice = "⚡️ Invoice"
+	// MainMenuCommandHelp    = "📖 Help"
+	// MainMenuCommandSend    = "⤴️ Send"
+	// SendMenuCommandEnter   = "👤 Enter"
+	MainMenuCommandWebApp  = "⤵️"
 	MainMenuCommandBalance = "Balance"
 	MainMenuCommandInvoice = "⚡️ Invoice"
 	MainMenuCommandHelp    = "📖 Help"
-	MainMenuCommandSend    = "⤴️ Send"
+	MainMenuCommandSend    = "⤴️"
 	SendMenuCommandEnter   = "👤 Enter"
 )
 
