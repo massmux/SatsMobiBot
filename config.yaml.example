@@ -28,3 +28,4 @@ database:
 generate:
   dalle_key: "asd"
   dalle_price: 1000
+  worker: 2

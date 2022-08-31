@@ -22,7 +22,7 @@ import (
 // generateImages is called when the user enters /generate or /generate <prompt>
 // asks the user for a prompt if not given
 func (bot *TipBot) generateImages(ctx intercept.Context) (intercept.Context, error) {
-	if internal.Configuration.Generate.DalleKey == "" {
+	if !dalle.Enabled {
 		bot.trySendMessage(ctx.Message().Sender, "🤖💤 Dalle image generation is currently not available. Please try again later.")
 		return ctx, nil
 	}
@@ -102,9 +102,14 @@ func (bot *TipBot) confirmGenerateImages(ctx intercept.Context) (intercept.Conte
 }
 
 var jobChan chan func(workerId int)
-var workers = 2
+var workers = internal.Configuration.Generate.Worker
 
 func init() {
+	if workers == 0 {
+		log.Printf("Dalle is disabled. No worker started.")
+		return
+	}
+	log.Printf("Starting Dalle image generation. Worker: %d, Price: %d sat", workers, internal.Configuration.Generate.DallePrice)
 	jobChan = make(chan func(workerId int), workers)
 	for i := 0; i < workers; i++ {
 		go worker(jobChan, i)

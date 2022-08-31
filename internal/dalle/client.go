@@ -2,8 +2,17 @@ package dalle
 
 import (
 	"context"
+	"github.com/LightningTipBot/LightningTipBot/internal"
 	"io"
 )
+
+var Enabled bool
+
+func init() {
+	if internal.Configuration.Generate.DalleKey != "" {
+		Enabled = true
+	}
+}
 
 type Client interface {
 	Generate(ctx context.Context, prompt string) (*Task, error)
