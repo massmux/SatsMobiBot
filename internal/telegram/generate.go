@@ -22,6 +22,10 @@ import (
 // generateImages is called when the user enters /generate or /generate <prompt>
 // asks the user for a prompt if not given
 func (bot *TipBot) generateImages(ctx intercept.Context) (intercept.Context, error) {
+	if internal.Configuration.Generate.DalleKey == "" {
+		bot.trySendMessage(ctx.Message().Sender, "🤖💤 Dalle image generation is currently not available. Please try again later.")
+		return ctx, nil
+	}
 	bot.anyTextHandler(ctx)
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
