@@ -13,7 +13,7 @@ import (
 
 // we can't use space in the label of buttons, because string splitting will mess everything up.
 const (
-	MainMenuCommandWebApp  = "⤵️ Receive"
+	MainMenuCommandWebApp  = "⤵️ Recv"
 	MainMenuCommandBalance = "Balance"
 	MainMenuCommandInvoice = "⚡️ Invoice"
 	MainMenuCommandHelp    = "📖 Help"
@@ -38,7 +38,7 @@ func init() {
 	btnBalanceMainMenu = mainMenu.Text(MainMenuCommandBalance)
 	mainMenu.Reply(
 		mainMenu.Row(btnBalanceMainMenu),
-		mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnSendMainMenu),
+		mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnSendMainMenu, btnHelpMainMenu),
 	)
 }
 
@@ -100,7 +100,7 @@ func (bot *TipBot) mainMenuBalanceButtonUpdate(to int64) {
 		bot.appendWebAppLinkToButton(&btnWebAppMainMenu, user)
 		mainMenu.Reply(
 			mainMenu.Row(btnBalanceMainMenu),
-			mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnSendMainMenu),
+			mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnSendMainMenu, btnHelpMainMenu),
 		)
 	}
 }
