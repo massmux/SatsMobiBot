@@ -140,7 +140,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute*10)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute*15)
 		defer cancel()
 		// generate a task to create an image with a prompt
 		task, err := dalleClient.Generate(ctx, invoiceEvent.CallbackData)
@@ -151,28 +151,28 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		}
 		// poll the task.ID until status is succeeded
 		var t *dalle.Task
-		timeout := time.After(5 * time.Minute)
+		timeout := time.After(10 * time.Minute)
 		ticker := time.Tick(5 * time.Second)
 		// Keep trying until we're timed out or get a result/error
 		for {
 			select {
 			case <-ctx.Done():
 				bot.dalleRefundUser(user, "")
-				log.Errorf("[DALLE-%d] ctx done", workerId)
+				log.Errorf("[DALLE-%d] ctx done. Task %s", workerId, task.ID)
 				return
 			// Got a timeout! fail with a timeout error
 			case <-timeout:
 				bot.dalleRefundUser(user, "Timeout. Please try again later.")
-				log.Errorf("[DALLE-%d] timeout", workerId)
+				log.Errorf("[DALLE-%d] timeout. Task: %s", workerId, task.ID)
 				return
 			// Got a tick, we should check on checkSomething()
 			case <-ticker:
 				t, err = dalleClient.GetTask(ctx, task.ID)
 				// handle err
 				if err != nil {
-					log.Errorf("[GetTask-%d] %v", workerId, err.Error())
-					bot.dalleRefundUser(user, "")
-					return
+					log.Errorf("[GetTask-%d] Task: %s. Error: %v", workerId, task.ID, err.Error())
+					//bot.dalleRefundUser(user, "")
+					continue
 				}
 				if t.Status == dalle.StatusSucceeded {
 					log.Printf("[DALLE-%d] task succeeded for user %s", workerId, GetUserStr(user.Telegram))
@@ -180,7 +180,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 					for _, data := range t.Generations.Data {
 						err = bot.downloadAndSendImages(ctx, dalleClient, data, invoiceEvent)
 						if err != nil {
-							log.Errorf("[downloadAndSendImages-%d] %v", workerId, err.Error())
+							log.Errorf("[downloadAndSendImages-%d] Id: %s. Error: %v", workerId, data.ID, err.Error())
 						}
 					}
 					return
