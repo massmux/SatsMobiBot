@@ -97,16 +97,18 @@ func (bot *TipBot) confirmGenerateImages(ctx intercept.Context) (intercept.Conte
 	return ctx, nil
 }
 
-var jobChan chan func()
+var jobChan chan func(workerId int)
+var workers = 2
 
 func init() {
-	jobChan = make(chan func(), 2)
-	go worker(jobChan)
-	go worker(jobChan)
+	jobChan = make(chan func(workerId int), workers)
+	for i := 0; i < workers; i++ {
+		go worker(jobChan, i)
+	}
 }
-func worker(linkChan chan func()) {
+func worker(linkChan chan func(workerId int), workerId int) {
 	for generatePrompt := range linkChan {
-		generatePrompt()
+		generatePrompt(workerId)
 	}
 }
 
@@ -119,12 +121,12 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		return
 	}
 	bot.trySendMessage(user.Telegram, "🔄 Your images are being generated. Please wait a few moments.")
-	var job = func() {
+	var job = func(worker int) {
 		// create the client with the bearer token api key
 		dalleClient, err := dalle.NewHTTPClient(internal.Configuration.Generate.DalleKey)
 		// handle err
 		if err != nil {
-			log.Errorf("[NewHTTPClient] %v", err.Error())
+			log.Errorf("[NewHTTPClient-%d] %v", worker, err.Error())
 			bot.dalleRefundUser(user)
 			return
 		}
@@ -134,7 +136,7 @@ func (bot *TipBot) generateDalleImages(event Event) {
 		// generate a task to create an image with a prompt
 		task, err := dalleClient.Generate(ctx, invoiceEvent.CallbackData)
 		if err != nil {
-			log.Errorf("[Generate] %v", err.Error())
+			log.Errorf("[Generate-%d] %v", worker, err.Error())
 			bot.dalleRefundUser(user)
 			return
 		}
@@ -147,12 +149,12 @@ func (bot *TipBot) generateDalleImages(event Event) {
 			select {
 			case <-ctx.Done():
 				bot.dalleRefundUser(user)
-				log.Errorf("[DALLE] ctx done")
+				log.Errorf("[DALLE-%d] ctx done", worker)
 				return
 			// Got a timeout! fail with a timeout error
 			case <-timeout:
 				bot.dalleRefundUser(user)
-				log.Errorf("[DALLE] timeout")
+				log.Errorf("[DALLE-%d] timeout", worker)
 				return
 			// Got a tick, we should check on checkSomething()
 			case <-ticker:
@@ -164,22 +166,22 @@ func (bot *TipBot) generateDalleImages(event Event) {
 					return
 				}
 				if t.Status == dalle.StatusSucceeded {
-					fmt.Printf("[DALLE] task succeeded for user %s", GetUserStr(user.Telegram))
+					fmt.Printf("[DALLE-%d] task succeeded for user %s", worker, GetUserStr(user.Telegram))
 					// download the first generated image
 					for _, data := range t.Generations.Data {
 						err = bot.downloadAndSendImages(ctx, dalleClient, data, invoiceEvent)
 						if err != nil {
-							log.Errorf("[downloadAndSendImages] %v", err.Error())
+							log.Errorf("[downloadAndSendImages-%d] %v", worker, err.Error())
 						}
 					}
 					return
 
 				} else if t.Status == dalle.StatusRejected {
-					log.Errorf("[DALLE] rejected: %s", t.ID)
+					log.Errorf("[DALLE-%d] rejected: %s", worker, t.ID)
 					bot.dalleRefundUser(user)
 					return
 				}
-				log.Debugf("[DALLE] pending for user %s", GetUserStr(user.Telegram))
+				log.Debugf("[DALLE-%d] pending for user %s", worker, GetUserStr(user.Telegram))
 			}
 		}
 	}
