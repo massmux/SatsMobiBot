@@ -209,11 +209,10 @@ func (bot *TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, erro
 			return "", nil,
 				fmt.Errorf("invalid bech32-encoded lnurl: " + rawlnurl)
 		}
-		rawurl, err = lnurl.LNURLDecode(lnurl_str)
+		rawurl, err = lnurl.LNURLDecodeStrict(lnurl_str)
 		if err != nil {
 			return "", nil, err
 		}
-
 	}
 	log.Debug("[HandleLNURL] rawurl: ", rawurl)
 	parsed, err := url.Parse(rawurl)
