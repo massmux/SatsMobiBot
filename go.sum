@@ -253,6 +253,8 @@ github.com/fergusstrange/embedded-postgres v1.10.0 h1:YnwF6xAQYmKLAXXrrRx4rHDLih
 github.com/fergusstrange/embedded-postgres v1.10.0/go.mod h1:a008U8/Rws5FtIOTGYDYa7beVWsT3qVKyqExqYYjL+c=
 github.com/fiatjaf/go-lnurl v1.11.2 h1:XyZS6Uuu/2ZbhkZjOm3W+FaFvRzRRTFel3aMoO6eDUE=
 github.com/fiatjaf/go-lnurl v1.11.2/go.mod h1:9PAgeVpZ5u6olV/dfkoyPSOJs3j4q0JIGLSbBbmMci8=
+github.com/fiatjaf/go-lnurl v1.11.3-0.20220819192234-5c5819dd0aa7 h1:0m0ph1FcZY7p89OpaXOUs8N44GhP7gE/98l+eWCNSkQ=
+github.com/fiatjaf/go-lnurl v1.11.3-0.20220819192234-5c5819dd0aa7/go.mod h1:KJfs14iAY3gCgt/3T6fxfBvPhU67OfIp7PSrBg/v/R8=
 github.com/fiatjaf/ln-decodepay v1.1.0 h1:HigjqNH+ApiO6gm7RV23jXNFuvwq+zgsWl4BJAfPWwE=
 github.com/fiatjaf/ln-decodepay v1.1.0/go.mod h1:2qdTT95b8Z4dfuxiZxXuJ1M7bQ9CrLieEA1DKC50q6s=
 github.com/form3tech-oss/jwt-go v3.2.3+incompatible h1:7ZaBxOI7TMoYBfyA3cQHErNNyAWIKUMIwqxEtgHOs5c=

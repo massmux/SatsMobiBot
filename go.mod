@@ -7,7 +7,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0
 	github.com/eko/gocache v1.2.0
-	github.com/fiatjaf/go-lnurl v1.11.2
+	github.com/fiatjaf/go-lnurl v1.11.3-0.20220819192234-5c5819dd0aa7
 	github.com/fiatjaf/ln-decodepay v1.1.0
 	github.com/gorilla/mux v1.8.0
 	github.com/imroc/req v0.3.0
