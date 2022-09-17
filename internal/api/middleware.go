@@ -73,7 +73,7 @@ func AuthorizationMiddleware(database *gorm.DB, authType AuthType, accessType Ac
 		if accessType.Type == "admin" {
 			tx = database.Where("wallet_adminkey = ? COLLATE NOCASE", password).First(user)
 		} else if accessType.Type == "invoice" {
-			tx = database.Where("wallet_inkey = ? COLLATE NOCASE", password).First(user)
+			tx = database.Where("wallet_inkey = ? OR wallet_adminkey = ? COLLATE NOCASE", password, password).First(user)
 		} else {
 			log.Errorf("[api] route without access type")
 			w.WriteHeader(401)
