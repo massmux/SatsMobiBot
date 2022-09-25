@@ -67,7 +67,7 @@ helpMessage = """⚡️ *Portfel*
 _Ten bot jest portfelem Bitcoin Lightning, który potrafi wysyłać napiwki na Telegramie. Aby zacząć dodaj tego bota do chatu grupowego. Podstawową jednostką dla napiwków są Satoshi (sat). 100 000 000 sat = 1 Bitcoin. Napisz 📚 /basics aby uzyskać więcej informacji._
 
 ❤️ *Wsparcie*
-_Ten bot nie pobiera opłat, ale jego funkcjonowanie kosztuje. Jeśli podoba Ci się, rozważ proszę wsparcie tego projektu darowizną. Aby to zrobić użyj `/donate 1000`
+_Ten bot nie pobiera opłat, ale jego funkcjonowanie kosztuje. Jeśli podoba Ci się, rozważ proszę wsparcie tego projektu darowizną. Aby to zrobić użyj_ `/donate 1000`
 
 %s
 
