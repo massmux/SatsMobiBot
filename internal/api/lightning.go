@@ -142,21 +142,46 @@ type InvoiceStream struct {
 
 func (s Service) InvoiceStream(w http.ResponseWriter, r *http.Request) {
 	user := telegram.LoadUser(r.Context())
-	w.Header().Set("Content-Type", "application/stream+json")
-	w.Header().Set("Cache-Control", "no-cache")
-	flusher, err := w.(http.Flusher)
-	if !err {
+	flusher, ok := w.(http.Flusher)
+	if !ok {
 		http.Error(w, "Streaming unsupported!", http.StatusInternalServerError)
 		return
 	}
-
 	client := sse.NewClient(fmt.Sprintf("%s/api/v1/payments/sse", internal.Configuration.Lnbits.Url))
+	client.Connection.Transport = &http.Transport{DisableCompression: true}
 	client.Headers = map[string]string{"X-Api-Key": user.Wallet.Inkey}
-	client.Subscribe("", func(msg *sse.Event) {
-		if msg.Data != nil {
-			fmt.Fprintf(w, "%s\n", string(msg.Data))
-			flusher.Flush()
+	c := make(chan *sse.Event)
+	err := client.SubscribeChan("", c)
+	if err != nil {
+		http.Error(w, "Streaming unsupported!", http.StatusInternalServerError)
+		return
+	}
+out:
+	for {
+		select {
+		case msg := <-c:
+			select {
+			case <-r.Context().Done():
+				client.Unsubscribe(c)
+				break out
+			default:
+				written, err := fmt.Fprintf(w, "event: %s\n", string(msg.Event))
+				if err != nil || written == 0 {
+					break out
+				}
+				written, err = fmt.Fprintf(w, "data: %s\n", string(msg.Data))
+				if err != nil || written == 0 {
+					break out
+				}
+				written, err = fmt.Fprint(w, "\n")
+				if err != nil || written == 0 {
+					break out
+				}
+				flusher.Flush()
+			}
 		}
-	})
+
+	}
+	close(c)
 	time.Sleep(time.Second * 5)
 }
