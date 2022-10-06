@@ -144,7 +144,6 @@ func (s Service) InvoiceStream(w http.ResponseWriter, r *http.Request) {
 	user := telegram.LoadUser(r.Context())
 	w.Header().Set("Content-Type", "application/stream+json")
 	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
 	flusher, err := w.(http.Flusher)
 	if !err {
 		http.Error(w, "Streaming unsupported!", http.StatusInternalServerError)
