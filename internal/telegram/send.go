@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
@@ -85,13 +86,23 @@ func (bot *TipBot) sendHandler(ctx intercept.Context) (intercept.Context, error)
 	amount, err := decodeAmountFromCommand(ctx.Text())
 	// info: /send 10 <user> DEMANDS an amount, while /send <ln@address.com> also works without
 	// todo: /send <user> should also invoke amount input dialog if no amount is given
-
+	if err != nil {
+		return ctx, err
+	}
 	// CHECK whether first or second argument is a LIGHTNING ADDRESS
 	arg := ""
+	space := regexp.MustCompile(`\s+`)
+	ctx.Message().Text = space.ReplaceAllString(ctx.Message().Text, " ")
 	if len(strings.Split(ctx.Message().Text, " ")) > 2 {
 		arg, err = getArgumentFromCommand(ctx.Message().Text, 2)
+		if err != nil {
+			return ctx, err
+		}
 	} else if len(strings.Split(ctx.Message().Text, " ")) == 2 {
 		arg, err = getArgumentFromCommand(ctx.Message().Text, 1)
+		if err != nil {
+			return ctx, err
+		}
 	}
 	if err == nil {
 		if lightning.IsLightningAddress(arg) {
