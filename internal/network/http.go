@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
@@ -20,7 +21,15 @@ const (
 	ClientTypeTor      = "tor"
 )
 
+// checks if strings contains http(s)://*.onion
+var isOnion = regexp.MustCompile("^https?\\:\\/\\/[\\w\\-\\.]+\\.onion")
+
+// GetClientForScheme returns correct client for url scheme.
+// if tld is .onion, function will also return an onion client.
 func GetClientForScheme(url *url.URL) (*http.Client, error) {
+	if isOnion.FindString(url.String()) != "" {
+		return GetClient(ClientTypeTor)
+	}
 	switch url.Scheme {
 	case "onion":
 		return GetClient(ClientTypeTor)
