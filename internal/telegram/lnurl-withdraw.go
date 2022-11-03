@@ -280,7 +280,7 @@ func (bot *TipBot) confirmWithdrawHandler(ctx intercept.Context) (intercept.Cont
 	callbackUrl.RawQuery = qs.Encode()
 
 	// lnurlWithdrawState loaded
-	client, err := network.GetClient(network.ClientTypeClearNet)
+	client, err := network.GetClientForScheme(callbackUrl)
 	if err != nil {
 		log.Errorf("[lnurlWithdrawHandlerWithdraw] Error: %s", err.Error())
 		// bot.trySendMessage(c.Sender, Translate(ctx, "errorTryLaterMessage"))

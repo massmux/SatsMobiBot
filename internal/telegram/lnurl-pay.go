@@ -154,13 +154,13 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx intercept.Context) (intercept.Context
 
 	// LnurlPayState loaded
 
-	client, err := network.GetClient(network.ClientTypeClearNet)
+	callbackUrl, err := url.Parse(lnurlPayState.LNURLPayParams.Callback)
 	if err != nil {
 		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))
 		return ctx, err
 	}
-	callbackUrl, err := url.Parse(lnurlPayState.LNURLPayParams.Callback)
+	client, err := network.GetClientForScheme(callbackUrl)
 	if err != nil {
 		log.Errorf("[lnurlPayHandlerSend] Error: %s", err.Error())
 		bot.tryEditMessage(statusMsg, Translate(ctx, "errorTryLaterMessage"))

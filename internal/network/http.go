@@ -20,6 +20,15 @@ const (
 	ClientTypeTor      = "tor"
 )
 
+func GetClientForScheme(url *url.URL) (*http.Client, error) {
+	switch url.Scheme {
+	case "onion":
+		return GetClient(ClientTypeTor)
+	default:
+		return GetClient(ClientTypeClearNet)
+	}
+}
+
 func GetClient(clientType ClientType) (*http.Client, error) {
 	client := http.Client{
 		Timeout: 10 * time.Second,

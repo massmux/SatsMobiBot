@@ -238,7 +238,7 @@ func (bot *TipBot) HandleLNURL(rawlnurl string) (string, lnurl.LNURLParams, erro
 	// 	return rawurl, nil, err
 	// }
 
-	client, err := network.GetClient(network.ClientTypeClearNet)
+	client, err := network.GetClientForScheme(parsed)
 	if err != nil {
 		return "", nil, err
 	}
