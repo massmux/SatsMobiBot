@@ -1,0 +1,404 @@
+# COMMANDS
+
+helpCommandStr = """pomoc"""
+basicsCommandStr = """základy"""
+tipCommandStr = """tip"""
+balanceCommandStr = """zůstatek"""
+sendCommandStr = """poslat"""
+invoiceCommandStr = """invoice"""
+payCommandStr = """zaplatit"""
+donateCommandStr = """podpořit"""
+advancedCommandStr = """pokročilé"""
+transactionsCommandStr = """transakce"""
+logCommandStr = """log"""
+listCommandStr = """list"""
+
+linkCommandStr = """odkaz"""
+lnurlCommandStr = """LNURL"""
+faucetCommandStr = """faucet"""
+
+tipjarCommandStr = """tipjar"""
+receiveCommandStr = """přijmout"""
+hideCommandStr = """skrýt"""
+volcanoCommandStr = """sopka"""
+showCommandStr = """ukázat"""
+optionsCommandStr = """možnosti"""
+settingsCommandStr = """nastavení"""
+saveCommandStr = """uložit"""
+deleteCommandStr = """smazat"""
+infoCommandStr = """info"""
+
+# NOTIFICATIONS
+
+cantDoThatMessage = """To nelze udělat."""
+cantClickMessage = """Toto tlačítko nejde zmáčkout."""
+balanceTooLowMessage = """Tvůj zůstatek je příliš malý."""
+
+# BUTTONS
+
+sendButtonMessage = """✅ Odeslat"""
+payButtonMessage = """✅ Zaplatit"""
+payReceiveButtonMessage = """💸 Zaplatit"""
+receiveButtonMessage = """✅ Přijmout"""
+withdrawButtonMessage = """✅ Vybrat"""
+cancelButtonMessage = """🚫 Zrušit"""
+collectButtonMessage = """✅ Vybrat"""
+nextButtonMessage = """Dále"""
+backButtonMessage = """Zpět"""
+acceptButtonMessage = """Potvrdit"""
+denyButtonMessage = """Odmítnout"""
+tipButtonMessage = """Platba"""
+revealButtonMessage = """Odhalit"""
+showButtonMessage = """Ukázat"""
+hideButtonMessage = """Skrýt"""
+joinButtonMessage = """Připojit se"""
+optionsButtonMessage = """Možnosti"""
+settingsButtonMessage = """Nastavení"""
+saveButtonMessage = """Uložit"""
+deleteButtonMessage = """Smazat"""
+infoButtonMessage = """Info"""
+
+cancelButtonEmoji = """🚫"""
+payButtonEmoji = """💸"""
+
+# HELP
+
+helpMessage = """⚡️ *Peněženka*
+_Tento bot je bitcoinová lightning peněženka, která umožňuje posílat platby na Telegramu. Pro použití přidejte bota do chatu. Základní jednotkou je 1 sat. 100 000 000 sats = 1 bitcoin. Napiš 📚 /basics pro víc info._
+
+❤️ *Podpořit*
+_Tento bot si neúčtuje žádné poplatky, ale jeho provoz stojí nějaké sats. Pokud se Ti líbí, zvaž prosím podporu tohoto projektu. Pro podporu napiš_ `/donate 1000`
+
+%s
+
+⚙️ *Příkazy*
+*/tip* 🏅 Odpověz na zprávu, abys poslal tip: `/tip <částka> [<zpráva>]`
+*/balance* 👑 Zkontroluj svůj zůstatek: `/balance`
+*/send* 💸 Poslat platbu uživateli: `/send <částka> @uživatel nebo uživatel@ln.tips [<zpráva>]`
+*/invoice* ⚡️ Vytvořit lightning (invoice): `/invoice <částka> [<zpráva>]`
+*/pay* ⚡️ Zaplatit lightning invoice: `/pay <invoice>`
+*/donate* ❤️ Podpořit projekt: `/donate 1000`
+*/advanced* 🤖 Pokročilé funkce.
+*/help* 📖 Tato nápověda."""
+
+infoHelpMessage = """ℹ️ *Info*"""
+infoYourLightningAddress = """Tvoje lightning adresa je `%s`"""
+
+basicsMessage = """🧡 *Bitcoin*
+_Bitcoin jsou internetové peníze. Jsou decentralizované, k jejich použití nepotřebuješ povolení a nemají žádnou centrální autoritu, která by je řídila. Bitcoin jsou zdravé peníze, které jsou na rozdíl od starého finančního systému rychlejší, bezpečnější a pro každého._
+
+🧮 *Ekonomnika*
+_Nejmenší jednotkou bitcoinu je 1 sat. 100 000 000 sats = 1 bitcoin. Nikdy nebude existovat víc než 21 milionů bitcoinů. Kurz bitcoinu vůči státním měnám se může často a náhle měnit. Nicméně, pokud žijete na bitcoinovém standardu, 1 sat se bude pořád rovnat 1 satu._
+
+⚡️ *Lightning Network*
+_Lightningová síť je platební protokol který umožňuje rychlé a levné bitcoinové platby nevyžadující téměř žádnou energii. Tato síť škáluje bitcoin pro miliardy lidí na celém světě._
+
+📲 *Lightning peněženky*
+_Tvoje prostředky z této lightning peněženky můžeš poslat na jakoukoliv jinou a naopak. Doporučené lightning peněženky pro mobil jsou_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (držíte své klíče), nebo_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(jednoduchá, ale klíče od sats nedržíte)_.
+
+📄 *Open Source*
+_Tento bot je volný a otevřený_ [open source](https://github.com/LightningTipBot/LightningTipBot) _software. Můžeš ho běžet na vlastním počítači a používat jej ve vlastní komunitě._
+
+✈️ *Telegram*
+_Přidej tohoto bota do své skupiny na Telegramu a můžeš posílat /tip za zprávy. Pokud uděláš bota adminem skupiny, bude odstraňovat příkazy, aby zůstal chat přehlednější._
+
+🏛 *Podmínky*
+_Nejsme správci Tvých prostředků. Budeme konat v Tvém nejlepším zájmu, ale také jsme si vědomi nejisté situace bez KYC, dokud nepřijdeme na něco jiného. Jakákoli částka, kterou si pošleš do peněženky, je proto považována za příspěvek podpory. Neposílej nám všechny svoje peníze.  Vezmi v potaz, že bot je v beta fázi vývoje. Používáš ho na vlastní riziko._
+
+❤️ *Podpora*
+_Tento bot si neúčtuje žádné poplatky, ale jeho provoz stojí nějaké sats. Pokud se Ti líbí, zvaž prosím podporu tohoto projektu. Pro podporu napiš_ `/donate 1000`"""
+
+helpNoUsernameMessage = """👋 Prosím, nastav si uživatelské jméno na Telegramu."""
+
+advancedMessage = """%s
+
+👉 *Inline příkazy*
+*send* 💸 Poslat sats do chatu: `%s send <částka> [<uživatel>] [<zpráva>]`
+*receive* 🏅 Vyžádat platbu: `... receive <částka> [<uživatel>] [<zpráva>]`
+*faucet* 🚰 Vytvořit faucet: `... faucet <kapacita> <částka_na_uživatele> [<zpráva>]`
+*tipjar* 🍯 Vytvořit tipjar: `... tipjar <kapacita> <částka_na_uživatele> [<zpráva>]`
+
+📖 V každém chatu můžeš používat inline příkazy, dokonce i v soukromých konverzacích. Po zadání inline příkazu chvilku vyčkej a *klikni* na výsledek, nemačkej enter.
+
+⚙️ *Pokročilé příkazy*
+*/transactions* 📊 Seznam transakcí
+*/link* 🔗 Propojit peněženku s [BlueWallet](https://bluewallet.io/) nebo [Zeus](https://zeusln.app/)
+*/lnurl* ⚡️ LNURL obdržet nebo zaplatit: `/lnurl` nebo `/lnurl <lnurl>`
+*/faucet* 🚰 Vytvořit faucet: `/faucet <kapacita> <částka_na_uživatele>`
+*/tipjar* 🍯 Vytvořit tipjar: `/tipjar <kapacita> <částka_na_uživatele>`
+*/group* 🎟 Vytvořit vstupenky do skupiny: `/group add <název_skupiny> [<cena_vstupenky>]`
+*/shop* 🛍 Prohlížet obchody: `/shop` nebo `/shop <uživatel/id_obchodu>`
+*/generate* 🎆 Vytvořit obrázky od DALLE 2: `/generate <prompt>`"""
+
+
+# GENERIC
+enterAmountRangeMessage        = """💯 Zadej částku mezi %d a %d sats."""
+enterAmountMessage             = """💯 Zadej částku."""
+enterUserMessage               = """👤 Zadej uživatele."""
+enterTextMessage               = """⌨️ Zadej text."""
+errorReasonMessage             = """🚫 Chyba: %s"""
+
+# START
+
+startSettingWalletMessage = """🧮 Nastavování peněženky..."""
+startWalletCreatedMessage = """🧮 Peněženka vytvořena."""
+startWalletReadyMessage   = """✅ *Tvá peněženka je připravena.*"""
+startWalletErrorMessage   = """🚫 Chyba při vytváření peněženky. Zkus to později znovu."""
+startNoUsernameMessage    = """☝️ Vypadá to, že na Telegramu nemáš ještě uživatelské jméno (@username). Nevadí, pro používání tohoto bota ho nepotřebuješ. Nicméně, pro snazší používání peněženky si nastav uživatelské jméno v nastavení Telegramu. Poté zadej příkaz /balance a bot si zaktualizuje své záznamy."""
+
+# BALANCE
+
+balanceMessage      = """👑 *Tvůj zůstatek:* %d sat"""
+balanceErrorMessage = """🚫 Nepodařilo se získat info o zůstatku. Zkus to později znovu."""
+
+# TIP
+
+tipDidYouReplyMessage = """Odpověděl jsi na zprávu kvůli platbě? Pro odpověď na jakoukoli zprávu na PC klikni pravým myšítkem a vyber ´Odpovědět´ nebo na mobilu přes zprávu přejeď do strany. Pokud chceš poslat platbu jinému uživateli přímo, použij příkaz /send"""
+tipInviteGroupMessage = """ℹ️ Tohoto bota můžeš přizvat do jakékoli skupiny a posílat v ní platby."""
+tipEnterAmountMessage = """Zadal jsi částku?"""
+tipValidAmountMessage = """Zadal jsi platnou částku?"""
+tipYourselfMessage    = """📖 Nemůžeš poslat platbu sobě."""
+tipSentMessage        = """💸 %d sats posláno pro %s."""
+tipReceivedMessage    = """🏅 %s ti poslal %d sats."""
+tipErrorMessage       = """🚫 Platba selhala."""
+tipUndefinedErrorMsg  = """Prosím, zkus to později znovu."""
+tipHelpText           = """📖 Ou, tohle se nezdařilo. %s
+
+*Použití:* `/tip <částka> [<zpráva>]`
+*Příklad:* `/tip 1000 Díky moc!`"""
+
+# SEND
+
+sendValidAmountMessage     = """Zadal jsi platnou částku?"""
+sendUserHasNoWalletMessage = """🚫 Uživatel %s si ještě nevytvořil peněženku."""
+sendSentMessage            = """💸 %d sats posláno uživateli %s."""
+sendPublicSentMessage      = """💸 %d sats posláno od %s uživateli %s."""
+sendReceivedMessage        = """🏅 %s ti poslal %d sats."""
+sendErrorMessage           = """🚫 Odeslání selhalo."""
+confirmSendMessage         = """Chceš zaplatit uživateli %s?\n\n💸 Částka: %d sats"""
+confirmSendAppendMemo      = """\n✉️ %s"""
+sendCancelledMessage       = """🚫 Odeslání zrušeno."""
+errorTryLaterMessage       = """🚫 Chyba. Prosím, zkus to později znovu."""
+sendSyntaxErrorMessage     = """Zadal jsi částku a příjemce? Můžeš použít příkaz /send k poslání platby buď uživateli Telegramu jako %s nebo na lightning adresu jako LightningTipBot@ln.tips."""
+sendHelpText               = """📖 Ou, tohle se nezdařilo. %s
+
+*Použití:* `/send <částka> <uživatel> [<zpráva>]`
+*Příklad:* `/send 1000 @LightningTipBot Všichni jsme Satoshi ❤️`
+*Příklad:* `/send 1234 LightningTipBot@ln.tips`"""
+
+# INVOICE
+
+invoiceReceivedMessage    = """⚡️ Obdržel jsi %d sats."""
+invoiceEnterAmountMessage = """Zadal jsi částku?"""
+invoiceValidAmountMessage = """Zadal jsi platnou částku?"""
+invoiceHelpText           = """📖 Ou, tohle se nezdařilo. %s
+
+*Použití:* `/invoice <částka> [<zpráva>]`
+*Příklad:* `/invoice 1000 Děkuji!`"""
+invoicePaidText           = """✅ Invoice zaplacena.""" 
+
+# PAY
+
+paymentCancelledMessage     = """🚫 Platba zrušena."""
+invoicePaidMessage          = """⚡️ Platba odeslána."""
+invoicePublicPaidMessage    = """⚡️ Platba od %s odeslána."""
+invalidInvoiceHelpMessage    = """Máš platnou lightning invoice? Zkus příkaz /send k poslání platby uživateli Telegramu nebo na lightning adresu."""
+invoiceNoAmountMessage       = """🚫 Nemůžu zaplatit invoice bez částky."""
+insufficientFundsMessage     = """🚫 Nedostatek prostředků. Máš %d sats, ale potřebuješ alespoň %d sats."""
+feeReserveMessage            = """⚠️ Odeslání celého zůstatku se nemusí zdařit kvůli poplatkům v síti. Nechej rezervu aspoň 1% na poplatky."""
+invoicePaymentFailedMessage  = """🚫 Platba selhala: %s"""
+invoiceUndefinedErrorMessage = """Nemohl jsem zaplatit invoice."""
+confirmPayInvoiceMessage     = """Chceš poslat tuto platbu?\n\n💸 Částka: %d sats"""
+confirmPayAppendMemo         = """\n✉️ %s"""
+payHelpText                  = """📖 Ou, tohle se nezdařilo. %s
+
+*Použití:* `/pay <invoice>`
+*Příklad:* `/pay lnbc20n1psscehd...`"""
+
+# DONATE
+
+donationSuccess          = """🙏 Díky za tvůj příspěvek."""
+donationErrorMessage     = """🚫 Ale ne, odeslání přspěvku selhalo."""
+donationProgressMessage  = """🧮 Příprava odeslání příspěvku..."""
+donationFailedMessage    = """🚫 Příspěvek selhal: %s"""
+donateEnterAmountMessage = """Zadal jsi částku?"""
+donateValidAmountMessage = """Zadal jsi platnou částku?"""
+donateHelpText           = """📖 Ou, tohle se nezdařilo. %s
+
+*Použití:* `/donate <částka>`
+*Příklad:* `/donate 1000`"""
+
+# PHOTO
+
+photoQrNotRecognizedMessage = """🚫 Lightning invoice nebo LNURL nešlo rozpoznat. Pokus se QR kód vycentrovat, oříznout, nebo ho více přiblížit."""
+photoQrRecognizedMessage = """✅ QR kód:
+`%s`"""
+
+# LNURL
+
+lnurlReceiveInfoText           = """👇 Pro příjem plateb můžeš používat tuto statickou LNURL."""
+lnurlResolvingUrlMessage       = """🧮 Zpracovávám adresu..."""
+lnurlGettingUserMessage        = """🧮 Připravuji platbu..."""
+lnurlPaymentFailed             = """🚫 Platba selhala: %s"""
+lnurlInvalidAmountMessage      = """🚫 Neplatná částka."""
+lnurlInvalidAmountRangeMessage = """🚫 Částka musí být mezi %d a %d sats."""
+lnurlNoUsernameMessage         = """🚫 Pro příjem plateb pomocí LNURL potřebuješ na Telegramu uživatelské jméno."""
+lnurlHelpText                  = """📖 Ou, tohle se nezdařilo. %s
+
+*Použití:* `/lnurl [částka] <lnurl>`
+*Příklad:* `/lnurl LNURL1DP68GUR...`"""
+
+# LNURL LOGIN
+
+confirmLnurlAuthMessager        = """Chceš se přihlásit do %s?"""
+lnurlSuccessfulLogin            = """✅ Přihlášení úspěšné."""
+loginButtonMessage              = """✅ Přihlásit"""
+loginCancelledMessage           = """🚫 Přihlášení zrušeno."""
+
+# LNURL WITHDRAW
+
+confirmLnurlWithdrawMessage     = """Chceš provést tento výběr?\n\n💸 Částka: %d sats"""
+lnurlPreparingWithdraw        = """🧮 Příprava výběru..."""
+lnurlWithdrawFailed             = """🚫 Výběr selhal."""
+lnurlWithdrawCancelled             = """🚫 Výběr zrušen."""
+lnurlWithdrawSuccess             = """✅ Výběr vyžádán."""
+
+# LINK
+
+walletConnectMessage = """🔗 *Propojit vlastní peněženku*
+
+⚠️ Nikdy s nikým nesdílej URL nebo QR kód, jinak bude mít přístup k tvým prostředkům. Použij příkaz /api pro své API klíče.
+
+- *BlueWallet:* Vyber *Nová peněženka*, *Importovat peněženku*, *Scanovat nebo importovat ze souboru* a nascanuj QR kód.
+- *Zeus:* Zkopíruj URL níže, vyber *Add a new node/Přidat novou nodu*, zvol *LNDHub* jako Node interface/Rozhraní nody, vlož URL a ulož nastavení *Save Node Config*."""
+couldNotLinkMessage             = """🚫 Propojení s peněženkou se nezdařilo. Prosím, zkus to později znovu."""
+linkHiddenMessage               = """🔍 Propojení je skryto. Abys ho znovu viděl, zadej /link příkaz."""
+
+# API
+
+apiConnectMessage = """🔗 *Tvé API klíče*
+
+⚠️ Nikdy s nikým tyto klíče nesdílej, jinak bude mít přístup k tvým prostředkům. Použij příkaz /link k propojení své peněženky.
+
+- *Admin klíč:* `%s`
+- *Invoice klíč:* `%s`"""
+apiHiddenMessage               = """🔍 Klíče jsou skryty. Abys je znovu viděl, zadej /api příkaz."""
+
+# FAUCET
+
+inlineQueryFaucetTitle        = """🚰 Vytvořit faucet."""
+inlineQueryFaucetDescription  = """Použití: @%s faucet <kapacita> <částka_na_uživatele>"""
+inlineResultFaucetTitle       = """🚰 Vytvořit faucet s %d sats."""
+inlineResultFaucetDescription = """👉 Klikni zde pro vytvoření faucetu v tomto chatu."""
+
+inlineFaucetMessage                     = """Zmáčkni ✅ pro výběr %d sats z faucetu od %s.
+
+🚰 Zbývá: %d/%d sats (rozdáno %d/%d uživatelům)
+%s"""
+inlineFaucetEndedMessage                = """🚰 Faucet je prázdný 🍺\n\n🏅 %d sats rozdáno %d uživatelům."""
+inlineFaucetAppendMemo                  = """\n✉️ %s"""
+inlineFaucetCreateWalletMessage         = """Komunikuj s %s 👈 pro správu své peněženky."""
+inlineFaucetCancelledMessage            = """🚫 Faucet zrušen."""
+inlineFaucetInvalidPeruserAmountMessage = """🚫 Částka na uživatele musí dělit kapacitu faucetu beze zbytku nebo je příliš malá (min 5 sats)."""
+inlineFaucetInvalidAmountMessage        = """🚫 Neplatná částka."""
+inlineFaucetSentMessage                 = """🚰 %d sats posláno %s."""
+inlineFaucetReceivedMessage             = """🚰 %s ti poslal %d sats."""
+inlineFaucetHelpFaucetInGroup           = """Vytvoř faucet ve skupině s botem nebo použij 👉 inline příkaz (napiš /advanced pro víc info)."""
+inlineFaucetAlreadyTookMessage          = """🚫 Z tohoto faucetu už jsi čerpal."""
+inlineFaucetHelpText                    = """📖 Ou, tohle se nezdařilo. %s
+
+*Použití:* `/faucet <kapacita> <částka_na_uživatele>`
+*Příklad:* `/faucet 210 21`"""
+
+# INLINE SEND
+
+inlineQuerySendTitle            = """💸 Poslat platbu do chatu."""
+inlineQuerySendDescription      = """Použití: @%s send <částka> [<uživatel>] [<zpráva>]"""
+inlineResultSendTitle           = """💸 Poslat %d sats."""
+inlineResultSendDescription     = """👉 Klikni pro poslání %d sats do tohoto chatu."""
+
+inlineSendMessage              = """Zmáčkni ✅ pro obdržení platby od %s.\n\n💸 Částka: %d sats"""
+inlineSendAppendMemo           = """\n✉️ %s"""
+inlineSendUpdateMessageAccept  = """💸 %d sats posláno od %s uživateli %s."""
+inlineSendCreateWalletMessage  = """Chatuj s %s 👈 pro správu své peněženky."""
+sendYourselfMessage            = """📖 Nemůžeš platit sám sobě."""
+inlineSendFailedMessage        = """🚫 Platba selhala."""
+inlineSendInvalidAmountMessage = """🚫 Částka musí být větší než 0."""
+inlineSendBalanceLowMessage    = """🚫 Tvůj zůstatek je příliš malý."""
+
+# INLINE RECEIVE
+
+inlineQueryReceiveTitle        = """🏅 Vyžádat platbu v chatu."""
+inlineQueryReceiveDescription  = """Použití: @%s receive <částka> [<uživatel>] [<zpráva>]"""
+inlineResultReceiveTitle       = """🏅 Dostat %d sats."""
+inlineResultReceiveDescription = """👉 Klikni pro vyžádání platby %d sats."""
+
+inlineReceiveMessage             = """Zmáčkni 💸 pro zaplacení uživateli %s.\n\n💸 Částka: %d sats"""
+inlineReceiveAppendMemo          = """\n✉️ %s"""
+inlineReceiveUpdateMessageAccept = """💸 %d sats posláno od %s uživateli %s."""
+inlineReceiveCreateWalletMessage = """Chatuj s %s 👈 pro správu své peněženky."""
+inlineReceiveYourselfMessage     = """📖 Nemůžeš platit sám sobě."""
+inlineReceiveFailedMessage       = """🚫 Platba selhala."""
+inlineReceiveCancelledMessage    = """🚫 Platba zrušena."""
+
+# TIPJAR
+
+inlineQueryTipjarTitle        = """🍯 Vytvořit tipjar."""
+inlineQueryTipjarDescription  = """Použití: @%s tipjar <kapacita> <částka_od_uživatele>"""
+inlineResultTipjarTitle       = """🍯 Vytvořit tipjar na %d sats."""
+inlineResultTipjarDescription = """👉 Klikni zde pro vytvoření tipjar v tomto chatu."""
+
+inlineTipjarMessage                     = """Zmáčkni 💸 pro *platbu %d sats* do tohoto tipjar od %s.
+
+🙏 Věnováno: *%d*/%d sats (od %d uživatelů)
+%s"""
+inlineTipjarEndedMessage                = """🍯 Tipjar od %s je plný ⭐️\n\n🏅 Věnováno %d sats od %d uživatelů."""
+inlineTipjarAppendMemo                  = """\n✉️ %s"""
+inlineTipjarCancelledMessage            = """🚫 Tipjar zrušen."""
+inlineTipjarInvalidPeruserAmountMessage = """🚫 Částka od jednoho uživatele musí dělit kapacitu tipjar beze zbytku."""
+inlineTipjarInvalidAmountMessage        = """🚫 Neplatná částka."""
+inlineTipjarSentMessage                 = """🍯 %d sats posláno pro %s."""
+inlineTipjarReceivedMessage             = """🍯 %s ti poslal %d sats."""
+inlineTipjarHelpTipjarInGroup           = """Vytvoř tipjar ve skupině s botem nebo použij 👉 inline příkaz (/advanced pro víc info)."""
+inlineTipjarHelpText                    = """📖 Ou, tohle se nezdařilo. %s
+
+*Použití:* `/tipjar <kapacita> <částka_od_uživatele>`
+*Příklad:* `/tipjar 210 21`"""
+
+# GROUP TICKETS
+groupAddGroupHelpMessage            = """📖 Ou, tohle se nezdařilo. Tento příkaz funguje pouze ve skupinovém chatu. Mohou ho použít pouze vlastníci skupin.\nPoužití: `/group add <název_skupiny> [<částka>]`\nPříklad: `/group add NejvícHustáSkupina 1000`"""
+groupJoinGroupHelpMessage           = """📖 Ou, tohle se nezdařilo. Prosím, zkus to znovu.\nPoužití: `/join <název_skupiny>`\nPříklad: `/join NejvícHustáSkupina`"""
+groupClickToJoinMessage             = """🎟 [Klikni zde](%s) 👈 pro připojení `%s`."""
+groupTicketIssuedGroupMessage       = """🎟 Uživatel %s obdržel vstupenku do této skupiny."""
+groupPayInvoiceMessage              = """🎟 Pro připojení se ke skupině %s, zaplať výše uvedenou invoice."""
+groupBotIsNotAdminMessage           = """🚫 Ou, tohle se nezdařilo. Musíš mě jmenovat adminem a dát mi práva zvát uživatele."""
+groupNameExists                     = """🚫 Skupina s tímto názvem už existuje. Prosím, vyber jiný název."""
+groupAddedMessage                   = """🎟 Vstupenky pro skupinu `%s` přidány.\nAlias: `%s` Cena: %d sats\n\nPro vyžádání vstupenky do této skupiny začni soukromý chat s %s a napiš `/join %s`."""
+groupNotFoundMessage                = """🚫 Skupinu s tímto názvem se nepodařilo najít."""
+groupReceiveTicketInvoiceCommission = """🎟 Obdržel jsi *%d sats* (bez provize %d sats) za vstupenku do skupiny `%s` od uživatele %s."""
+groupReceiveTicketInvoice           = """🎟 Obdržel jsi *%d sats* za vstupenku do skupiny `%s` od uživatele %s."""
+commandPrivateMessage               = """Prosím, použij tento příkaz v soukromém chatu s %s."""
+groupHelpMessage                    = """🎟 Vstupenky do soukromých skupin 🎟
+
+Prodej vstupenky do své _soukromé skupiny_ a zbavíš se spam botů. 
+
+*Pokyny pro skupinové adminy:*
+
+1) Pozvi %s do své skupiny a udělej ho adminem.
+2) Skupinu změň na soukromou.
+3) Ve své skupině, jako její majitel, napiš `/group add <název_skupiny> [<cena_vstupenky>]`.
+
+_Poplatky: Bot si bere provizi 10%% +10 sats za levné vstupenky. Je-li cena vstupenky >= 1000 sats, je provize 2%% + 100 sats._
+
+*Pokyny pro členy skupin:*
+
+Pro připojení ke skupině si promluv s %s a v soukromé zprávě napiš `/join <název_skupiny>`.
+
+📖 *Použití:*
+*Pro adminy (ve skupinovém chatu):* `/group add <název_skupiny> [<cena_vstupenky>]`\nPříklad: `/group add NejvícHustáSkupina 1000`
+*Pro uživatele (v soukromém chatu):* `/join <název_skupiny>`\nPříklad: `/join NejvícHustáSkupina`"""
+
+# DALLE GENERATE
+generateDalleHelpMessage        = """Vytvořit obrázky pomocí OpenAI DALLE 2.\nPoužití: `/generate <prompt>`\nCena: 1000 sat"""
+generateDallePayInvoiceMessage  = """Zaplať tuto invoice pro vytvoření 4 obrázků 👇"""
+generateDalleGeneratingMessage  = """Tvé obrázky se generují. Chvilku strpení..."""
