@@ -54,6 +54,9 @@ func GetClient(clientType ClientType) (*http.Client, error) {
 	if cfg == nil {
 		return &client, nil
 	}
+	if cfg.Host == "" {
+		return &client, nil
+	}
 	proxyURL, _ := url.Parse(cfg.Host)
 	specialTransport := &http.Transport{}
 	specialTransport.Proxy = http.ProxyURL(proxyURL)
