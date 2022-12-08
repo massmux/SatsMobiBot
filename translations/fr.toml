@@ -229,7 +229,7 @@ photoQrRecognizedMessage = """✅ QR code:
 
 # LNURL
 
-lnurlReceiveInfoText           = """👇 Vous ne pouvez pas utiliser cet LNURL pour recevoir des paiements."""
+lnurlReceiveInfoText           = """👇 Vous pouvez utiliser cet LNURL pour recevoir des paiements."""
 lnurlResolvingUrlMessage       = """🧮 Recherche de l'adresse..."""
 lnurlGettingUserMessage        = """🧮 Préparation du paiement..."""
 lnurlPaymentFailed             = """🚫 Echec du paiement : %s"""
