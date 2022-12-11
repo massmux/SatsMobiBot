@@ -18,9 +18,10 @@ var Configuration = struct {
 }{}
 
 type GenerateConfiguration struct {
-	DalleKey   string `yaml:"dalle_key"`
-	DallePrice int64  `yaml:"dalle_price"`
-	Worker     int    `yaml:"worker"`
+	OpenAiBearerToken string `yaml:"open_ai_bearer_token"`
+	DalleKey          string `yaml:"dalle_key"`
+	DallePrice        int64  `yaml:"dalle_price"`
+	Worker            int    `yaml:"worker"`
 }
 
 type SocksConfiguration struct {

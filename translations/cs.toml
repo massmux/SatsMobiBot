@@ -128,7 +128,8 @@ advancedMessage = """%s
 */tipjar* 🍯 Vytvořit tipjar: `/tipjar <kapacita> <částka_na_uživatele>`
 */group* 🎟 Vytvořit vstupenky do skupiny: `/group add <název_skupiny> [<cena_vstupenky>]`
 */shop* 🛍 Prohlížet obchody: `/shop` nebo `/shop <uživatel/id_obchodu>`
-*/generate* 🎆 Vytvořit obrázky od DALLE 2: `/generate <prompt>`"""
+*/generate* 🎆 Vytvořit obrázky od DALLE 2: `/generate <prompt>`
+*/chat* 💬 Chat with GPT: `/chat <prompt>`"""
 
 
 # GENERIC

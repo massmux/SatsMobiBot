@@ -124,7 +124,8 @@ advancedMessage = """%s
 */tipjar* 🍯 Créer un tipjar: `/tipjar <capacité> <par_utilisateur>`
 */group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`
 */shop* 🛍 Browse shops: `/shop` or `/shop <user/shop_id>`
-*/generate* 🎆 Generate DALLE-2 images: `/generate <prompt>`"""
+*/generate* 🎆 Generate DALLE-2 images: `/generate <prompt>`
+*/chat* 💬 Chat with GPT: `/chat <prompt>`"""
 
 # GENERIC
 enterAmountRangeMessage        = """💯 Choisissez un montant entre %d et %d sat."""

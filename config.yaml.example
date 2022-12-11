@@ -26,6 +26,7 @@ database:
   shop_buntdb_path: "data/shop.db"
   groupsdb_path: "data/groups.db"
 generate:
+  open_ai_bearer_token: "token_here"
   dalle_key: "asd"
   dalle_price: 1000
   worker: 2
