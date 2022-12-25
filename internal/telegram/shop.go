@@ -175,10 +175,6 @@ func (bot *TipBot) enterShopItemPriceHandler(ctx intercept.Context) (intercept.C
 		}
 	}
 
-	if amount > 2000 {
-		bot.sendStatusMessageAndDelete(ctx, m.Sender, "ℹ️ During testing, price can be max 2000 sat.")
-		amount = 2000
-	}
 	item.Price = amount
 	shop.Items[item.ID] = item
 	runtime.IgnoreError(shop.Set(shop, bot.ShopBunt))
@@ -951,7 +947,6 @@ func (bot *TipBot) sendFileByID(ctx context.Context, to tb.Recipient, fileId str
 var ShopsText = ""
 var ShopsTextWelcome = "*You are browsing %s shop.*"
 var ShopsTextShopCount = "*Browse %d shops:*"
-var ShopsTextHelp = "⚠️ Shops are still in beta. Expect bugs."
 var ShopsNoShopsText = "*There are no shops here yet.*"
 
 // shopsHandlerCallback is a warpper for shopsHandler for callbacks
@@ -1061,7 +1056,6 @@ func (bot *TipBot) shopsHandler(ctx intercept.Context) (intercept.Context, error
 	if len(shops.Shops) > 0 {
 		ShopsText += fmt.Sprintf("%s\n", shopTitles)
 	}
-	ShopsText += fmt.Sprintf("\n%s", ShopsTextHelp)
 
 	// fmt.Sprintf(ShopsText, shopOwnerText, len(shops.Shops), shopTitles)
 
