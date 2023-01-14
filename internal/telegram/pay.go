@@ -17,6 +17,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/str"
+	lnurl "github.com/fiatjaf/go-lnurl"
 	decodepay "github.com/fiatjaf/ln-decodepay"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
@@ -38,15 +39,16 @@ func helpPayInvoiceUsage(ctx context.Context, errormsg string) string {
 
 type PayData struct {
 	*storage.Base
-	From            *lnbits.User `json:"from"`
-	Invoice         string       `json:"invoice"`
-	Hash            string       `json:"hash"`
-	Proof           string       `json:"proof"`
-	Memo            string       `json:"memo"`
-	Message         string       `json:"message"`
-	Amount          int64        `json:"amount"`
-	LanguageCode    string       `json:"languagecode"`
-	TelegramMessage *tb.Message  `json:"telegrammessage"`
+	From            *lnbits.User         `json:"from"`
+	Invoice         string               `json:"invoice"`
+	Hash            string               `json:"hash"`
+	Proof           string               `json:"proof"`
+	Memo            string               `json:"memo"`
+	Message         string               `json:"message"`
+	Amount          int64                `json:"amount"`
+	LanguageCode    string               `json:"languagecode"`
+	SuccessAction   *lnurl.SuccessAction `json:"successAction"`
+	TelegramMessage *tb.Message          `json:"telegrammessage"`
 }
 
 // payHandler invoked on "/pay lnbc..." command
@@ -140,6 +142,7 @@ func (bot *TipBot) payHandler(ctx intercept.Context) (intercept.Context, error) 
 		Memo:            bolt11.Description,
 		Message:         confirmText,
 		LanguageCode:    ctx.Value("publicLanguageCode").(string),
+		SuccessAction:   ctx.Value("SuccessAction").(*lnurl.SuccessAction),
 		TelegramMessage: payMessage,
 	}
 	// add result to persistent struct
@@ -183,8 +186,6 @@ func (bot *TipBot) confirmPayHandler(ctx intercept.Context) (intercept.Context, 
 		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
-	invoiceString := payData.Invoice
-
 	// reset state immediately
 	ResetUserState(user, bot)
 
@@ -203,7 +204,7 @@ func (bot *TipBot) confirmPayHandler(ctx intercept.Context) (intercept.Context, 
 
 	log.Infof("[/pay] Attempting %s's invoice %s (%d sat)", userStr, payData.ID, payData.Amount)
 	// pay invoice
-	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoiceString}, bot.Client)
+	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: payData.Invoice}, bot.Client)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/pay] Could not pay invoice of %s: %s", userStr, err)
 		err = fmt.Errorf(i18n.Translate(payData.LanguageCode, "invoiceUndefinedErrorMessage"))
@@ -236,6 +237,18 @@ func (bot *TipBot) confirmPayHandler(ctx intercept.Context) (intercept.Context, 
 		bot.trySendMessage(ctx.Sender(), i18n.Translate(payData.LanguageCode, "invoicePaidMessage"))
 		bot.tryEditMessage(ctx.Message(), fmt.Sprintf(i18n.Translate(payData.LanguageCode, "invoicePublicPaidMessage"), userStr), &tb.ReplyMarkup{})
 	}
+
+	// display LNURL success action if present
+	sa := payData.SuccessAction
+	if sa.Tag == "message" && len(sa.Message) > 0 {
+		bot.trySendMessage(ctx.Sender(), fmt.Sprintf("✉️: `%s`", sa.Message))
+	} else if sa.Tag == "url" && len(sa.URL) > 0 {
+		bot.trySendMessage(ctx.Sender(), fmt.Sprintf("🔗: %s", str.MarkdownEscape(sa.URL)))
+		if len(sa.Description) > 0 {
+			bot.trySendMessage(ctx.Sender(), fmt.Sprintf("✉️: %s", sa.Description))
+		}
+	}
+
 	log.Infof("[⚡️ pay] User %s paid invoice %s (%d sat)", userStr, payData.ID, payData.Amount)
 	return ctx, nil
 }
