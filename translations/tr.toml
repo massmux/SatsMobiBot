@@ -119,7 +119,7 @@ advancedMessage = """%s
 ⚙️ *Gelişmiş komutlar*
 */transactions* 📊 List transactions
 */link* 🔗 Cüzdanını bağla: [BlueWallet](https://bluewallet.io/) veya [Zeus](https://zeusln.app/) 
-*/lnurl* ⚡️ Lnurl iste veya gönder: `/lnurl` veya `/lnurl <lnurl>`
+*/lnurl* ⚡️ Lnurl iste veya gönder: `/lnurl` veya `/lnurl <lnurl> [memo]`
 */faucet* 🚰 Bir fıçı oluştur: `/faucet <toplam> <kullanıcı_başına>`
 */tipjar* 🍯 Bir tipjar oluştur: `/tipjar <capacity> <per_user>`
 */group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`

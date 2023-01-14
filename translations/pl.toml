@@ -124,7 +124,7 @@ advancedMessage = """%s
 ⚙️ *Komendy zaawansowane*
 */transactions* 📊 Lista transakcji
 */link* 🔗 Połączenie Twojego portfela z [BlueWallet](https://bluewallet.io/) lub [Zeus](https://zeusln.app/)
-*/lnurl* ⚡️ Przyjmij płatność lub zapłać za pomocą Lnurl: `/lnurl` lub `/lnurl <lnurl>`
+*/lnurl* ⚡️ Przyjmij płatność lub zapłać za pomocą Lnurl: `/lnurl` lub `/lnurl <lnurl> [memo]`
 */faucet* 🚰 Stwórz kranik (_faucet_): `/faucet <pojemność> <na_użytkownika>`
 */tipjar* 🍯 Stwórz słoik na napiwki (_tipjar_): `/tipjar <pojemność> <na_użytkownika>`
 */group* 🎟 Stwórz bilety na wejście do grupy: `/group add <mojagrupa> [<cena_biletu>]`

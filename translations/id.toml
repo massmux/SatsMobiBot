@@ -119,7 +119,7 @@ advancedMessage = """%s
 ⚙️ *Perintah lanjutan*
 */transactions* 📊 List transactions
 */link* 🔗 Menghubungkan dompet mu ke [BlueWallet](https://bluewallet.io/) atau [Zeus](https://zeusln.app/)
-*/lnurl* ⚡️ Lnurl menerima atau membayar: `/lnurl` atau `/lnurl <lnurl>`
+*/lnurl* ⚡️ Lnurl menerima atau membayar: `/lnurl` atau `/lnurl <lnurl> [memo]`
 */faucet* 🚰 Membuat sebuah keran `/faucet <kapasitas> <per_pengguna>`
 */tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`
 */group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`
