@@ -243,7 +243,7 @@ func (bot *TipBot) confirmPayHandler(ctx intercept.Context) (intercept.Context, 
 	if sa.Tag == "message" && len(sa.Message) > 0 {
 		bot.trySendMessage(ctx.Sender(), fmt.Sprintf("✉️: `%s`", sa.Message))
 	} else if sa.Tag == "url" && len(sa.URL) > 0 {
-		bot.trySendMessage(ctx.Sender(), fmt.Sprintf("🔗: %s", str.MarkdownEscape(sa.URL)))
+		bot.trySendMessage(ctx.Sender(), fmt.Sprintf("🔗: %s", str.MarkdownEscape(sa.URL)), tb.NoPreview)
 		if len(sa.Description) > 0 {
 			bot.trySendMessage(ctx.Sender(), fmt.Sprintf("✉️: %s", sa.Description))
 		}
