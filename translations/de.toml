@@ -120,7 +120,7 @@ advancedMessage = """%s
 ⚙️ *Fortgeschrittene Befehle*
 */transactions* 📊 Liste der Transaktionen
 */link* 🔗 Verbinde dein Wallet mit [BlueWallet](https://bluewallet.io/) oder [Zeus](https://zeusln.app/)
-*/lnurl* ⚡️ Lnurl empfangen oder senden: `/lnurl` oder `/lnurl <lnurl>`
+*/lnurl* ⚡️ Lnurl empfangen oder senden: `/lnurl` oder `/lnurl <lnurl> [memo]`
 */faucet* 🚰 Erzeuge einen Zapfhahn: `/faucet <gesamt> <pro_user>`
 */tipjar* 🍯 Erzeuge eine Spendendose: `/tipjar <gesamt> <pro_user>`
 */group* 🎟 Tickets für Gruppenchats: `/group add <meine_gruppe> [<ticket_preis>]`
