@@ -134,6 +134,12 @@ func (bot *TipBot) payHandler(ctx intercept.Context) (intercept.Context, error) 
 			cancelButton),
 	)
 	payMessage := bot.trySendMessageEditable(ctx.Chat(), confirmText, paymentConfirmationMenu)
+	// read successaction
+	sa, ok := ctx.Value("SuccessAction").(*lnurl.SuccessAction)
+	if !ok {
+		sa = &lnurl.SuccessAction{}
+	}
+
 	payData := &PayData{
 		Base:            storage.New(storage.ID(id)),
 		From:            user,
@@ -142,7 +148,7 @@ func (bot *TipBot) payHandler(ctx intercept.Context) (intercept.Context, error) 
 		Memo:            bolt11.Description,
 		Message:         confirmText,
 		LanguageCode:    ctx.Value("publicLanguageCode").(string),
-		SuccessAction:   ctx.Value("SuccessAction").(*lnurl.SuccessAction),
+		SuccessAction:   sa,
 		TelegramMessage: payMessage,
 	}
 	// add result to persistent struct
