@@ -36,7 +36,7 @@ type LnurlPayState struct {
 }
 
 // lnurlPayHandler is invoked when the first lnurl response was a lnurlpay response
-// at this point, the user hans't necessarily entered an amount yet
+// at this point, the user hasn't necessarily entered an amount yet
 func (bot *TipBot) lnurlPayHandler(ctx intercept.Context, payParams *LnurlPayState) (context.Context, error) {
 	m := ctx.Message()
 	user := LoadUser(ctx)
@@ -201,27 +201,15 @@ func (bot *TipBot) lnurlPayHandlerSend(ctx intercept.Context) (intercept.Context
 		return ctx, fmt.Errorf("error in LNURLPayValues: %s", error_reason)
 	}
 
-	// todo: doesn't work with lnurls from lnbits??
-	// check whether description hash matches with expected hash
-	// decode invoice
-	// bolt11, err := decodepay.Decodepay(response2.PR)
-	// if err != nil {
-	// 	bot.trySendMessage(ctx.Sender(), helpPayInvoiceUsage(ctx, Translate(ctx, "invalidInvoiceHelpMessage")))
-	// 	errmsg := fmt.Sprintf("[/pay] Error: Could not decode invoice: %s", err.Error())
-	// 	log.Errorln(errmsg)
-	// 	return ctx, errors.New(errors.InvalidSyntaxError, err)
-	// }
-	// if bolt11.DescriptionHash != lnurlPayState.DescriptionHash {
-	// 	log.Errorf("[lnurlPayHandlerSend] Error: description hash doesn't match")
-	// 	bot.tryEditMessage(statusMsg, fmt.Sprintf(Translate(ctx, "errorReasonMessage"), "description hash doesn't match.\nExpected: `"+lnurlPayState.DescriptionHash+"` Received: `"+bolt11.DescriptionHash+"`"))
-	// 	return ctx, fmt.Errorf("description hash doesn't match")
-	// }
-
 	// all good
 	lnurlPayState.LNURLPayValues = response2
 	// add result to persistent struct
 	runtime.IgnoreError(lnurlPayState.Set(lnurlPayState, bot.Bunt))
 	bot.Telegram.Delete(statusMsg)
+
+	// store success action in context for printing after the payHandler
+	ctx.Context = context.WithValue(ctx, "SuccessAction", lnurlPayState.LNURLPayValues.SuccessAction)
+
 	m.Text = fmt.Sprintf("/pay %s", response2.PR)
 	return bot.payHandler(ctx)
 }
