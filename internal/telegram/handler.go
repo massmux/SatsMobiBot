@@ -227,22 +227,22 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 					bot.unlockInterceptor,
 				}},
 		},
-		{
-			Endpoints: []interface{}{"/gpt", "/chat"},
-			Handler:   bot.gptHandler,
-			Interceptor: &Interceptor{
+		// {
+		// 	Endpoints: []interface{}{"/gpt", "/chat"},
+		// 	Handler:   bot.gptHandler,
+		// 	Interceptor: &Interceptor{
 
-				Before: []intercept.Func{
-					bot.localizerInterceptor,
-					bot.logMessageInterceptor,
-					bot.requireUserInterceptor,
-					bot.lockInterceptor,
-				},
-				OnDefer: []intercept.Func{
-					bot.unlockInterceptor,
-				},
-			},
-		},
+		// 		Before: []intercept.Func{
+		// 			bot.localizerInterceptor,
+		// 			bot.logMessageInterceptor,
+		// 			bot.requireUserInterceptor,
+		// 			bot.lockInterceptor,
+		// 		},
+		// 		OnDefer: []intercept.Func{
+		// 			bot.unlockInterceptor,
+		// 		},
+		// 	},
+		// },
 		{
 			Endpoints: []interface{}{"/balance", &btnBalanceMainMenu},
 			Handler:   bot.balanceHandler,
