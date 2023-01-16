@@ -19,7 +19,7 @@ const (
 	// MainMenuCommandHelp    = "📖 Help"
 	// MainMenuCommandSend    = "⤴️ Send"
 	// SendMenuCommandEnter   = "👤 Enter"
-	MainMenuCommandWebApp  = "⤵️"
+	MainMenuCommandWebApp  = "🗳️ App"
 	MainMenuCommandBalance = "Balance"
 	MainMenuCommandInvoice = "⚡️ Invoice"
 	MainMenuCommandHelp    = "📖 Help"
@@ -44,7 +44,8 @@ func init() {
 	btnBalanceMainMenu = mainMenu.Text(MainMenuCommandBalance)
 	mainMenu.Reply(
 		mainMenu.Row(btnBalanceMainMenu),
-		mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnSendMainMenu, btnHelpMainMenu),
+		// mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnSendMainMenu, btnHelpMainMenu), // TODO: fix btnSendMainMenu
+		mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnHelpMainMenu),
 	)
 }
 
@@ -106,7 +107,8 @@ func (bot *TipBot) mainMenuBalanceButtonUpdate(to int64) {
 		bot.appendWebAppLinkToButton(&btnWebAppMainMenu, user)
 		mainMenu.Reply(
 			mainMenu.Row(btnBalanceMainMenu),
-			mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnSendMainMenu, btnHelpMainMenu),
+			// mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnSendMainMenu, btnHelpMainMenu), // TODO: fix btnSendMainMenu
+			mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnHelpMainMenu),
 		)
 	}
 }
