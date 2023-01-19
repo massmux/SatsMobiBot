@@ -499,6 +499,22 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 		},
 		// group tickets
 		{
+			Endpoints: []interface{}{tb.OnUserJoined, tb.OnAddedToGroup},
+			Handler:   bot.handleTelegramNewMember,
+			Interceptor: &Interceptor{
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		// group tickets
+		{
 			Endpoints: []interface{}{"/group"},
 			Handler:   bot.groupHandler,
 			Interceptor: &Interceptor{

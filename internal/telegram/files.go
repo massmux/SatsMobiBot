@@ -5,6 +5,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
+	"time"
 )
 
 func (bot *TipBot) fileHandler(ctx intercept.Context) (intercept.Context, error) {
@@ -16,7 +17,7 @@ func (bot *TipBot) fileHandler(ctx intercept.Context) (intercept.Context, error)
 	if c := stateCallbackMessage[user.StateKey]; c != nil {
 		// found ctx for this state
 		// now looking for user state reset ticker
-		ticker := runtime.GetTicker(user.ID)
+		ticker := runtime.GetFunction(user.ID, runtime.WithTicker(time.NewTicker(runtime.DefaultTickerDuration)))
 		if !ticker.Started {
 			ticker.Do(func() {
 				ResetUserState(user, bot)

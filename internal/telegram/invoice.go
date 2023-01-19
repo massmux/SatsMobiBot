@@ -41,6 +41,7 @@ func initInvoiceEventCallbacks(bot *TipBot) {
 		InvoiceCallbackGroupTicket:     EventHandler{Function: bot.groupGetInviteLinkHandler, Type: EventTypeInvoice},
 		InvoiceCallbackSatdressProxy:   EventHandler{Function: bot.satdressProxyRelayPaymentHandler, Type: EventTypeInvoice},
 		InvoiceCallbackGenerateDalle:   EventHandler{Function: bot.generateDalleImages, Type: EventTypeInvoice},
+		InvoiceCallbackPayGroupTicket:  EventHandler{Function: bot.stopTicketTimer, Type: EventTypeInvoice},
 	}
 }
 
@@ -53,6 +54,7 @@ const (
 	InvoiceCallbackGroupTicket
 	InvoiceCallbackSatdressProxy
 	InvoiceCallbackGenerateDalle
+	InvoiceCallbackPayGroupTicket
 )
 
 const (

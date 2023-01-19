@@ -204,7 +204,7 @@ func (bot *TipBot) sendStatusMessageAndDelete(ctx intercept.Context, to tb.Recip
 	id := fmt.Sprintf("shopview-delete-%d", user.Telegram.ID)
 	statusMsg := bot.sendStatusMessage(ctx, to, what, options...)
 	// kick off ticker to remove all messages
-	ticker := runtime.GetTicker(id, runtime.WithDuration(5*time.Second))
+	ticker := runtime.GetFunction(id, runtime.WithTicker(time.NewTicker(5*time.Second)), runtime.WithDuration(5*time.Second))
 	if !ticker.Started {
 		ticker.Do(func() {
 			bot.shopViewDeleteAllStatusMsgs(ctx, user)

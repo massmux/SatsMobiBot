@@ -135,6 +135,7 @@ func (bot *TipBot) Start() {
 	// start the telegram bot
 	go bot.Telegram.Start()
 
+	go bot.restartPersistedTickets()
 	// gracefully shutdown
 	exit := make(chan os.Signal, 1) // we need to reserve to buffer size 1, so the notifier are not blocked
 	// we need to catch SIGTERM and SIGSTOP
