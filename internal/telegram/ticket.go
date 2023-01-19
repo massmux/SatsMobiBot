@@ -127,23 +127,34 @@ func (bot *TipBot) stopJoinTicketTimer(event Event) {
 	ticket := JoinTicket{Sender: ev.Payer.Telegram, Message: ev.Message}
 	err := bot.Bunt.Get(&ticket)
 	if err != nil {
+		log.Errorf("[stopJoinTicketTimer] %v", err)
 		return
 	}
-	me, err := GetUser(bot.Telegram.Me, *bot)
-	invoice, err := me.Wallet.Invoice(
-		lnbits.InvoiceParams{
-			Out:    false,
-			Amount: ticket.Ticket.Cut,
-			Memo:   ticket.Ticket.Memo},
-		bot.Client)
-	ticket.Ticket.Creator.Wallet.Pay(lnbits.PaymentParams{Bolt11: invoice.PaymentRequest, Out: true}, bot.Client)
+	if commission := getTicketCommission(ticket.Ticket); commission > 0 {
+		me, err := GetUser(bot.Telegram.Me, *bot)
+		if err != nil {
+			log.Errorf("[stopJoinTicketTimer] %v", err)
+			return
+		}
+		invoice, err := me.Wallet.Invoice(
+			lnbits.InvoiceParams{
+				Out:    false,
+				Amount: commission,
+				Memo:   ticket.Ticket.Memo},
+			bot.Client)
+		_, err = ticket.Ticket.Creator.Wallet.Pay(lnbits.PaymentParams{Bolt11: invoice.PaymentRequest, Out: true}, bot.Client)
+		if err != nil {
+			log.Errorf("[stopJoinTicketTimer] %v", err)
+		}
+	}
+
 	d := time.Until(time.Now().Add(defaultTicketDuration))
 	bot.tryDeleteMessage(ev.Message)
 	t := runtime.GetFunction(ticket.Key(), runtime.WithDuration(d))
 	t.StopChan <- struct{}{}
 	err = bot.Bunt.Delete(ticket.Key(), &ticket)
 	if err != nil {
-		log.Errorln(err)
+		log.Errorf("[stopJoinTicketTimer] %v", err)
 	}
 }
 
@@ -192,4 +203,16 @@ func (bot *TipBot) restartPersistedTickets() {
 		})
 		return err
 	})
+}
+func getTicketCommission(ticket *Ticket) int64 {
+	if ticket.Price < 20 {
+		return 0
+	}
+	// 2% cut + 100 sat base fee
+	commissionSat := ticket.Price*ticket.Cut/100 + ticket.BaseFee
+	if ticket.Price <= 1000 {
+		// if < 1000, then 10% cut + 10 sat base fee
+		commissionSat = ticket.Price*ticket.CutCheap/100 + ticket.BaseFeeCheap
+	}
+	return commissionSat
 }

@@ -365,19 +365,12 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 
 	// take a commission
 	ticketSat := ticketEvent.Group.Ticket.Price
-	if ticketEvent.Group.Ticket.Price > 20 {
+	if commissionSat := getTicketCommission(ticketEvent.Group.Ticket); commissionSat > 0 {
 		me, err := GetUser(bot.Telegram.Me, *bot)
 		if err != nil {
 			log.Errorf("[groupGetInviteLinkHandler] Could not get bot user from DB: %s", err.Error())
 			return
 		}
-		// 2% cut + 100 sat base fee
-		commissionSat := ticketEvent.Group.Ticket.Price*ticketEvent.Group.Ticket.Cut/100 + ticketEvent.Group.Ticket.BaseFee
-		if ticketEvent.Group.Ticket.Price <= 1000 {
-			// if < 1000, then 10% cut + 10 sat base fee
-			commissionSat = ticketEvent.Group.Ticket.Price*ticketEvent.Group.Ticket.CutCheap/100 + ticketEvent.Group.Ticket.BaseFeeCheap
-		}
-
 		ticketSat = ticketEvent.Group.Ticket.Price - commissionSat
 		invoice, err := me.Wallet.Invoice(
 			lnbits.InvoiceParams{

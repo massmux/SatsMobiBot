@@ -497,7 +497,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 				},
 			},
 		},
-		// group tickets
+		// group join
 		{
 			Endpoints: []interface{}{tb.OnUserJoined, tb.OnAddedToGroup},
 			Handler:   bot.handleTelegramNewMember,
