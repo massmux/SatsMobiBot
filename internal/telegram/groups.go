@@ -25,7 +25,6 @@ import (
 )
 
 type JoinTicket struct {
-	Chat             *tb.Chat    `json:"chat"`
 	Sender           *tb.User    `json:"sender"`
 	Message          *tb.Message `json:"message"`
 	CreatedTimestamp time.Time   `json:"created_timestamp"`
@@ -33,7 +32,7 @@ type JoinTicket struct {
 }
 
 func (jt JoinTicket) Key() string {
-	return fmt.Sprintf("join-ticket:%d_%d", jt.Chat.ID, jt.Sender.ID)
+	return fmt.Sprintf("join-ticket:%d_%d", jt.Message.Chat.ID, jt.Sender.ID)
 }
 
 func (jt JoinTicket) Type() EventType {
@@ -300,13 +299,17 @@ func (bot *TipBot) groupConfirmPayButtonHandler(ctx intercept.Context) (intercep
 	if err != nil {
 		errmsg := fmt.Sprintf("[/pay] Could not pay invoice of %s: %s", GetUserStr(user.Telegram), err)
 		err = fmt.Errorf(i18n.Translate(ticketEvent.LanguageCode, "invoiceUndefinedErrorMessage"))
-		bot.tryEditMessage(c, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "invoicePaymentFailedMessage"), err.Error()), &tb.ReplyMarkup{})
+		if ticketEvent.Callback != InvoiceCallbackPayJoinTicket {
+			bot.tryEditMessage(c, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "invoicePaymentFailedMessage"), err.Error()), &tb.ReplyMarkup{})
+		}
 		log.Errorln(errmsg)
 		return ctx, err
 	}
+	// if this was a join-ticket, we want to delete the invoice message
 
 	// update the message and remove the button
 	bot.tryEditMessage(c, i18n.Translate(ticketEvent.LanguageCode, "invoicePaidMessage"), &tb.ReplyMarkup{})
+
 	return ctx, nil
 }
 

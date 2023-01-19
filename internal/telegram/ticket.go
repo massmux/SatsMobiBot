@@ -35,19 +35,10 @@ func (bot *TipBot) handleTelegramNewMember(ctx intercept.Context) (intercept.Con
 	}
 	user := LoadUser(ctx)
 	ownerUser, err := GetUser(group.Owner, *bot)
-
-	ticket := JoinTicket{Sender: ctx.Sender(),
-		Chat: ctx.Chat(),
-
-		Ticket: group.Ticket}
-
-	/*	err = bot.Bunt.Get(&ticket)
-		if err != nil {
-			if err.Error() != "not found" {
-				return ctx, err
-			}
-		}*/
-
+	ticket := JoinTicket{
+		Sender: ctx.Sender(),
+		Ticket: group.Ticket,
+	}
 	// group owner creates invoice
 	invoice, err := ownerUser.Wallet.Invoice(
 		lnbits.InvoiceParams{
@@ -69,10 +60,11 @@ func (bot *TipBot) handleTelegramNewMember(ctx intercept.Context) (intercept.Con
 	}
 
 	// send the owner invoice to chat
-
+	// TicketEvent is used for callback button (if user has balance)
 	ticketEvent := TicketEvent{
+		// invoice event is used for invoice callbacks (do not kick if invoice is paid)
 		InvoiceEvent: &InvoiceEvent{
-			Base: storage.New(storage.ID(id)),
+			Base: storage.New(storage.ID(fmt.Sprintf("invoice-event:%s", id))),
 			Invoice: &Invoice{PaymentHash: invoice.PaymentHash,
 				PaymentRequest: invoice.PaymentRequest,
 				Amount:         ticket.Ticket.Price,
@@ -84,7 +76,7 @@ func (bot *TipBot) handleTelegramNewMember(ctx intercept.Context) (intercept.Con
 			LanguageCode: ctx.Value("publicLanguageCode").(string),
 		},
 		Group: group,
-		Base:  storage.New(storage.ID(id)),
+		Base:  storage.New(storage.ID(fmt.Sprintf("ticket-event:%s", id))),
 	}
 	captionText := fmt.Sprintf("⚠️ %s, this group requires that you pay %d sat to be able to join.\n\nYou have 15 minutes to do it or you'll be kicked and banned for one day", GetUserStrMd(ctx.Message().Sender), ticket.Ticket.Price)
 	entryMessage := &tb.Photo{
@@ -132,7 +124,7 @@ func (bot *TipBot) handleTelegramNewMember(ctx intercept.Context) (intercept.Con
 // should stop the ticker timer function and remove ticket from bluntDB.
 func (bot *TipBot) stopJoinTicketTimer(event Event) {
 	ev := event.(*InvoiceEvent)
-	ticket := JoinTicket{Sender: ev.Payer.Telegram, Chat: ev.Chat}
+	ticket := JoinTicket{Sender: ev.Payer.Telegram, Message: ev.Message}
 	err := bot.Bunt.Get(&ticket)
 	if err != nil {
 		return
@@ -140,10 +132,9 @@ func (bot *TipBot) stopJoinTicketTimer(event Event) {
 	me, err := GetUser(bot.Telegram.Me, *bot)
 	invoice, err := me.Wallet.Invoice(
 		lnbits.InvoiceParams{
-			Out:     false,
-			Amount:  ticket.Ticket.Cut,
-			Memo:    ticket.Ticket.Memo,
-			Webhook: internal.Configuration.Lnbits.WebhookServer},
+			Out:    false,
+			Amount: ticket.Ticket.Cut,
+			Memo:   ticket.Ticket.Memo},
 		bot.Client)
 	ticket.Ticket.Creator.Wallet.Pay(lnbits.PaymentParams{Bolt11: invoice.PaymentRequest, Out: true}, bot.Client)
 	d := time.Until(time.Now().Add(defaultTicketDuration))
@@ -170,13 +161,13 @@ func (bot *TipBot) startTicketCallbackFunctionTimer(ticket JoinTicket) {
 	// run the ticket callback function
 	t.Do(func() {
 		// ticket expired
-		member, err := bot.Telegram.ChatMemberOf(ticket.Chat, ticket.Sender)
+		member, err := bot.Telegram.ChatMemberOf(ticket.Message.Chat, ticket.Sender)
 		if err != nil {
 			log.Errorln("🧨 could not fetch / ban chat member")
 			return
 		}
 		// ban user
-		err = bot.Telegram.Ban(ticket.Chat, member)
+		err = bot.Telegram.Ban(ticket.Message.Chat, member)
 		if err != nil {
 			log.Errorln(err)
 		}
@@ -192,7 +183,10 @@ func (bot *TipBot) restartPersistedTickets() {
 	bot.Bunt.View(func(tx *buntdb.Tx) error {
 		err := tx.Ascend("join-ticket", func(key, value string) bool {
 			ticket := JoinTicket{}
-			json.Unmarshal([]byte(value), &ticket)
+			err := json.Unmarshal([]byte(value), &ticket)
+			if err != nil {
+				return true
+			}
 			bot.startTicketCallbackFunctionTimer(ticket)
 			return true // continue iteration
 		})
