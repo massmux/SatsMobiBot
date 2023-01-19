@@ -32,7 +32,7 @@ type Server struct {
 
 type Webhook struct {
 	CheckingID    string      `json:"checking_id"`
-	Pending       int         `json:"pending"`
+	Pending       bool        `json:"pending"`
 	Amount        int64       `json:"amount"`
 	Fee           int64       `json:"fee"`
 	Memo          string      `json:"memo"`
@@ -48,7 +48,7 @@ type Webhook struct {
 
 func NewServer(bot *telegram.TipBot) *Server {
 	srv := &http.Server{
-		Addr:         "0.0.0.0:5588",
+		Addr:         internal.Configuration.Lnbits.WebhookServerUrl.Host,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
