@@ -137,7 +137,7 @@ func (bot TipBot) groupHandler(ctx intercept.Context) (intercept.Context, error)
 			return bot.addGroupHandler(ctx)
 		}
 		if splits[1] == "ticket" {
-			return bot.handleGroupTicketPayWall(ctx)
+			return bot.handleJoinTicketPayWall(ctx)
 		}
 		if splits[1] == "remove" {
 			// todo -- implement this
@@ -406,7 +406,7 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 	}
 }
 
-func (bot TipBot) handleGroupTicketPayWall(ctx intercept.Context) (intercept.Context, error) {
+func (bot TipBot) handleJoinTicketPayWall(ctx intercept.Context) (intercept.Context, error) {
 	var err error
 	var cmd string
 	if cmd, err = getArgumentFromCommand(ctx.Message().Text, 2); err == nil {
@@ -416,14 +416,14 @@ func (bot TipBot) handleGroupTicketPayWall(ctx intercept.Context) (intercept.Con
 		case "delete":
 			fallthrough
 		case "remove":
-			return bot.removeGroupTicketPayWallHandler(ctx)
+			return bot.removeJoinTicketPayWallHandler(ctx)
 		default:
-			return bot.addGroupTicketPayWallHandler(ctx)
+			return bot.addJoinTicketPayWallHandler(ctx)
 		}
 	}
 	return ctx, err
 }
-func (bot TipBot) removeGroupTicketPayWallHandler(ctx intercept.Context) (intercept.Context, error) {
+func (bot TipBot) removeJoinTicketPayWallHandler(ctx intercept.Context) (intercept.Context, error) {
 	groupName := strconv.FormatInt(ctx.Chat().ID, 10)
 	tx := bot.DB.Groups.Where("id = ? COLLATE NOCASE", groupName).Delete(&Group{})
 	if tx.Error != nil {
@@ -432,7 +432,7 @@ func (bot TipBot) removeGroupTicketPayWallHandler(ctx intercept.Context) (interc
 
 	return ctx, nil
 }
-func (bot TipBot) addGroupTicketPayWallHandler(ctx intercept.Context) (intercept.Context, error) {
+func (bot TipBot) addJoinTicketPayWallHandler(ctx intercept.Context) (intercept.Context, error) {
 	m := ctx.Message()
 	if m.Chat.Type == tb.ChatPrivate {
 		bot.trySendMessage(m.Chat, Translate(ctx, "groupAddGroupHelpMessage"))

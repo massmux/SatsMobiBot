@@ -79,7 +79,7 @@ func (bot *TipBot) handleTelegramNewMember(ctx intercept.Context) (intercept.Con
 				Memo:           ticket.Ticket.Memo},
 			Payer:        user,
 			Chat:         ctx.Chat(),
-			Callback:     InvoiceCallbackPayGroupTicket,
+			Callback:     InvoiceCallbackPayJoinTicket,
 			CallbackData: "",
 			LanguageCode: ctx.Value("publicLanguageCode").(string),
 		},
@@ -130,7 +130,7 @@ func (bot *TipBot) handleTelegramNewMember(ctx intercept.Context) (intercept.Con
 
 // stopTicketTimer will load the timer function based on the event.
 // should stop the ticker timer function and remove ticket from bluntDB.
-func (bot *TipBot) stopTicketTimer(event Event) {
+func (bot *TipBot) stopJoinTicketTimer(event Event) {
 	ev := event.(*InvoiceEvent)
 	ticket := JoinTicket{Sender: ev.Payer.Telegram, Chat: ev.Chat}
 	err := bot.Bunt.Get(&ticket)
