@@ -48,7 +48,7 @@ type Webhook struct {
 
 func NewServer(bot *telegram.TipBot) *Server {
 	srv := &http.Server{
-		Addr:         "localhost:5588",
+		Addr:         internal.Configuration.Lnbits.WebhookServerUrl.Host,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
