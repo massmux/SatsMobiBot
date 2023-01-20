@@ -505,6 +505,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 				Before: []intercept.Func{
 					bot.localizerInterceptor,
 					bot.logMessageInterceptor,
+					bot.tryLoadUserInterceptor,
 					bot.lockInterceptor,
 				},
 				OnDefer: []intercept.Func{
