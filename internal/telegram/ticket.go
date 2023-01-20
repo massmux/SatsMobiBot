@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
@@ -14,8 +17,6 @@ import (
 	"github.com/skip2/go-qrcode"
 	"github.com/tidwall/buntdb"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
-	"strconv"
-	"time"
 )
 
 var defaultTicketDuration = time.Minute * 15
@@ -30,11 +31,24 @@ func (bot *TipBot) handleTelegramNewMember(ctx intercept.Context) (intercept.Con
 		return ctx, err
 	}
 	if !bot.isAdmin(ctx.Chat(), bot.Telegram.Me) {
-		fmt.Println("[TICKET] no admin")
+		log.Traceln("[TICKET] I am not an admin of this group")
 		return ctx, fmt.Errorf("no admin rights")
 	}
 	user := LoadUser(ctx)
+	// if the user does not have an account we put his Telegram user here
+	// because we will need it after the invoice callback has been triggered in stopJoinTicketTimer
+	if user == nil {
+		user = &lnbits.User{
+			ID:       "",
+			Telegram: ctx.Message().Sender,
+		}
+	}
+
 	ownerUser, err := GetUser(group.Owner, *bot)
+	if err != nil {
+		log.Errorln("[TICKET] Error: no owner found")
+		return ctx, err
+	}
 	ticket := JoinTicket{
 		Sender: ctx.Sender(),
 		Ticket: group.Ticket,
@@ -50,12 +64,6 @@ func (bot *TipBot) handleTelegramNewMember(ctx intercept.Context) (intercept.Con
 	if err != nil {
 		errmsg := fmt.Sprintf("[handleTelegramNewMember] Could not create an invoice: %s", err.Error())
 		log.Errorln(errmsg)
-		return ctx, err
-	}
-
-	// create qr code
-	qr, err := qrcode.Encode(invoice.PaymentRequest, qrcode.Medium, 256)
-	if err != nil {
 		return ctx, err
 	}
 
@@ -78,25 +86,37 @@ func (bot *TipBot) handleTelegramNewMember(ctx intercept.Context) (intercept.Con
 		Group: group,
 		Base:  storage.New(storage.ID(fmt.Sprintf("ticket-event:%s", id))),
 	}
-	captionText := fmt.Sprintf("⚠️ %s, this group requires that you pay %d sat to be able to join.\n\nYou have 15 minutes to do it or you'll be kicked and banned for one day", GetUserStrMd(ctx.Message().Sender), ticket.Ticket.Price)
-	entryMessage := &tb.Photo{
-		File:    tb.File{FileReader: bytes.NewReader(qr)},
-		Caption: captionText}
+	captionText := fmt.Sprintf("⚠️ %s, this group requires that you pay %d sat to join. You have 15 minutes to pay or you will be kicked and banned for one day", GetUserStrMd(ctx.Message().Sender), ticket.Ticket.Price)
 
-	// // if the user has enough balance, we send him a payment button
-	balance, err := bot.GetUserBalance(user)
-	if err != nil {
-		errmsg := fmt.Sprintf("[/group] Error: Could not get user balance: %s", err.Error())
-		log.Errorln(errmsg)
-		bot.trySendMessage(ctx.Message().Sender, Translate(ctx, "errorTryLaterMessage"))
-		return ctx, errors.New(errors.GetBalanceError, err)
+	var balance int64 = 0
+	if user.ID != "" {
+		// if the user has an account
+		// // if the user has enough balance, we send him a payment button
+		balance, err = bot.GetUserBalance(user)
+		if err != nil {
+			errmsg := fmt.Sprintf("[/group] Error: Could not get user balance: %s", err.Error())
+			log.Errorln(errmsg)
+			bot.trySendMessage(ctx.Message().Sender, Translate(ctx, "errorTryLaterMessage"))
+			return ctx, errors.New(errors.GetBalanceError, err)
+		}
+	} else {
+		balance = 0
 	}
+
 	var msg *tb.Message
 	if balance >= group.Ticket.Price {
 		confirm, menu := bot.getSendPayButton(ctx, ticketEvent)
-		msg = bot.trySendMessageEditable(ctx.Chat(), fmt.Sprintf("%s\n%s", entryMessage.Caption, confirm), menu)
+		msg = bot.trySendMessageEditable(ctx.Chat(), fmt.Sprintf("%s\n%s", captionText, confirm), menu)
 	} else {
-		entryMessage.Caption = fmt.Sprintf("%s\n`%s`", entryMessage.Caption, invoice.PaymentRequest)
+		// create qr code
+		qr, err := qrcode.Encode(invoice.PaymentRequest, qrcode.Medium, 256)
+		if err != nil {
+			return ctx, err
+		}
+		entryMessage := &tb.Photo{
+			File:    tb.File{FileReader: bytes.NewReader(qr)},
+			Caption: captionText}
+		entryMessage.Caption = fmt.Sprintf("%s\n\n`%s`", entryMessage.Caption, invoice.PaymentRequest)
 		msg = bot.trySendMessageEditable(ctx.Chat(), entryMessage)
 	}
 	ticketEvent.Message = msg

@@ -32,7 +32,7 @@ type Server struct {
 
 type Webhook struct {
 	CheckingID    string      `json:"checking_id"`
-	Pending       int         `json:"pending"`
+	Pending       bool        `json:"pending"`
 	Amount        int64       `json:"amount"`
 	Fee           int64       `json:"fee"`
 	Memo          string      `json:"memo"`
