@@ -160,7 +160,7 @@ func (bot *TipBot) stopJoinTicketTimer(event Event) {
 			lnbits.InvoiceParams{
 				Out:    false,
 				Amount: commission,
-				Memo:   ticket.Ticket.Memo},
+				Memo:   fmt.Sprintf("Ticket for group %d", ticket.Message.Chat.ID)},
 			bot.Client)
 		_, err = ticket.Ticket.Creator.Wallet.Pay(lnbits.PaymentParams{Bolt11: invoice.PaymentRequest, Out: true}, bot.Client)
 		if err != nil {

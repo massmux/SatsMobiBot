@@ -109,8 +109,9 @@ var (
 	btnPayTicket              = paymentConfirmationMenu.Data("✅ Pay", "pay_ticket")
 )
 
-var (
-	groupInvoiceMemo = "🎟 Ticket for group %s"
+const (
+	groupInvoiceMemo           = "🎟 Ticket for group %s"
+	groupInvoiceCommissionMemo = "🎟 Commission for group %s"
 )
 
 // groupHandler is called if the /group <cmd> command is invoked. It then decides with other
@@ -434,7 +435,7 @@ func (bot TipBot) addJoinTicketPayWallHandler(ctx intercept.Context) (intercept.
 		bot.trySendMessage(m.Chat, Translate(ctx, "groupAddGroupHelpMessage"))
 		return ctx, fmt.Errorf("not in group")
 	}
-	// parse command "/group add <grou_name> [<amount>]"
+	// parse command "/group ticket <grou_name> [<amount>]"
 	splits := strings.Split(m.Text, " ")
 	if len(splits) < 3 || len(m.Text) > 100 {
 		bot.trySendMessage(m.Chat, Translate(ctx, "groupAddGroupHelpMessage"))
