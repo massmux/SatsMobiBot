@@ -5,7 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 
@@ -21,6 +23,30 @@ import (
 	"github.com/skip2/go-qrcode"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
+
+type JoinTicket struct {
+	Sender           *tb.User    `json:"sender"`
+	Message          *tb.Message `json:"message"`
+	CreatedTimestamp time.Time   `json:"created_timestamp"`
+	Ticket           *Ticket     `json:"ticket"`
+}
+
+func (jt JoinTicket) Key() string {
+	return fmt.Sprintf("join-ticket:%d_%d", jt.Message.Chat.ID, jt.Sender.ID)
+}
+
+func (jt JoinTicket) Type() EventType {
+	return EventTypeTicketInvoice
+}
+
+func (bot *TipBot) loadGroup(groupName string) (*Group, error) {
+	group := &Group{}
+	tx := bot.DB.Groups.Where("name = ? COLLATE NOCASE", groupName).First(group)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return group, nil
+}
 
 type Ticket struct {
 	Price        int64        `json:"price"`
@@ -83,8 +109,9 @@ var (
 	btnPayTicket              = paymentConfirmationMenu.Data("✅ Pay", "pay_ticket")
 )
 
-var (
-	groupInvoiceMemo = "🎟 Ticket for group %s"
+const (
+	groupInvoiceMemo           = "🎟 Ticket for group %s"
+	groupInvoiceCommissionMemo = "🎟 Commission for group %s"
 )
 
 // groupHandler is called if the /group <cmd> command is invoked. It then decides with other
@@ -92,15 +119,18 @@ var (
 func (bot TipBot) groupHandler(ctx intercept.Context) (intercept.Context, error) {
 	m := ctx.Message()
 	splits := strings.Split(m.Text, " ")
-	user := LoadUser(ctx)
+	// user := LoadUser(ctx)
 	if len(splits) == 1 {
+		// command: /group
 		if ctx.Message().Private() {
+			// /group help message
 			bot.trySendMessage(ctx.Message().Chat, fmt.Sprintf(Translate(ctx, "groupHelpMessage"), GetUserStr(bot.Telegram.Me), GetUserStr(bot.Telegram.Me)))
-		} else {
-			if bot.isOwner(ctx.Message().Chat, user.Telegram) {
-				bot.trySendMessage(ctx.Message().Chat, fmt.Sprintf(Translate(ctx, "commandPrivateMessage"), GetUserStr(bot.Telegram.Me)))
-			}
 		}
+		// else {
+		// 	if bot.isOwner(ctx.Message().Chat, user.Telegram) {
+		// 		bot.trySendMessage(ctx.Message().Chat, fmt.Sprintf(Translate(ctx, "commandPrivateMessage"), GetUserStr(bot.Telegram.Me)))
+		// 	}
+		// }
 		return ctx, nil
 	} else if len(splits) > 1 {
 		if splits[1] == "join" {
@@ -108,6 +138,9 @@ func (bot TipBot) groupHandler(ctx intercept.Context) (intercept.Context, error)
 		}
 		if splits[1] == "add" {
 			return bot.addGroupHandler(ctx)
+		}
+		if splits[1] == "ticket" {
+			return bot.handleJoinTicketPayWall(ctx)
 		}
 		if splits[1] == "remove" {
 			// todo -- implement this
@@ -213,6 +246,11 @@ func (bot TipBot) groupRequestJoinHandler(ctx intercept.Context) (intercept.Cont
 // groupSendPayButtonHandler is invoked if the user has enough balance so a message with a
 // pay button is sent to the user.
 func (bot *TipBot) groupSendPayButtonHandler(ctx intercept.Context, ticket TicketEvent) (intercept.Context, error) {
+	confirmText, confirmationMenu := bot.getSendPayButton(ctx, ticket)
+	bot.trySendMessageEditable(ctx.Message().Chat, confirmText, confirmationMenu)
+	return ctx, nil
+}
+func (bot *TipBot) getSendPayButton(ctx intercept.Context, ticket TicketEvent) (string, *tb.ReplyMarkup) {
 	// object that holds all information about the send payment
 	// // // create inline buttons
 	btnPayTicket := ticketPayConfirmationMenu.Data(Translate(ctx, "payButtonMessage"), "pay_ticket", ticket.Base.ID)
@@ -221,11 +259,10 @@ func (bot *TipBot) groupSendPayButtonHandler(ctx intercept.Context, ticket Ticke
 			btnPayTicket),
 	)
 	confirmText := fmt.Sprintf(Translate(ctx, "confirmPayInvoiceMessage"), ticket.Group.Ticket.Price)
-	if len(ticket.Group.Ticket.Memo) > 0 {
-		confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmPayAppendMemo"), str.MarkdownEscape(ticket.Group.Ticket.Memo))
-	}
-	bot.trySendMessageEditable(ctx.Message().Chat, confirmText, ticketPayConfirmationMenu)
-	return ctx, nil
+	// if len(ticket.Group.Ticket.Memo) > 0 {
+	// 	confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmPayAppendMemo"), str.MarkdownEscape(ticket.Group.Ticket.Memo))
+	// }
+	return confirmText, ticketPayConfirmationMenu
 }
 
 // groupConfirmPayButtonHandler is invoked if th user clicks the pay button.
@@ -266,13 +303,17 @@ func (bot *TipBot) groupConfirmPayButtonHandler(ctx intercept.Context) (intercep
 	if err != nil {
 		errmsg := fmt.Sprintf("[/pay] Could not pay invoice of %s: %s", GetUserStr(user.Telegram), err)
 		err = fmt.Errorf(i18n.Translate(ticketEvent.LanguageCode, "invoiceUndefinedErrorMessage"))
-		bot.tryEditMessage(c, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "invoicePaymentFailedMessage"), err.Error()), &tb.ReplyMarkup{})
+		if ticketEvent.Callback != InvoiceCallbackPayJoinTicket {
+			bot.tryEditMessage(c, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "invoicePaymentFailedMessage"), err.Error()), &tb.ReplyMarkup{})
+		}
 		log.Errorln(errmsg)
 		return ctx, err
 	}
+	// if this was a join-ticket, we want to delete the invoice message
 
 	// update the message and remove the button
 	bot.tryEditMessage(c, i18n.Translate(ticketEvent.LanguageCode, "invoicePaidMessage"), &tb.ReplyMarkup{})
+
 	return ctx, nil
 }
 
@@ -328,19 +369,12 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 
 	// take a commission
 	ticketSat := ticketEvent.Group.Ticket.Price
-	if ticketEvent.Group.Ticket.Price > 20 {
+	if commissionSat := getTicketCommission(ticketEvent.Group.Ticket); commissionSat > 0 {
 		me, err := GetUser(bot.Telegram.Me, *bot)
 		if err != nil {
 			log.Errorf("[groupGetInviteLinkHandler] Could not get bot user from DB: %s", err.Error())
 			return
 		}
-		// 2% cut + 100 sat base fee
-		commissionSat := ticketEvent.Group.Ticket.Price*ticketEvent.Group.Ticket.Cut/100 + ticketEvent.Group.Ticket.BaseFee
-		if ticketEvent.Group.Ticket.Price <= 1000 {
-			// if < 1000, then 10% cut + 10 sat base fee
-			commissionSat = ticketEvent.Group.Ticket.Price*ticketEvent.Group.Ticket.CutCheap/100 + ticketEvent.Group.Ticket.BaseFeeCheap
-		}
-
 		ticketSat = ticketEvent.Group.Ticket.Price - commissionSat
 		invoice, err := me.Wallet.Invoice(
 			lnbits.InvoiceParams{
@@ -370,6 +404,105 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 	} else {
 		bot.trySendMessage(ticketEvent.User.Telegram, fmt.Sprintf(i18n.Translate(ticketEvent.LanguageCode, "groupReceiveTicketInvoice"), ticketSat, ticketEvent.Group.Title, GetUserStrMd(ticketEvent.Payer.Telegram)))
 	}
+}
+
+func (bot TipBot) handleJoinTicketPayWall(ctx intercept.Context) (intercept.Context, error) {
+	var err error
+	var cmd string
+	if cmd, err = getArgumentFromCommand(ctx.Message().Text, 2); err == nil {
+		switch strings.TrimSpace(strings.ToLower(cmd)) {
+		case "del":
+			fallthrough
+		case "delete":
+			fallthrough
+		case "remove":
+			return bot.removeJoinTicketPayWallHandler(ctx)
+		default:
+			return bot.addJoinTicketPayWallHandler(ctx)
+		}
+	}
+	return ctx, err
+}
+func (bot TipBot) removeJoinTicketPayWallHandler(ctx intercept.Context) (intercept.Context, error) {
+	groupName := strconv.FormatInt(ctx.Chat().ID, 10)
+	tx := bot.DB.Groups.Where("id = ? COLLATE NOCASE", groupName).Delete(&Group{})
+	if tx.Error != nil {
+		return ctx, tx.Error
+	}
+
+	return ctx, nil
+}
+
+// addJoinTicketPayWallHandler is invoked if the user calls the "/group ticket" command
+func (bot TipBot) addJoinTicketPayWallHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
+	if m.Chat.Type == tb.ChatPrivate {
+		bot.trySendMessage(m.Chat, Translate(ctx, "groupAddGroupHelpMessage"))
+		return ctx, fmt.Errorf("not in group")
+	}
+	// parse command "/group ticket <grou_name> [<amount>]"
+	splits := strings.Split(m.Text, " ")
+	if len(splits) < 3 || len(m.Text) > 100 {
+		bot.trySendMessage(m.Chat, Translate(ctx, "groupAddGroupHelpMessage"))
+		return ctx, nil
+	}
+	groupName := strconv.FormatInt(ctx.Chat().ID, 10)
+
+	user := LoadUser(ctx)
+	// check if the user is the owner of the group
+	if !bot.isOwner(m.Chat, user.Telegram) {
+		return ctx, fmt.Errorf("not owner")
+	}
+
+	if !bot.isAdminAndCanInviteUsers(m.Chat, bot.Telegram.Me) {
+		bot.trySendMessage(m.Chat, Translate(ctx, "groupBotIsNotAdminMessage"))
+		return ctx, fmt.Errorf("bot is not admin")
+	}
+
+	// check if the group with this name is already in db
+	// only if a group with this name is owned by this user, it can be overwritten
+	group := &Group{}
+	tx := bot.DB.Groups.Where("id = ? COLLATE NOCASE", groupName).First(group)
+	if tx.Error == nil {
+		// if it is already added, check if this user is the admin
+		if user.Telegram.ID != group.Owner.ID || group.ID != m.Chat.ID {
+			bot.trySendMessage(m.Chat, Translate(ctx, "groupNameExists"))
+			return ctx, fmt.Errorf("not owner")
+		}
+	}
+
+	amount := int64(0) // default amount is zero
+	if amount_str, err := getArgumentFromCommand(m.Text, 2); err == nil {
+		amount, err = GetAmount(amount_str)
+		if err != nil {
+			bot.trySendMessage(m.Sender, Translate(ctx, "lnurlInvalidAmountMessage"))
+			return ctx, err
+		}
+	}
+
+	ticket := &Ticket{
+		Price:        amount,
+		Memo:         "Ticket for group " + groupName,
+		Creator:      user,
+		Cut:          2,
+		BaseFee:      100,
+		CutCheap:     10,
+		BaseFeeCheap: 10,
+	}
+
+	group = &Group{
+		Name:   groupName,
+		Title:  m.Chat.Title,
+		ID:     m.Chat.ID,
+		Owner:  user.Telegram,
+		Ticket: ticket,
+	}
+
+	bot.DB.Groups.Save(group)
+	log.Infof("[group] Ticket of %d sat added to group %s.", group.Ticket.Price, group.Name)
+	bot.trySendMessage(m.Chat, Translate(ctx, "groupAddedMessagePublic"))
+
+	return ctx, nil
 }
 
 // addGroupHandler is invoked if the user calls the "/group add" command
@@ -439,7 +572,7 @@ func (bot TipBot) addGroupHandler(ctx intercept.Context) (intercept.Context, err
 
 	bot.DB.Groups.Save(group)
 	log.Infof("[group] Ticket of %d sat added to group %s.", group.Ticket.Price, group.Name)
-	bot.trySendMessage(m.Chat, fmt.Sprintf(Translate(ctx, "groupAddedMessage"), str.MarkdownEscape(m.Chat.Title), group.Name, group.Ticket.Price, GetUserStrMd(bot.Telegram.Me), group.Name))
+	bot.trySendMessage(m.Chat, fmt.Sprintf(Translate(ctx, "groupAddedMessagePrivate"), str.MarkdownEscape(m.Chat.Title), group.Name, group.Ticket.Price, GetUserStrMd(bot.Telegram.Me), group.Name))
 
 	return ctx, nil
 }

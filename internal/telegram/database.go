@@ -35,6 +35,7 @@ type Databases struct {
 }
 
 const (
+	JoinTicketIndex             = "join-ticket:*"
 	MessageOrderedByReplyToFrom = "message.reply_to_message.from.id"
 	TipTooltipKeyPattern        = "tip-tool-tip:*"
 )
@@ -44,6 +45,10 @@ func createBunt(file string) *storage.DB {
 	bunt := storage.NewBunt(file)
 	// create bunt database index for ascending (searching) TipTooltips
 	err := bunt.CreateIndex(MessageOrderedByReplyToFrom, TipTooltipKeyPattern, buntdb.IndexJSON(MessageOrderedByReplyToFrom))
+	if err != nil {
+		panic(err)
+	}
+	err = bunt.CreateIndex("join-ticket", JoinTicketIndex, buntdb.IndexString)
 	if err != nil {
 		panic(err)
 	}

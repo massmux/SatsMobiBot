@@ -2,6 +2,7 @@ package storage
 
 import (
 	"encoding/json"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/buntdb"
@@ -56,6 +57,7 @@ func (db *DB) Get(object Storable) error {
 		}
 		err = json.Unmarshal([]byte(val), object)
 		if err != nil {
+			fmt.Println(err)
 			return err
 		}
 		return nil

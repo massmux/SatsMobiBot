@@ -5,72 +5,127 @@ import (
 	"time"
 )
 
-var tickerMap cmap.ConcurrentMap
+var functionMap cmap.ConcurrentMap
 
 func init() {
-	tickerMap = cmap.New()
+	functionMap = cmap.New()
 }
 
-var defaultTickerCoolDown = time.Second * 10
+var DefaultTickerDuration = time.Second * 10
 
-// ResettableFunctionTicker will reset the user state as soon as tick is delivered.
-type ResettableFunctionTicker struct {
+// ResettableFunction will reset the user state as soon as tick is delivered.
+type ResettableFunction struct {
 	Ticker    *time.Ticker
+	Timer     *time.Timer
 	ResetChan chan struct{} // channel used to reset the ticker
+	StopChan  chan struct{} // channel used to reset the ticker
 	duration  time.Duration
 	Started   bool
 	name      string
 }
-type ResettableFunctionTickerOption func(*ResettableFunctionTicker)
 
+type ResettableFunctionTickerOption func(*ResettableFunction)
+
+func WithTicker(t *time.Ticker) ResettableFunctionTickerOption {
+	return func(a *ResettableFunction) {
+		a.Ticker = t
+	}
+}
 func WithDuration(d time.Duration) ResettableFunctionTickerOption {
-	return func(a *ResettableFunctionTicker) {
+	return func(a *ResettableFunction) {
 		a.duration = d
 	}
 }
-func RemoveTicker(name string) {
-	tickerMap.Remove(name)
+func WithTimer(t *time.Timer) ResettableFunctionTickerOption {
+	return func(a *ResettableFunction) {
+		a.Timer = t
+	}
 }
-func GetTicker(name string, option ...ResettableFunctionTickerOption) *ResettableFunctionTicker {
+func RemoveTicker(name string) {
+	functionMap.Remove(name)
+}
 
-	if t, ok := tickerMap.Get(name); ok {
-		return t.(*ResettableFunctionTicker)
+func Get(name string) (*ResettableFunction, bool) {
+	if t, ok := functionMap.Get(name); ok {
+		return t.(*ResettableFunction), ok
+	}
+	return nil, false
+}
+func GetFunction(name string, option ...ResettableFunctionTickerOption) *ResettableFunction {
+	if t, ok := functionMap.Get(name); ok {
+		return t.(*ResettableFunction)
 	} else {
-		t := NewResettableFunctionTicker(name, option...)
-		tickerMap.Set(name, t)
+		t := NewResettableFunction(name, option...)
+		functionMap.Set(name, t)
 		return t
 	}
 }
-func NewResettableFunctionTicker(name string, option ...ResettableFunctionTickerOption) *ResettableFunctionTicker {
-	t := &ResettableFunctionTicker{
+
+func NewResettableFunction(name string, option ...ResettableFunctionTickerOption) *ResettableFunction {
+	t := &ResettableFunction{
 		ResetChan: make(chan struct{}, 1),
+		StopChan:  make(chan struct{}, 1),
 		name:      name,
+	}
+	if t.duration == 0 {
+		t.duration = DefaultTickerDuration
 	}
 
 	for _, opt := range option {
 		opt(t)
 	}
-	if t.duration == 0 {
-		t.duration = defaultTickerCoolDown
-	}
-	t.Ticker = time.NewTicker(t.duration)
+
 	return t
 }
 
-func (t *ResettableFunctionTicker) Do(f func()) {
+// Do will listen for timers and invoke functionCallback on tick.
+func (t *ResettableFunction) Do(functionCallback func()) {
 	t.Started = true
-	tickerMap.Set(t.name, t)
+	// persist function
+	functionMap.Set(t.name, t)
 	go func() {
 		for {
+			if t.Timer != nil {
+				// timer is set. checking event
+				select {
+				case <-t.Timer.C:
+					functionCallback()
+					return
+				default:
+				}
+			}
+			if t.Ticker != nil {
+				// ticker is set. checking event
+				select {
+				case <-t.Ticker.C:
+					// ticker delivered signal. do function functionCallback
+					functionCallback()
+					return
+				default:
+				}
+			}
+			// check stop and reset channels
 			select {
-			case <-t.Ticker.C:
-				// ticker delivered signal. do function f
-				f()
+			case <-t.StopChan:
+				if t.Timer != nil {
+					t.Timer.Stop()
+				}
+				if t.Ticker != nil {
+					t.Ticker.Stop()
+				}
 				return
 			case <-t.ResetChan:
 				// reset signal received. creating new ticker.
-				t.Ticker = time.NewTicker(t.duration)
+				if t.Ticker != nil {
+					t.Ticker.Reset(t.duration)
+				}
+				if t.Timer != nil {
+					t.Timer.Reset(t.duration)
+				}
+			default:
+				break
 			}
+			time.Sleep(time.Millisecond * 500)
 		}
 	}()
 }

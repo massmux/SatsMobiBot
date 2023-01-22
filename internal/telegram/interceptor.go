@@ -131,6 +131,10 @@ func (bot TipBot) loadUserInterceptor(ctx intercept.Context) (intercept.Context,
 	}
 	return ctx, nil
 }
+func (bot TipBot) tryLoadUserInterceptor(ctx intercept.Context) (intercept.Context, error) {
+	ctx, _ = bot.requireUserInterceptor(ctx)
+	return ctx, nil
+}
 
 // loadReplyToInterceptor Loading the Telegram user with message intercept
 func (bot TipBot) loadReplyToInterceptor(ctx intercept.Context) (intercept.Context, error) {

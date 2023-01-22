@@ -753,7 +753,7 @@ func (bot *TipBot) addItemFileHandler(ctx intercept.Context) (intercept.Context,
 	// // start a ticker to check if the user has sent more files
 	// if t, ok := fileStateResetTicker.Get(shop.ID); ok {
 	// 	// state reset ticker found. resetting ticker.
-	// 	t.(*runtime.ResettableFunctionTicker).ResetChan <- struct{}{}
+	// 	t.(*runtime.ResettableFunction).ResetChan <- struct{}{}
 	// } else {
 	// 	// state reset ticker not found. creating new one.
 	// 	ticker := runtime.NewResettableFunctionTicker(runtime.WithDuration(time.Second * 5))

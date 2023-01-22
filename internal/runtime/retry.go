@@ -5,13 +5,14 @@ import (
 	"time"
 )
 
+// todo -- use function.go instead!
 // var retryMap cmap.ConcurrentMap
 
 // func init() {
 // 	retryMap = cmap.New()
 // }
 
-// ResettableFunctionTicker will reset the user state as soon as tick is delivered.
+// ResettableFunction will reset the user state as soon as tick is delivered.
 type FunctionRetry struct {
 	Ticker   *time.Ticker
 	duration time.Duration
@@ -35,14 +36,14 @@ func NewRetryTicker(ctx context.Context, name string, option ...FunctionRetryOpt
 		opt(t)
 	}
 	if t.duration == 0 {
-		t.duration = defaultTickerCoolDown
+		t.duration = DefaultTickerDuration
 	}
 	t.Ticker = time.NewTicker(t.duration)
 	return t
 }
 
 func (t *FunctionRetry) Do(f func(), cancel_f func(), deadline_f func()) {
-	tickerMap.Set(t.name, t)
+	functionMap.Set(t.name, t)
 	go func() {
 		for {
 			select {

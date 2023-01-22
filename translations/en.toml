@@ -370,14 +370,21 @@ groupJoinGroupHelpMessage           = """📖 Oops, that didn't work. Please try
 groupClickToJoinMessage             = """🎟 [Click here](%s) 👈 to join `%s`."""
 groupTicketIssuedGroupMessage       = """🎟 User %s has received a ticket for this group."""
 groupPayInvoiceMessage              = """🎟 To join the group %s, pay the invoice above."""
-groupBotIsNotAdminMessage           = """🚫 Oops, that didn't work. You must make me admin and grant me rights to invite users."""
+groupBotIsNotAdminMessage           = """🚫 Oops, that didn't work. You must make me admin and grant me rights to invite and ban users."""
 groupNameExists                     = """🚫 A group with this name already exists. Please choose a different name."""
-groupAddedMessage                   = """🎟 Tickets for group `%s` added.\nAlias: `%s` Price: %d sat\n\nTo request a ticket for this group, start a private chat with %s and write `/join %s`."""
+groupAddedMessagePrivate            = """🎟 Tickets for group `%s` added.\n\nAlias: `%s` Price: %d sat\n\nTo request a ticket for this group, start a private chat with %s and write `/join %s`."""
+groupAddedMessagePublic             = """🎟 Tickets enabled."""
 groupNotFoundMessage                = """🚫 Could not find a group with this name."""
 groupReceiveTicketInvoiceCommission = """🎟 You received *%d sat* (excl. %d sat commission) for a ticket for group `%s` paid by user %s."""
 groupReceiveTicketInvoice           = """🎟 You received *%d sat* for a ticket for group `%s` paid by user %s."""
 commandPrivateMessage               = """Please use this command in a private chat with %s."""
-groupHelpMessage                    = """🎟 Private group tickets 🎟
+groupHelpMessage                    = """👥 *Group commands*
+
+🎟 *Public tickets*
+
+For admins (in group chat): `/group ticket <ticket_price>`\nExample: `/group ticket 1000`
+
+🎟 *Private tickets*
 
 Sell tickets for your _private Group_ and get rid of spam bots. 
 
@@ -394,8 +401,8 @@ _Fees: The bot takes a 10%% +10 sat commission for cheap tickets. If the ticket 
 To join a group, talk to %s and write in a private message `/join <mygroup>`.
 
 📖 *Usage:*
-*For admins (in group chat):* `/group add <group_name> [<ticket_price>]`\nExample: `/group add TheBestBitcoinGroup 1000`
-*For users (in private chat):* `/join <group_name>`\nExample: `/join TheBestBitcoinGroup`"""
+For admins (in group chat): `/group add <group_name> [<ticket_price>]`\nExample: `/group add TheBestBitcoinGroup 1000`
+For users (in private chat): `/join <group_name>`\nExample: `/join TheBestBitcoinGroup`"""
 
 # DALLE GENERATE
 generateDalleHelpMessage        = """Generate images using OpenAI DALLE 2.\nUsage: `/generate <prompt>`\nPrice: 1000 sat"""
