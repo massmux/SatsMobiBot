@@ -126,7 +126,7 @@ advancedMessage = """%s
 */lnurl* ⚡️ Lnurl receive or pay: `/lnurl` or `/lnurl <lnurl> [memo]`
 */faucet* 🚰 Create a faucet: `/faucet <capacity> <per_user>`
 */tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`
-*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`
+*/group* 🎟 Group chat features: `/group`
 */shop* 🛍 Browse shops: `/shop` or `/shop <user/shop_id>`
 */generate* 🎆 Generate DALLE-2 images: `/generate <prompt>`"""
 
