@@ -119,15 +119,18 @@ const (
 func (bot TipBot) groupHandler(ctx intercept.Context) (intercept.Context, error) {
 	m := ctx.Message()
 	splits := strings.Split(m.Text, " ")
-	user := LoadUser(ctx)
+	// user := LoadUser(ctx)
 	if len(splits) == 1 {
+		// command: /group
 		if ctx.Message().Private() {
+			// /group help message
 			bot.trySendMessage(ctx.Message().Chat, fmt.Sprintf(Translate(ctx, "groupHelpMessage"), GetUserStr(bot.Telegram.Me), GetUserStr(bot.Telegram.Me)))
-		} else {
-			if bot.isOwner(ctx.Message().Chat, user.Telegram) {
-				bot.trySendMessage(ctx.Message().Chat, fmt.Sprintf(Translate(ctx, "commandPrivateMessage"), GetUserStr(bot.Telegram.Me)))
-			}
 		}
+		// else {
+		// 	if bot.isOwner(ctx.Message().Chat, user.Telegram) {
+		// 		bot.trySendMessage(ctx.Message().Chat, fmt.Sprintf(Translate(ctx, "commandPrivateMessage"), GetUserStr(bot.Telegram.Me)))
+		// 	}
+		// }
 		return ctx, nil
 	} else if len(splits) > 1 {
 		if splits[1] == "join" {
@@ -256,9 +259,9 @@ func (bot *TipBot) getSendPayButton(ctx intercept.Context, ticket TicketEvent) (
 			btnPayTicket),
 	)
 	confirmText := fmt.Sprintf(Translate(ctx, "confirmPayInvoiceMessage"), ticket.Group.Ticket.Price)
-	if len(ticket.Group.Ticket.Memo) > 0 {
-		confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmPayAppendMemo"), str.MarkdownEscape(ticket.Group.Ticket.Memo))
-	}
+	// if len(ticket.Group.Ticket.Memo) > 0 {
+	// 	confirmText = confirmText + fmt.Sprintf(Translate(ctx, "confirmPayAppendMemo"), str.MarkdownEscape(ticket.Group.Ticket.Memo))
+	// }
 	return confirmText, ticketPayConfirmationMenu
 }
 
@@ -429,6 +432,8 @@ func (bot TipBot) removeJoinTicketPayWallHandler(ctx intercept.Context) (interce
 
 	return ctx, nil
 }
+
+// addJoinTicketPayWallHandler is invoked if the user calls the "/group ticket" command
 func (bot TipBot) addJoinTicketPayWallHandler(ctx intercept.Context) (intercept.Context, error) {
 	m := ctx.Message()
 	if m.Chat.Type == tb.ChatPrivate {
@@ -495,8 +500,7 @@ func (bot TipBot) addJoinTicketPayWallHandler(ctx intercept.Context) (intercept.
 
 	bot.DB.Groups.Save(group)
 	log.Infof("[group] Ticket of %d sat added to group %s.", group.Ticket.Price, group.Name)
-	msg := strings.Split(fmt.Sprintf(Translate(ctx, "groupAddedMessage"), str.MarkdownEscape(m.Chat.Title), group.Name, group.Ticket.Price, GetUserStrMd(bot.Telegram.Me), group.Name), "\n\n")[0]
-	bot.trySendMessage(m.Chat, msg)
+	bot.trySendMessage(m.Chat, Translate(ctx, "groupAddedMessagePublic"))
 
 	return ctx, nil
 }
@@ -568,7 +572,7 @@ func (bot TipBot) addGroupHandler(ctx intercept.Context) (intercept.Context, err
 
 	bot.DB.Groups.Save(group)
 	log.Infof("[group] Ticket of %d sat added to group %s.", group.Ticket.Price, group.Name)
-	bot.trySendMessage(m.Chat, fmt.Sprintf(Translate(ctx, "groupAddedMessage"), str.MarkdownEscape(m.Chat.Title), group.Name, group.Ticket.Price, GetUserStrMd(bot.Telegram.Me), group.Name))
+	bot.trySendMessage(m.Chat, fmt.Sprintf(Translate(ctx, "groupAddedMessagePrivate"), str.MarkdownEscape(m.Chat.Title), group.Name, group.Ticket.Price, GetUserStrMd(bot.Telegram.Me), group.Name))
 
 	return ctx, nil
 }

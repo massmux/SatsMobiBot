@@ -86,7 +86,7 @@ func (bot *TipBot) handleTelegramNewMember(ctx intercept.Context) (intercept.Con
 		Group: group,
 		Base:  storage.New(storage.ID(fmt.Sprintf("ticket-event:%s", id))),
 	}
-	captionText := fmt.Sprintf("⚠️ %s, this group requires that you pay %d sat to join. You have 15 minutes to pay or you will be kicked and banned for one day", GetUserStrMd(ctx.Message().Sender), ticket.Ticket.Price)
+	captionText := fmt.Sprintf("⚠️ %s, this group requires you to pay *%d sat* to join. You have 15 minutes to pay or you will be kicked for one day.", GetUserStrMd(ctx.Message().Sender), ticket.Ticket.Price)
 
 	var balance int64 = 0
 	if user.ID != "" {
@@ -105,8 +105,8 @@ func (bot *TipBot) handleTelegramNewMember(ctx intercept.Context) (intercept.Con
 
 	var msg *tb.Message
 	if balance >= group.Ticket.Price {
-		confirm, menu := bot.getSendPayButton(ctx, ticketEvent)
-		msg = bot.trySendMessageEditable(ctx.Chat(), fmt.Sprintf("%s\n%s", captionText, confirm), menu)
+		_, menu := bot.getSendPayButton(ctx, ticketEvent)
+		msg = bot.trySendMessageEditable(ctx.Chat(), captionText, menu)
 	} else {
 		// create qr code
 		qr, err := qrcode.Encode(invoice.PaymentRequest, qrcode.Medium, 256)
@@ -162,9 +162,14 @@ func (bot *TipBot) stopJoinTicketTimer(event Event) {
 				Amount: commission,
 				Memo:   fmt.Sprintf("Ticket for group %d", ticket.Message.Chat.ID)},
 			bot.Client)
+		if err != nil {
+			log.Errorf("[stopJoinTicketTimer] %v", err)
+			return
+		}
 		_, err = ticket.Ticket.Creator.Wallet.Pay(lnbits.PaymentParams{Bolt11: invoice.PaymentRequest, Out: true}, bot.Client)
 		if err != nil {
 			log.Errorf("[stopJoinTicketTimer] %v", err)
+			return
 		}
 	}
 
@@ -210,6 +215,7 @@ func (bot *TipBot) startTicketCallbackFunctionTimer(ticket JoinTicket) {
 	})
 }
 
+// restartPersistedTickets kicks of all ticket timers
 func (bot *TipBot) restartPersistedTickets() {
 	bot.Bunt.View(func(tx *buntdb.Tx) error {
 		err := tx.Ascend("join-ticket", func(key, value string) bool {
