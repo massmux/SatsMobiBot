@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/nbd-wtf/go-nostr"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"github.com/LightningTipBot/LightningTipBot/internal/storage"
@@ -214,12 +215,14 @@ func (bot *TipBot) notifyInvoiceReceivedEvent(event Event) {
 
 type LNURLInvoice struct {
 	*Invoice
-	Comment   string       `json:"comment"`
-	User      *lnbits.User `json:"user"`
-	CreatedAt time.Time    `json:"created_at"`
-	Paid      bool         `json:"paid"`
-	PaidAt    time.Time    `json:"paid_at"`
-	From      string       `json:"from"`
+	Comment            string       `json:"comment"`
+	User               *lnbits.User `json:"user"`
+	CreatedAt          time.Time    `json:"created_at"`
+	Paid               bool         `json:"paid"`
+	PaidAt             time.Time    `json:"paid_at"`
+	From               string       `json:"from"`
+	Nip57Receipt       nostr.Event  `json:"nip57_receipt"`
+	Nip57ReceiptRelays []string     `json:"nip57_receipt_relays"`
 }
 
 func (lnurlInvoice LNURLInvoice) Key() string {
@@ -234,6 +237,7 @@ func (bot *TipBot) lnurlReceiveEvent(event Event) {
 	err := bot.Bunt.Get(tx)
 	log.Debugf("[lnurl-p] Received invoice for %s of %d sat.", GetUserStr(invoiceEvent.User.Telegram), tx.Amount)
 	if err == nil {
+		// notify user with LNURL comment and sender Information
 		if len(tx.Comment) > 0 {
 			if len(tx.From) == 0 {
 				bot.trySendMessage(tx.User.Telegram, fmt.Sprintf("✉️ %s", str.MarkdownEscape(tx.Comment)))
@@ -242,6 +246,12 @@ func (bot *TipBot) lnurlReceiveEvent(event Event) {
 			}
 		} else if len(tx.From) > 0 {
 			bot.trySendMessage(tx.User.Telegram, fmt.Sprintf("From `%s`", str.MarkdownEscape(tx.From)))
+		}
+		// send out NIP57 zap receipt
+		if len(tx.Nip57Receipt.Sig) > 0 {
+			// zapEventSerialized, _ := json.Marshal(tx.Nip57Receipt)
+			bot.trySendMessage(tx.User.Telegram, "💜 This was a zap on nostr.")
+			go bot.publishNostrEvent(tx.Nip57Receipt, tx.Nip57ReceiptRelays)
 		}
 	}
 }

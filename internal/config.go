@@ -15,7 +15,12 @@ var Configuration = struct {
 	Database DatabaseConfiguration `yaml:"database"`
 	Lnbits   LnbitsConfiguration   `yaml:"lnbits"`
 	Generate GenerateConfiguration `yaml:"generate"`
+	Nostr    NostrConfiguration    `yaml:"nostr"`
 }{}
+
+type NostrConfiguration struct {
+	PrivateKey string `yaml:"private_key"`
+}
 
 type GenerateConfiguration struct {
 	OpenAiBearerToken string `yaml:"open_ai_bearer_token"`
