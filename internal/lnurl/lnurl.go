@@ -24,6 +24,7 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
 	"github.com/fiatjaf/go-lnurl"
 	"github.com/gorilla/mux"
+	"github.com/nbd-wtf/go-nostr"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -37,12 +38,14 @@ const (
 
 type Invoice struct {
 	*telegram.Invoice
-	Comment   string       `json:"comment"`
-	User      *lnbits.User `json:"user"`
-	CreatedAt time.Time    `json:"created_at"`
-	Paid      bool         `json:"paid"`
-	PaidAt    time.Time    `json:"paid_at"`
-	From      string       `json:"from"`
+	Comment            string       `json:"comment"`
+	User               *lnbits.User `json:"user"`
+	CreatedAt          time.Time    `json:"created_at"`
+	Paid               bool         `json:"paid"`
+	PaidAt             time.Time    `json:"paid_at"`
+	From               string       `json:"from"`
+	Nip57Receipt       nostr.Event  `json:"nip57_receipt"`
+	Nip57ReceiptRelays []string     `json:"nip57_receipt_relays"`
 }
 type Lnurl struct {
 	telegram         *tb.Bot
@@ -52,6 +55,7 @@ type Lnurl struct {
 	buntdb           *storage.DB
 	WebhookServer    string
 	cache            telegram.Cache
+	bot              *telegram.TipBot
 }
 
 func New(bot *telegram.TipBot) Lnurl {
@@ -63,6 +67,7 @@ func New(bot *telegram.TipBot) Lnurl {
 		buntdb:           bot.Bunt,
 		telegram:         bot.Telegram,
 		cache:            bot.Cache,
+		bot:              bot,
 	}
 }
 func (lnurlInvoice Invoice) Key() string {
@@ -110,7 +115,32 @@ func (w Lnurl) Handle(writer http.ResponseWriter, request *http.Request) {
 			// log.Errorf("[handleLnUrl] payerdata: %v", payerdata)
 		}
 
-		response, err = w.serveLNURLpSecond(username, int64(amount), comment, payerData)
+		// nostr NIP-57
+		// the "nostr" query param has a zap request which is a nostr event
+		// that specifies which nostr note has been zapped.
+		// here we check wheter its present, the event signature is valid
+		// and whether the event has the necessary tags that we need (p and relays are necessary, e is optional)
+		zapEventQuery := request.FormValue("nostr")
+		var zapEvent nostr.Event
+		err = json.Unmarshal([]byte(zapEventQuery), &zapEvent)
+		if err != nil {
+			log.Errorf("[handleLnUrl] Couldn't parse nostr event: %v", err)
+		} else {
+			valid, err := zapEvent.CheckSignature()
+			if !valid || err != nil {
+				log.Errorf("[handleLnUrl] Nostr NIP-57 zap event signature invalid: %v", err)
+				return
+			}
+			if len(zapEvent.Tags) == 0 || zapEvent.Tags.GetFirst([]string{"p"}) == nil ||
+				zapEvent.Tags.GetFirst([]string{"relays"}) == nil {
+				// zapEvent.Tags.GetFirst([]string{"e"}) == nil {
+				log.Errorf("[handleLnUrl] Nostr NIP-57 zap event validation error")
+				return
+			}
+
+		}
+
+		response, err = w.serveLNURLpSecond(username, int64(amount), comment, payerData, zapEvent)
 	}
 	// check if error was returned from first or second handlers
 	if err != nil {
@@ -156,9 +186,25 @@ func (w Lnurl) getMetaDataCached(username string) lnurl.Metadata {
 	return metadata
 }
 
+// we have our custom LNURLPayParams response object here because we want to
+// add nostr nip57 fields to it
+type LNURLPayParamsCustom struct {
+	lnurl.LNURLResponse
+	Callback        string               `json:"callback"`
+	Tag             string               `json:"tag"`
+	MaxSendable     int64                `json:"maxSendable"`
+	MinSendable     int64                `json:"minSendable"`
+	EncodedMetadata string               `json:"metadata"`
+	CommentAllowed  int64                `json:"commentAllowed"`
+	PayerData       *lnurl.PayerDataSpec `json:"payerData,omitempty"`
+	AllowNostr      bool                 `json:"allowsNostr,omitempty"`
+	NostrPubKey     string               `json:"nostrPubkey,omitempty"`
+	Metadata        lnurl.Metadata       `json:"-"`
+}
+
 // serveLNURLpFirst serves the first part of the LNURLp protocol with the endpoint
 // to call and the metadata that matches the description hash of the second response
-func (w Lnurl) serveLNURLpFirst(username string) (*lnurl.LNURLPayParams, error) {
+func (w Lnurl) serveLNURLpFirst(username string) (*LNURLPayParamsCustom, error) {
 	log.Infof("[LNURL] Serving endpoint for user %s", username)
 	callbackURL, err := url.Parse(fmt.Sprintf("%s/%s/%s", w.callbackHostname.String(), Endpoint, username))
 	if err != nil {
@@ -168,7 +214,21 @@ func (w Lnurl) serveLNURLpFirst(username string) (*lnurl.LNURLPayParams, error) 
 	// produce the metadata including the image
 	metadata := w.getMetaDataCached(username)
 
-	return &lnurl.LNURLPayParams{
+	// check if the user has added a nostr key for nip57
+	var allowNostr bool = false
+	var nostrPubkey string = ""
+	user, tx := findUser(w.database, username)
+	if tx.Error == nil && user.Telegram != nil {
+		user, err = findUserSettings(user, w.bot)
+		if user.Settings.Nostr.PubKey != "" {
+			allowNostr = true
+			nostrPubkey = user.Settings.Nostr.PubKey
+		}
+	} else {
+		log.Errorf("[serveLNURLpFirst] user not found")
+	}
+
+	return &LNURLPayParamsCustom{
 		LNURLResponse:   lnurl.LNURLResponse{Status: api.StatusOk},
 		Tag:             PayRequestTag,
 		Callback:        callbackURL.String(),
@@ -181,11 +241,13 @@ func (w Lnurl) serveLNURLpFirst(username string) (*lnurl.LNURLPayParams, error) 
 			LightningAddress: &lnurl.PayerDataItemSpec{},
 			Email:            &lnurl.PayerDataItemSpec{},
 		},
+		AllowNostr:  allowNostr,
+		NostrPubKey: nostrPubkey,
 	}, nil
 }
 
 // serveLNURLpSecond serves the second LNURL response with the payment request with the correct description hash
-func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment string, payerData lnurl.PayerDataValues) (*lnurl.LNURLPayValues, error) {
+func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment string, payerData lnurl.PayerDataValues, zapEvent nostr.Event) (*lnurl.LNURLPayValues, error) {
 	log.Infof("[LNURL] Serving invoice for user %s", username)
 	if amount_msat < MinSendable || amount_msat > MaxSendable {
 		// amount is not ok
@@ -222,24 +284,59 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 	// set wallet lnbits client
 
 	var resp *lnurl.LNURLPayValues
+	var descriptionHash string
 
-	// the same description_hash needs to be built in the second request
-	metadata := w.getMetaDataCached(username)
+	// NIP57 ZAPs
+	var nip57Receipt nostr.Event
+	var zapEventSerializedStr string
+	var nip57ReceiptRelays []string
+	// for nip57 use only the nostr event as the descriptionHash:
+	if zapEvent.Sig != "" {
+		// we calculate the descriptionHash here, create an invoice with it
+		// and store the invoice in the zap receipt later down the line
+		zapEventSerialized, err := json.Marshal(zapEvent)
+		zapEventSerializedStr = fmt.Sprintf("%s", zapEventSerialized)
+		if err != nil {
+			log.Println(err)
+			return &lnurl.LNURLPayValues{
+				LNURLResponse: lnurl.LNURLResponse{
+					Status: api.StatusError,
+					Reason: "Couldn't serialize zap event."},
+			}, err
+		}
+		// we extract the relays from the zap request
+		nip57ReceiptRelaysTags := zapEvent.Tags.GetFirst([]string{"relays"})
+		nip57ReceiptRelays = strings.Split(fmt.Sprintf("%s", nip57ReceiptRelaysTags), " ")
+		// this tirty method returns slice [ "[relays", "wss...", "wss...", "wss...]" ] – we need to clean it up
+		// remove the first entry
+		nip57ReceiptRelays = nip57ReceiptRelays[1:]
+		// clean up the last entry
+		len_last_entry := len(nip57ReceiptRelays[len(nip57ReceiptRelays)-1])
+		nip57ReceiptRelays[len(nip57ReceiptRelays)-1] = nip57ReceiptRelays[len(nip57ReceiptRelays)-1][:len_last_entry-1]
+		// now the relay list is clean!
 
-	var payerDataByte []byte
-	var err error
-	if payerData.Email != "" || payerData.LightningAddress != "" || payerData.FreeName != "" {
-		payerDataByte, err = json.Marshal(payerData)
+		// calculate description hash from the serialized nostr event
+		descriptionHash = w.Nip57DescriptionHash(zapEventSerializedStr)
+	} else {
+		// normal LNURL descriptionhash
+		// the same description_hash needs to be built in the second request
+		metadata := w.getMetaDataCached(username)
+
+		var payerDataByte []byte
+		var err error
+		if payerData.Email != "" || payerData.LightningAddress != "" || payerData.FreeName != "" {
+			payerDataByte, err = json.Marshal(payerData)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			payerDataByte = []byte("")
+		}
+
+		descriptionHash, err = w.DescriptionHash(metadata, string(payerDataByte))
 		if err != nil {
 			return nil, err
 		}
-	} else {
-		payerDataByte = []byte("")
-	}
-
-	descriptionHash, err := w.DescriptionHash(metadata, string(payerDataByte))
-	if err != nil {
-		return nil, err
 	}
 
 	invoice, err := user.Wallet.Invoice(
@@ -263,14 +360,36 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 		PaymentHash:    invoice.PaymentHash,
 		Amount:         amount_msat / 1000,
 	}
+
+	// nip57 - we need to store the newly created invoice in the zap receipt
+	if zapEvent.Sig != "" {
+		pk := internal.Configuration.Nostr.PrivateKey
+		pub, _ := nostr.GetPublicKey(pk)
+		nip57Receipt = nostr.Event{
+			PubKey:    pub,
+			CreatedAt: time.Now(),
+			Kind:      9735,
+			Tags: nostr.Tags{
+				*zapEvent.Tags.GetFirst([]string{"p"}),
+				*zapEvent.Tags.GetFirst([]string{"e"}),
+				[]string{"bolt11", invoice.PaymentRequest},
+				[]string{"description", zapEventSerializedStr},
+			},
+		}
+		nip57Receipt.Sign(pk)
+	}
+
 	// save lnurl invoice struct for later use (will hold the comment or other metadata for a notification when paid)
+	// also holds Nip57 Zap receipt to send to nostr when invoice is paid
 	runtime.IgnoreError(w.buntdb.Set(
 		Invoice{
-			Invoice:   invoiceStruct,
-			User:      user,
-			Comment:   comment,
-			CreatedAt: time.Now(),
-			From:      extractSenderFromPayerdata(payerData),
+			Invoice:            invoiceStruct,
+			User:               user,
+			Comment:            comment,
+			CreatedAt:          time.Now(),
+			From:               extractSenderFromPayerdata(payerData),
+			Nip57Receipt:       nip57Receipt,
+			Nip57ReceiptRelays: nip57ReceiptRelays,
 		}))
 	// save the invoice Event that will be loaded when the invoice is paid and trigger the comment display callback
 	runtime.IgnoreError(w.buntdb.Set(
@@ -370,6 +489,17 @@ func findUser(database *gorm.DB, username string) (*lnbits.User, *gorm.DB) {
 		tx = database.Where("telegram_username = ? COLLATE NOCASE", username).First(user)
 	}
 	return user, tx
+}
+
+func findUserSettings(user *lnbits.User, bot *telegram.TipBot) (*lnbits.User, error) {
+	tx := bot.DB.Users.Preload("Settings").First(user)
+	if tx.Error != nil {
+		return user, tx.Error
+	}
+	if user.Settings == nil {
+		user.Settings = &lnbits.Settings{ID: user.ID}
+	}
+	return user, nil
 }
 
 func extractSenderFromPayerdata(payer lnurl.PayerDataValues) string {

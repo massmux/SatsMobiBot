@@ -30,3 +30,5 @@ generate:
   dalle_key: "asd"
   dalle_price: 1000
   worker: 2
+nostr:
+  private_key: "hex private key here"

@@ -39,10 +39,14 @@ type User struct {
 }
 
 type Settings struct {
-	ID   string       `json:"id" gorm:"primarykey"`
-	Node NodeSettings `gorm:"embedded;embeddedPrefix:node_"`
+	ID    string        `json:"id" gorm:"primarykey"`
+	Node  NodeSettings  `gorm:"embedded;embeddedPrefix:node_"`
+	Nostr NostrSettings `gorm:"embedded;embeddedPrefix:nostr_"`
 }
 
+type NostrSettings struct {
+	PubKey string `json:"pubkey"`
+}
 type NodeSettings struct {
 	NodeType     string                 `json:"nodetype"`
 	LNDParams    *satdress.LNDParams    `gorm:"embedded;embeddedPrefix:lndparams_"`

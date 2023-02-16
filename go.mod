@@ -34,6 +34,7 @@ require (
 )
 
 require (
+	github.com/SaveTheRbtz/generic-sync-map-go v0.0.0-20220414055132-a37292614db8 // indirect
 	github.com/XiaoMi/pegasus-go-client v0.0.0-20210427083443-f3b6b08bc4c2 // indirect
 	github.com/aead/siphash v1.0.1 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
@@ -60,6 +61,7 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/go-redis/redis/v8 v8.8.2 // indirect
+	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.2 // indirect
 	github.com/kkdai/bstream v1.0.0 // indirect
@@ -73,6 +75,7 @@ require (
 	github.com/lightningnetwork/lnd/tor v1.0.1 // indirect
 	github.com/mattn/go-sqlite3 v1.14.5 // indirect
 	github.com/miekg/dns v1.1.43 // indirect
+	github.com/nbd-wtf/go-nostr v0.13.0 // indirect
 	github.com/nbd-wtf/ln-decodepay v1.5.1 // indirect
 	github.com/pegasus-kv/thrift v0.13.0 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
@@ -82,12 +85,14 @@ require (
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tidwall/rtred v0.1.2 // indirect
 	github.com/tidwall/tinyqueue v0.1.1 // indirect
+	github.com/valyala/fastjson v1.6.3 // indirect
 	go.opentelemetry.io/otel v0.20.0 // indirect
 	go.opentelemetry.io/otel/metric v0.20.0 // indirect
 	go.opentelemetry.io/otel/trace v0.20.0 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
+	golang.org/x/exp v0.0.0-20221106115401-f9659909a136 // indirect
 	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde // indirect
-	golang.org/x/sys v0.0.0-20220817070843-5a390386f1f2 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect

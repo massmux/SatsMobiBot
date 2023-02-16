@@ -41,7 +41,7 @@ func (jt JoinTicket) Type() EventType {
 
 func (bot *TipBot) loadGroup(groupName string) (*Group, error) {
 	group := &Group{}
-	tx := bot.DB.Groups.Where("name = ? COLLATE NOCASE", groupName).First(group)
+	tx := bot.DB.Groups.Where("id = ? COLLATE NOCASE", groupName).First(group)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
