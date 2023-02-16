@@ -108,11 +108,14 @@ func (w Lnurl) Handle(writer http.ResponseWriter, request *http.Request) {
 		// payer data
 		payerdata := request.FormValue("payerdata")
 		var payerData lnurl.PayerDataValues
-		err = json.Unmarshal([]byte(payerdata), &payerData)
-		if err != nil {
-			// api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Couldn't parse payerdata: %v", err))
-			log.Errorf("[handleLnUrl] Couldn't parse payerdata: %v", err)
-			// log.Errorf("[handleLnUrl] payerdata: %v", payerdata)
+		if len(payerdata) > 0 {
+			err = json.Unmarshal([]byte(payerdata), &payerData)
+			if err != nil {
+				// api.NotFoundHandler(writer, fmt.Errorf("[handleLnUrl] Couldn't parse payerdata: %v", err))
+				log.Errorf("[handleLnUrl] Couldn't parse payerdata: %v", err)
+				// log.Errorf("[handleLnUrl] payerdata: %v", payerdata)
+			}
+
 		}
 
 		// nostr NIP-57
@@ -122,22 +125,24 @@ func (w Lnurl) Handle(writer http.ResponseWriter, request *http.Request) {
 		// and whether the event has the necessary tags that we need (p and relays are necessary, e is optional)
 		zapEventQuery := request.FormValue("nostr")
 		var zapEvent nostr.Event
-		err = json.Unmarshal([]byte(zapEventQuery), &zapEvent)
-		if err != nil {
-			log.Errorf("[handleLnUrl] Couldn't parse nostr event: %v", err)
-		} else {
-			valid, err := zapEvent.CheckSignature()
-			if !valid || err != nil {
-				log.Errorf("[handleLnUrl] Nostr NIP-57 zap event signature invalid: %v", err)
-				return
-			}
-			if len(zapEvent.Tags) == 0 || zapEvent.Tags.GetFirst([]string{"p"}) == nil ||
-				zapEvent.Tags.GetFirst([]string{"relays"}) == nil {
-				// zapEvent.Tags.GetFirst([]string{"e"}) == nil {
-				log.Errorf("[handleLnUrl] Nostr NIP-57 zap event validation error")
-				return
-			}
+		if len(zapEventQuery) > 0 {
+			err = json.Unmarshal([]byte(zapEventQuery), &zapEvent)
+			if err != nil {
+				log.Errorf("[handleLnUrl] Couldn't parse nostr event: %v", err)
+			} else {
+				valid, err := zapEvent.CheckSignature()
+				if !valid || err != nil {
+					log.Errorf("[handleLnUrl] Nostr NIP-57 zap event signature invalid: %v", err)
+					return
+				}
+				if len(zapEvent.Tags) == 0 || zapEvent.Tags.GetFirst([]string{"p"}) == nil ||
+					zapEvent.Tags.GetFirst([]string{"relays"}) == nil {
+					// zapEvent.Tags.GetFirst([]string{"e"}) == nil {
+					log.Errorf("[handleLnUrl] Nostr NIP-57 zap event validation error")
+					return
+				}
 
+			}
 		}
 
 		response, err = w.serveLNURLpSecond(username, int64(amount), comment, payerData, zapEvent)
@@ -306,14 +311,18 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 		}
 		// we extract the relays from the zap request
 		nip57ReceiptRelaysTags := zapEvent.Tags.GetFirst([]string{"relays"})
-		nip57ReceiptRelays = strings.Split(fmt.Sprintf("%s", nip57ReceiptRelaysTags), " ")
-		// this tirty method returns slice [ "[relays", "wss...", "wss...", "wss...]" ] – we need to clean it up
-		// remove the first entry
-		nip57ReceiptRelays = nip57ReceiptRelays[1:]
-		// clean up the last entry
-		len_last_entry := len(nip57ReceiptRelays[len(nip57ReceiptRelays)-1])
-		nip57ReceiptRelays[len(nip57ReceiptRelays)-1] = nip57ReceiptRelays[len(nip57ReceiptRelays)-1][:len_last_entry-1]
-		// now the relay list is clean!
+		if len(fmt.Sprintf("%s", nip57ReceiptRelaysTags)) > 0 {
+			nip57ReceiptRelays = strings.Split(fmt.Sprintf("%s", nip57ReceiptRelaysTags), " ")
+			// this tirty method returns slice [ "[relays", "wss...", "wss...", "wss...]" ] – we need to clean it up
+			// remove the first entry
+			nip57ReceiptRelays = nip57ReceiptRelays[1:]
+			// clean up the last entry
+			len_last_entry := len(nip57ReceiptRelays[len(nip57ReceiptRelays)-1])
+			nip57ReceiptRelays[len(nip57ReceiptRelays)-1] = nip57ReceiptRelays[len(nip57ReceiptRelays)-1][:len_last_entry-1]
+			// now the relay list is clean!
+		} else {
+			nip57ReceiptRelays = []string{"wss://nostr.zebedee.cloud", "wss://nostr-pub.wellorder.net", "wss://relay.snort.social/", "wss://relay.damus.io/", "wss://nostr.oxtr.dev/", "wss://nostr.fmt.wiz.biz/"}
+		}
 
 		// calculate description hash from the serialized nostr event
 		descriptionHash = w.Nip57DescriptionHash(zapEventSerializedStr)
