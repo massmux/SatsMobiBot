@@ -321,7 +321,7 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 			nip57ReceiptRelays[len(nip57ReceiptRelays)-1] = nip57ReceiptRelays[len(nip57ReceiptRelays)-1][:len_last_entry-1]
 			// now the relay list is clean!
 		} else {
-			nip57ReceiptRelays = []string{"wss://nostr.zebedee.cloud", "wss://nostr-pub.wellorder.net", "wss://relay.snort.social/", "wss://relay.damus.io/", "wss://nostr.oxtr.dev/", "wss://nostr.fmt.wiz.biz/"}
+			nip57ReceiptRelays = []string{"wss://brb.io", "wss://nostr.zebedee.cloud", "wss://nostr-pub.wellorder.net", "wss://relay.snort.social/", "wss://relay.damus.io/", "wss://nostr.oxtr.dev/", "wss://nostr.fmt.wiz.biz/"}
 		}
 
 		// calculate description hash from the serialized nostr event
