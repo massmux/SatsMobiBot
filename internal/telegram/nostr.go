@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
@@ -32,6 +33,17 @@ func uniqueSlice(slice []string) []string {
 	return list
 }
 
+func cleanUrls(slice []string) []string {
+	list := []string{}
+	for _, entry := range slice {
+		if strings.HasSuffix(entry, "/") {
+			entry = entry[:len(entry)-1]
+		}
+		list = append(list, entry)
+	}
+	return list
+}
+
 func (bot *TipBot) publishNostrEvent(ev nostr.Event, relays []string) {
 	pk := internal.Configuration.Nostr.PrivateKey
 
@@ -53,16 +65,27 @@ func (bot *TipBot) publishNostrEvent(ev nostr.Event, relays []string) {
 	// more relays
 	relays = append(relays, "wss://nostr.btcmp.com", "wss://nostr.relayer.se", "wss://relay.current.fyi", "wss://nos.lol", "wss://nostr.mom", "wss://relay.nostr.info", "wss://nostr.zebedee.cloud", "wss://nostr-pub.wellorder.net", "wss://relay.snort.social/", "wss://relay.damus.io/", "wss://nostr.oxtr.dev/", "wss://nostr.fmt.wiz.biz/")
 
+	// remove trailing /
+	relays = cleanUrls(relays)
+
+	// unique relays
+	relays = uniqueSlice(relays)
+
 	// publish the event to relays
-	for _, url := range uniqueSlice(relays) {
+	for _, url := range relays {
 		go func(url string) {
+			// remove trailing /
 			relay, e := nostr.RelayConnect(context.Background(), url)
 			if e != nil {
 				log.Errorf(e.Error())
 				return
 			}
+			time.Sleep(3 * time.Second)
+
 			status := relay.Publish(context.Background(), ev)
 			log.Debugf("[NOSTR] published to %s: %s", url, status)
+
+			time.Sleep(3 * time.Second)
 			relay.Close()
 		}(url)
 
