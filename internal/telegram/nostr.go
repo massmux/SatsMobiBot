@@ -36,7 +36,7 @@ func (bot *TipBot) publishNostrEvent(ev nostr.Event, relays []string) {
 
 	// calling Sign sets the event ID field and the event Sig field
 	ev.Sign(pk)
-
+	log.Debugf("[NOSTR] publishing event %s", ev.ID)
 	// publish the event to relays
 	for _, url := range relays {
 		go func(url string) {
