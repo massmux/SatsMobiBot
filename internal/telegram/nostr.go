@@ -20,6 +20,18 @@ var (
 	nostrPublicKeyErrorMessage  = "🚫 There was an error decoding your public key."
 )
 
+func uniqueSlice(slice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range slice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}
+
 func (bot *TipBot) publishNostrEvent(ev nostr.Event, relays []string) {
 	pk := internal.Configuration.Nostr.PrivateKey
 
@@ -37,8 +49,12 @@ func (bot *TipBot) publishNostrEvent(ev nostr.Event, relays []string) {
 	// calling Sign sets the event ID field and the event Sig field
 	ev.Sign(pk)
 	log.Debugf("[NOSTR] publishing event %s", ev.ID)
+
+	// more relays
+	relays = append(relays, "wss://nostr.btcmp.com", "wss://nostr.relayer.se", "wss://relay.current.fyi", "wss://nos.lol", "wss://nostr.mom", "wss://relay.nostr.info", "wss://nostr.zebedee.cloud", "wss://nostr-pub.wellorder.net", "wss://relay.snort.social/", "wss://relay.damus.io/", "wss://nostr.oxtr.dev/", "wss://nostr.fmt.wiz.biz/")
+
 	// publish the event to relays
-	for _, url := range relays {
+	for _, url := range uniqueSlice(relays) {
 		go func(url string) {
 			relay, e := nostr.RelayConnect(context.Background(), url)
 			if e != nil {
@@ -47,6 +63,7 @@ func (bot *TipBot) publishNostrEvent(ev nostr.Event, relays []string) {
 			}
 			status := relay.Publish(context.Background(), ev)
 			log.Debugf("[NOSTR] published to %s: %s", url, status)
+			relay.Close()
 		}(url)
 
 	}
