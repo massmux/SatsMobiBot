@@ -377,10 +377,12 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 			Kind:      9735,
 			Tags: nostr.Tags{
 				*zapEvent.Tags.GetFirst([]string{"p"}),
-				*zapEvent.Tags.GetFirst([]string{"e"}),
 				[]string{"bolt11", invoice.PaymentRequest},
 				[]string{"description", zapEventSerializedStr},
 			},
+		}
+		if zapEvent.Tags.GetFirst([]string{"e"}) != nil {
+			nip57Receipt.Tags = nip57Receipt.Tags.AppendUnique(*zapEvent.Tags.GetFirst([]string{"e"}))
 		}
 		nip57Receipt.Sign(pk)
 	}
