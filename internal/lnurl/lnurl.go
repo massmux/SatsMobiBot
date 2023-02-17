@@ -224,14 +224,17 @@ func (w Lnurl) serveLNURLpFirst(username string) (*LNURLPayParamsCustom, error) 
 	var allowNostr bool = false
 	var nostrPubkey string = ""
 	user, tx := db.FindUser(w.database, username)
-	if tx.Error == nil && user.Telegram != nil {
+	if len(internal.Configuration.Nostr.PrivateKey) > 0 &&
+		tx.Error == nil && user.Telegram != nil {
 		user, err = db.FindUserSettings(user, w.bot.DB.Users.Preload("Settings"))
 		if err != nil {
 			return &LNURLPayParamsCustom{}, err
 		}
 		if user.Settings.Nostr.PubKey != "" {
 			allowNostr = true
-			nostrPubkey = user.Settings.Nostr.PubKey
+			pk := internal.Configuration.Nostr.PrivateKey
+			pub, _ := nostr.GetPublicKey(pk)
+			nostrPubkey = pub
 		}
 	} else {
 		log.Errorf("[serveLNURLpFirst] user not found")

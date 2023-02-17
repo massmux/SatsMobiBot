@@ -15,7 +15,9 @@ import (
 
 var (
 	nosterRegisterMessage       = "📖 Add your nostr pubkey for zap receipts"
-	nostrHelpMessage            = "⚙️ *Commands:*\n`/nostr add <pubkey>` ✅ Add your nostr pubkeyt.\n`/nostr help` 📖 Show help."
+	nostrInfoMessage            = "💜 *Your nostr information*\n\nYour pubkey: `%s`"
+	nostrInfoLNAddrMessage      = "Your Lightning address: `%s`"
+	nostrHelpMessage            = "⚙️ *Nostr commands:*\n`/nostr add <pubkey>` ✅ Add your nostr pubkeyt.\n`/nostr help` 📖 Show help."
 	nostrAddedMessage           = "✅ *Nostr pubkey added.*"
 	nostrPrivateKeyErrorMessage = "🚫 This is not your public key but your private key! Very dangerous! Try again with your npub..."
 	nostrPublicKeyErrorMessage  = "🚫 There was an error decoding your public key."
@@ -163,17 +165,23 @@ func (bot *TipBot) getNostrHandler(ctx intercept.Context) (intercept.Context, er
 		log.Infof("Could not get user settings for user %s", GetUserStr(user.Telegram))
 		return ctx, err
 	}
-
+	var dynamicHelpMessage string
+	dynamicHelpMessage += nostrHelpMessage
 	if user.Settings == nil {
-		bot.trySendMessage(m.Sender, nosterRegisterMessage+"\n\n"+nostrHelpMessage)
+		bot.trySendMessage(m.Sender, dynamicHelpMessage)
 		return ctx, fmt.Errorf("no nostr pubkey registered")
 	} else if len(user.Settings.Nostr.PubKey) > 0 {
+
 		pubkeyBech32, err := nip19.EncodePublicKey(user.Settings.Nostr.PubKey)
 		if err != nil {
 			log.Infof("Could not decode user nostr pubkey %s", GetUserStr(user.Telegram))
 			return ctx, err
 		}
-		bot.trySendMessage(m.Sender, nosterRegisterMessage+"\n\n"+nostrHelpMessage+"\n\n"+fmt.Sprintf("Your nostr pubkey: `%s`", pubkeyBech32))
+		dynamicHelpMessage += "\n\n" + fmt.Sprintf(nostrInfoMessage, pubkeyBech32)
+		if lnaddr, _ := bot.UserGetLightningAddress(user); len(lnaddr) > 0 {
+			dynamicHelpMessage += "\n\n" + fmt.Sprintf(nostrInfoLNAddrMessage, lnaddr)
+		}
+		bot.trySendMessage(m.Sender, dynamicHelpMessage)
 	}
 
 	return ctx, nil

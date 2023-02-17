@@ -124,6 +124,7 @@ advancedMessage = """%s
 */transactions* 📊 List transactions
 */link* 🔗 Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Lnurl receive or pay: `/lnurl` or `/lnurl <lnurl> [memo]`
+*/nostr* 💜 Connect to Nostr: `/nostr`
 */faucet* 🚰 Create a faucet: `/faucet <capacity> <per_user>`
 */tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`
 */group* 🎟 Group chat features: `/group`

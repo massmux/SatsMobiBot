@@ -26,7 +26,7 @@ func New(bot *telegram.TipBot) Nostr {
 func (n Nostr) Handle(writer http.ResponseWriter, request *http.Request) {
 	username := request.FormValue("name")
 	if username == "" {
-		api.NotFoundHandler(writer, fmt.Errorf("[NostrNip05] Form value 'amount' is not set"))
+		api.NotFoundHandler(writer, fmt.Errorf("[NostrNip05] Form value 'name' is not set"))
 		return
 	}
 	user, tx := db.FindUser(n.database, username)

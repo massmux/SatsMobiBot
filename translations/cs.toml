@@ -124,6 +124,7 @@ advancedMessage = """%s
 */transactions* 📊 Seznam transakcí
 */link* 🔗 Propojit peněženku s [BlueWallet](https://bluewallet.io/) nebo [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ LNURL obdržet nebo zaplatit: `/lnurl` nebo `/lnurl <lnurl> [memo]`
+*/nostr* 💜 Connect to Nostr: `/nostr`
 */faucet* 🚰 Vytvořit faucet: `/faucet <kapacita> <částka_na_uživatele>`
 */tipjar* 🍯 Vytvořit tipjar: `/tipjar <kapacita> <částka_na_uživatele>`
 */group* 🎟 Vytvořit vstupenky do skupiny: `/group add <název_skupiny> [<cena_vstupenky>]`
