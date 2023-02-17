@@ -120,11 +120,13 @@ advancedMessage = """%s
 */transactions* 📊 List transactions
 */link* 🔗 Vincule sua carteira a [ BlueWallet ](https://bluewallet.io/) ou [ Zeus ](https://zeusln.app/)
 */lnurl* ⚡️ Receber ou pagar com lnurl: `/lnurl` o `/lnurl <lnurl> [memo]`
+*/nostr* 💜 Connect to Nostr: `/nostr`
 */faucet* 🚰 Criar uma torneira: `/faucet <capacidade> <por_usuário>`
 */tipjar* 🍯 Criar uma tipjar: `/tipjar <capacidade> <por_usuário>`
 */group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`
 */shop* 🛍 Browse shops: `/shop` or `/shop <user/shop_id>`
 */generate* 🎆 Generate DALLE-2 images: `/generate <prompt>`"""
+
 # GENERIC
 enterAmountRangeMessage        = """💯 Insira uma quantia entre %d e %d sat."""
 enterAmountMessage             = """💯 Insira uma quantia."""
