@@ -231,8 +231,8 @@ func (lnurlInvoice LNURLInvoice) Key() string {
 
 func (bot *TipBot) lnurlReceiveEvent(event Event) {
 	invoiceEvent := event.(*InvoiceEvent)
-
 	bot.notifyInvoiceReceivedEvent(invoiceEvent)
+
 	tx := &LNURLInvoice{Invoice: &Invoice{PaymentHash: invoiceEvent.PaymentHash}}
 	err := bot.Bunt.Get(tx)
 	log.Debugf("[lnurl-p] Received invoice for %s of %d sat.", GetUserStr(invoiceEvent.User.Telegram), tx.Amount)
@@ -250,7 +250,7 @@ func (bot *TipBot) lnurlReceiveEvent(event Event) {
 		// send out NIP57 zap receipt
 		if len(tx.Nip57Receipt.Sig) > 0 {
 			// zapEventSerialized, _ := json.Marshal(tx.Nip57Receipt)
-			bot.trySendMessage(tx.User.Telegram, "💜 This was a zap on nostr.", tb.Silent)
+			bot.trySendMessage(tx.User.Telegram, "💜 This was a zap on nostr.")
 			go bot.publishNostrEvent(tx.Nip57Receipt, tx.Nip57ReceiptRelays)
 		}
 	}
