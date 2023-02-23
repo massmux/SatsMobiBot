@@ -136,6 +136,10 @@ To pay a Lightning invoice, you can snap a photo of a QR code and send it direct
 
 To minimize the clutter all the heavy tipping can cause in a group chat, the bot will remove all failed commands (for example due to a syntax error) from the chat immediately. All successful commands will stay visible for `message_dispose_duration` seconds (default 10s) and then be removed. The tips will sill be visible for everyone in the Live tooltip. This feature only works, if the bot is made admin of the group.
 
+## Full Guide to Install and run on a VPS
+
+A complete guide to install and run LightningTipBot + LNBITS (on docker with PostgreSQL) on the same VPS with an external LND funding source has been prepared by Massimo Musumeci (@massmux) and it is available: [LightningTipBot full install](https://www.massmux.com/howto-complete-lightningtipbot-lnbits-setup-vps/)
+
 ## Made with
 
 - [LNbits](https://github.com/lnbits/lnbits) – Free and open-source lightning-network wallet/accounts system.
