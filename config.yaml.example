@@ -6,8 +6,8 @@ bot:
   tor_proxy:
       host: 127.0.0.1:9050
   http_proxy: ""
-  lnurl_public_host_name: "mylnurl.com"
-  lnurl_server: "https://mylnurl.com"
+  lnurl_public_host_name: "https://mylnurl.com"
+  lnurl_server: "http://127.0.0.1:5454" # or http://0.0.0.0:5454 depending on your configuration
   lnurl_image: true
   admin_api_host: localhost:6060
 telegram:
