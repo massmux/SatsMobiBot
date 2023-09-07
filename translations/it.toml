@@ -60,10 +60,10 @@ infoButtonMessage = """Info"""
 # HELP
 
 helpMessage = """⚡️ *Wallet*
-_Questo bot è un Wallet Bitcoin Lightning con cui puoi inviare ricompense via Telegram. Per inviare, aggiungi il bot come partecipante a una chat di gruppo. L'unità di conto per questi invii di piccolo importo è il Satoshi (sat). 100,000,000 sat = 1 Bitcoin. Digita 📚 /basics per maggiori informazioni._
+_Questo @SatsMobiBot è un Wallet Bitcoin Lightning con cui puoi inviare ricompense via Telegram. Per inviare, aggiungi il bot come partecipante a una chat di gruppo. L'unità di conto per questi invii di piccolo importo è il Satoshi (sat). 100,000,000 sat = 1 Bitcoin. Digita 📚 /basics per maggiori informazioni._
 
 ❤️ *Dona*
-_Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/donate 1000`
+_Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/send 1000 @SatsMobiBot`
 
 %s
 
@@ -73,7 +73,6 @@ _Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirl
 */send* 💸 Invia fondi a un utente: `/send <ammontare> @utente o utente@ln.tips [<memo>]`
 */invoice* ⚡️ Ricevi attraverso Lightning: `/invoice <ammontare> [<memo>]`
 */pay* ⚡️ Paga attraverso Lightning: `/pay <invoice>`
-*/donate* ❤️ Dona per supportare questo progetto: `/donate 1000`
 */advanced* 🤖 Funzioni avanzate.
 */help* 📖 Richiama questo elenco."""
 
@@ -120,12 +119,12 @@ advancedMessage = """%s
 */transactions* 📊 List transactions
 */link* 🔗 Crea un collegamento al tuo wallet [BlueWallet](https://bluewallet.io/) o [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Ricevi o paga un Lnurl: `/lnurl` or `/lnurl <lnurl> [memo]`
-*/nostr* 💜 Connect to Nostr: `/nostr`
+*/nostr* 💜 Connect to Nostr: `/nostr` prima volta `/nostr help`
 */faucet* 🚰 Crea una distribuzione: `/faucet <totale> <per_utente>`
 */tipjar* 🍯 Crea un tipjar: `/tipjar <totale> <per_utente>`
 */group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`
 */shop* 🛍 Browse shops: `/shop` or `/shop <user/shop_id>`
-*/generate* 🎆 Generate DALLE-2 images: `/generate <prompt>`"""
+"""
 
 # GENERIC
 enterAmountRangeMessage        = """💯 Imposta un ammontare tra %d e %d sat."""
@@ -174,12 +173,12 @@ confirmSendMessage         = """Vuoi inviare un pagamento a %s?\n\n💸 Ammontar
 confirmSendAppendMemo      = """\n✉️ %s"""
 sendCancelledMessage       = """🚫 Invio cancellato."""
 errorTryLaterMessage       = """🚫 Errore. Per favore riprova più tardi."""
-sendSyntaxErrorMessage     = """Hai specificato un ammontare e un destinatario? Puoi usare il comando /send per inviare sia a utenti Telegram come %s sia a un indirizzo Lightning del tipo LightningTipBot@ln.tips."""
+sendSyntaxErrorMessage     = """Hai specificato un ammontare e un destinatario? Puoi usare il comando /send per inviare sia a utenti Telegram come %s sia a un indirizzo Lightning del tipo USERNAME@sats.mobi ."""
 sendHelpText               = """📖 Ops, non ha funzionato. %s
 
 *Sintassi:* `/send <ammontare> <utente> [<memo>]`
-*Esempio:* `/send 1000 @LightningTipBot Amo questo bot ❤️`
-*Esempio:* `/send 1234 LightningTipBot@ln.tips`"""
+*Esempio:* `/send 1000 @SatsMobiBot Amo questo bot ❤️`
+"""
 
 # INVOICE
 
