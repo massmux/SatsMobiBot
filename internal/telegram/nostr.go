@@ -73,6 +73,12 @@ func (bot *TipBot) publishNostrEvent(ev nostr.Event, relays []string) {
 	// unique relays
 	relays = uniqueSlice(relays)
 
+	// crop relays
+	var max_relays int = 50
+	if len(relays) > max_relays {
+		relays = relays[:max_relays]
+	}
+
 	// publish the event to relays
 	for _, url := range relays {
 		go func(url string) {
@@ -167,7 +173,7 @@ func (bot *TipBot) getNostrHandler(ctx intercept.Context) (intercept.Context, er
 	}
 	var dynamicHelpMessage string
 	dynamicHelpMessage += nostrHelpMessage
-	if user.Settings == nil {
+	if user.Settings.Nostr.PubKey == "" {
 		bot.trySendMessage(m.Sender, dynamicHelpMessage)
 		return ctx, fmt.Errorf("no nostr pubkey registered")
 	} else if len(user.Settings.Nostr.PubKey) > 0 {

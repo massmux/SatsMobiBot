@@ -2,10 +2,14 @@ package telegram
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/fiatjaf/go-lnurl"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
@@ -51,11 +55,24 @@ func (bot TipBot) donationHandler(ctx intercept.Context) (intercept.Context, err
 		_, err = bot.askForAmount(ctx, "", "CreateDonationState", 0, 0, m.Text)
 		return ctx, err
 	}
-
+	amount = amount * 1000
 	// command is valid
 	msg := bot.trySendMessageEditable(m.Chat, Translate(ctx, "donationProgressMessage"))
 	// get invoice
-	resp, err := http.Get(fmt.Sprintf(donationEndpoint, amount, GetUserStr(user.Telegram), GetUserStr(bot.Telegram.Me)))
+	r, err := http.NewRequest(http.MethodGet, donationEndpoint, nil)
+	if err != nil {
+		log.Errorln(err)
+		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
+		return ctx, err
+	}
+	// Create query parameters
+	params := url.Values{}
+	params.Set("amount", strconv.FormatInt(amount, 10))
+	params.Set("comment", fmt.Sprintf("from %s bot %s", GetUserStr(user.Telegram), GetUserStr(bot.Telegram.Me)))
+	// Set the query parameters in the URL
+	r.URL.RawQuery = params.Encode()
+
+	resp, err := http.DefaultClient.Do(r)
 	if err != nil {
 		log.Errorln(err)
 		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
@@ -67,11 +84,23 @@ func (bot TipBot) donationHandler(ctx intercept.Context) (intercept.Context, err
 		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
 		return ctx, err
 	}
+	pv := lnurl.LNURLPayValues{}
+	err = json.Unmarshal(body, &pv)
+	if err != nil {
+		log.Errorln(err)
+		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
+		return ctx, err
+	}
+	if pv.Status == "ERROR" || len(pv.PR) < 1 {
+		log.Errorln(err)
+		bot.tryEditMessage(msg, Translate(ctx, "donationErrorMessage"))
+		return ctx, err
+	}
 
 	// send donation invoice
 	// user := LoadUser(ctx)
 	// bot.trySendMessage(user.Telegram, string(body))
-	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: string(body)}, bot.Client)
+	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: string(pv.PR)}, bot.Client)
 	if err != nil {
 		userStr := GetUserStr(user.Telegram)
 		errmsg := fmt.Sprintf("[/donate] Donation failed for user %s: %s", userStr, err)
@@ -89,7 +118,7 @@ func (bot TipBot) donationHandler(ctx intercept.Context) (intercept.Context, err
 
 func init() {
 	var sb strings.Builder
-	_, err := io.Copy(&sb, rot13Reader{strings.NewReader("uggcf://ya.gvcf/qbangr/%q?sebz=%f&obg=%f")})
+	_, err := io.Copy(&sb, rot13Reader{strings.NewReader("uggcf://ya.gvcf/.jryy-xabja/yaheyc/YvtugavatGvcObg")})
 	if err != nil {
 		panic(err)
 	}
