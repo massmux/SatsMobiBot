@@ -64,17 +64,17 @@ payButtonEmoji = """💸"""
 # HELP
 
 helpMessage = """⚡️ *Wallet*
-_This @SatsMobiBot is a Bitcoin Lightning wallet that can send/receive tips on Telegram. It works smoothly with @BitcoinVoucherBot and Nostr, based on LightningTipBot. Use this Bot as a transit wallet to get tips and move to your own node_
+_This @NePayCHBot is a Bitcoin Lightning wallet that can send/receive tips on Telegram. It works smoothly with Nostr, based on LightningTipBot. Use this Bot as a transit wallet to get tips and move to your own node_
 
 ❤️ *Donate*
-_This bot charges no fees but costs Satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/send 1000 @SatsMobiBot`
+_This bot charges no fees but costs Satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/send 1000 @NepayCHBot`
 
 %s
 
 ⚙️ *Commands*
 */tip* 🏅 Reply to a message to tip: `/tip <amount> [<memo>]`
 */balance* 👑 Check your balance: `/balance`
-*/send* 💸 Send funds to a user: `/send <amount> @user or user@sats.mobi [<memo>]`
+*/send* 💸 Send funds to a user: `/send <amount> @user or user@nepay.ch [<memo>]`
 */invoice* ⚡️ Receive with Lightning: `/invoice <amount> [<memo>]`
 */pay* ⚡️ Pay with Lightning: `/pay <invoice>`
 */advanced* 🤖 Advanced features.
@@ -105,7 +105,7 @@ _Add this bot to your Telegram group chat to /tip posts. If you make the bot adm
 _We are not custodian of your funds. We will act in your best interest but we're also aware that the situation without KYC is tricky until we figure something out. Any amount you load onto your wallet will be considered a donation. Do not give us all your money.  Be aware that this bot is in beta development. Use at your own risk._
 
 ❤️ *Donate*
-_This bot charges no fees but costs satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/send 1000 @SatsMobiBot`"""
+_This bot charges no fees but costs satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/send 1000 @NepayChBot`"""
 
 helpNoUsernameMessage = """👋 Please, set a Telegram username."""
 
@@ -178,11 +178,11 @@ confirmSendMessage         = """Do you want to pay to %s?\n\n💸 Amount: %d sat
 confirmSendAppendMemo      = """\n✉️ %s"""
 sendCancelledMessage       = """🚫 Send cancelled."""
 errorTryLaterMessage       = """🚫 Error. Please try again later."""
-sendSyntaxErrorMessage     = """Did you enter an amount and a recipient? You can use the /send command to either send to Telegram users like %s or to a Lightning address like USERNAME@sats.mobi ."""
+sendSyntaxErrorMessage     = """Did you enter an amount and a recipient? You can use the /send command to either send to Telegram users like %s or to a Lightning address like USERNAME@nepay.ch ."""
 sendHelpText               = """📖 Oops, that didn't work. %s
 
 *Usage:* `/send <amount> <user> [<memo>]`
-*Example:* `/send 1000 @SatsMobiBot I just like the bot ❤️`
+*Example:* `/send 1000 @NepayChBot I just like the bot ❤️`
 """
 
 # INVOICE

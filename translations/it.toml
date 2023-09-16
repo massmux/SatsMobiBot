@@ -60,10 +60,10 @@ infoButtonMessage = """Info"""
 # HELP
 
 helpMessage = """⚡️ *Wallet*
-_Questo @SatsMobiBot è un Wallet Bitcoin Lightning con cui puoi inviare ricompense via Telegram. Per inviare, aggiungi il bot come partecipante a una chat di gruppo. L'unità di conto per questi invii di piccolo importo è il Satoshi (sat). 100,000,000 sat = 1 Bitcoin. Digita 📚 /basics per maggiori informazioni._
+_Questo @NepayChBot è un Wallet Bitcoin Lightning con cui puoi inviare ricompense via Telegram. Per inviare, aggiungi il bot come partecipante a una chat di gruppo. L'unità di conto per questi invii di piccolo importo è il Satoshi (sat). 100,000,000 sat = 1 Bitcoin. Digita 📚 /basics per maggiori informazioni._
 
 ❤️ *Dona*
-_Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/send 1000 @SatsMobiBot`
+_Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/send 1000 @NepayChBot`
 
 %s
 
@@ -173,11 +173,11 @@ confirmSendMessage         = """Vuoi inviare un pagamento a %s?\n\n💸 Ammontar
 confirmSendAppendMemo      = """\n✉️ %s"""
 sendCancelledMessage       = """🚫 Invio cancellato."""
 errorTryLaterMessage       = """🚫 Errore. Per favore riprova più tardi."""
-sendSyntaxErrorMessage     = """Hai specificato un ammontare e un destinatario? Puoi usare il comando /send per inviare sia a utenti Telegram come %s sia a un indirizzo Lightning del tipo USERNAME@sats.mobi ."""
+sendSyntaxErrorMessage     = """Hai specificato un ammontare e un destinatario? Puoi usare il comando /send per inviare sia a utenti Telegram come %s sia a un indirizzo Lightning del tipo USERNAME@nepay.ch ."""
 sendHelpText               = """📖 Ops, non ha funzionato. %s
 
 *Sintassi:* `/send <ammontare> <utente> [<memo>]`
-*Esempio:* `/send 1000 @SatsMobiBot Amo questo bot ❤️`
+*Esempio:* `/send 1000 @NepayChBot Amo questo bot ❤️`
 """
 
 # INVOICE
