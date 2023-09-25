@@ -250,6 +250,8 @@ walletConnectMessage = """🔗 *Lier votre wallet*
 - *BlueWallet:* Appuyez sur *New wallet*, *Import wallet*, *Scan or import a file*, puis scanner le QR code.
 - *Zeus:* Copier l'URL, appuyez sur *Add a new node*, *Import* (l'URL), *Save Node Config*."""
 couldNotLinkMessage = """🚫 Impossible de lier votre wallet. Merci de réésayer."""
+linkHiddenMessage   = """🔍 Lien caché. Entrez /link pour le voir à nouveau"""
+
 
 # FAUCET
 

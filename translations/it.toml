@@ -250,6 +250,8 @@ walletConnectMessage = """🔗 *Collega il tuo wallet*
 - *BlueWallet:* Premi *+ (Aggiungi Portafoglio)*, *Importa portafoglio*, *scansionare un codice QR*, e scansiona il codice QR .
 - *Zeus:* Copia la URL qui sotto, premi *Add a new node*, *Import* (incolla la URL), *Save Node Config*."""
 couldNotLinkMessage = """🚫 Non sono riuscito a collegare il tuo wallet. Per favore riprova più tardi."""
+linkHiddenMessage               = """🔍 Link nascosto. Usa /link per vederlo ancora."""
+
 
 # FAUCET
 
