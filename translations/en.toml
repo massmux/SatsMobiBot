@@ -67,7 +67,7 @@ helpMessage = """⚡️ *Wallet*
 _This @NePayCHBot is a Bitcoin Lightning wallet that can send/receive tips on Telegram. It works smoothly with Nostr, based on LightningTipBot. Use this Bot as a transit wallet to get tips and move to your own node_
 
 ❤️ *Donate*
-_This bot charges no fees but costs Satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/send 1000 @NepayCHBot`
+_This bot charges no fees but costs Satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/send 1000 0x1f118c4689be07b2@nepay.ch`
 
 %s
 
@@ -105,7 +105,7 @@ _Add this bot to your Telegram group chat to /tip posts. If you make the bot adm
 _We are not custodian of your funds. We will act in your best interest but we're also aware that the situation without KYC is tricky until we figure something out. Any amount you load onto your wallet will be considered a donation. Do not give us all your money.  Be aware that this bot is in beta development. Use at your own risk._
 
 ❤️ *Donate*
-_This bot charges no fees but costs satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/send 1000 @NepayChBot`"""
+_This bot charges no fees but costs satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/send 1000 0x1f118c4689be07b2@nepay.ch`"""
 
 helpNoUsernameMessage = """👋 Please, set a Telegram username."""
 
