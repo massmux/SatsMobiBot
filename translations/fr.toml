@@ -63,17 +63,16 @@ helpMessage = """⚡️ *Wallet*
 _Ce bot est un Bitcoin Lightning wallet qui permet d'envoyer des pourboires sur Telegram. Pour envoyer des pourboires, ajoutez le bot à un groupe. L'unité de base des pourboires est les Satoshis (sat). 100,000,000 sat = 1 Bitcoin. Tapez 📚 /basics pour plus d'info._
 
 ❤️ *Donation*
-_Ce bot ne vous facture pas de frais mais nous coûte des Satoshis à opérerer. Si vous aimez ce bot, n'hésitez pas à faire un don pour soutenir le développement. Pour donner, utilisez_ `/donate 1000`
+_Ce bot ne vous facture pas de frais mais nous coûte des Satoshis à opérerer. Si vous aimez ce bot, n'hésitez pas à faire un don pour soutenir le développement. Pour donner, utilisez_ `/send 1000 0x8859a71ff4569543@sats.mobi`
 
 %s
 
 ⚙️ *Commandes*
 */tip* 🏅 Répondre à un message pour envoyer un pourboire : `/tip <montant> [<memo>]`
 */balance* 👑 Afficher votre solde: `/balance`
-*/send* 💸 Envoyer un pourboire à un utilisateur: `/send <montant> @user ou user@ln.tips [<memo>]`
+*/send* 💸 Envoyer un pourboire à un utilisateur: `/send <montant> @user ou user@sats.mobi [<memo>]`
 */invoice* ⚡️ Recevoir avec Lightning : `/invoice <montant> [<memo>]`
 */pay* ⚡️ Payer avec Lightning : `/pay <invoice>`
-*/donate* ❤️ Faire une donation au projet : `/donate 1000`
 */advanced* 🤖 Fonctionnalités avancées.
 */help* 📖 Aide."""
 
@@ -102,7 +101,7 @@ _Ajoutez ce bot à un groupe Telegram pour envoyer des pourboires en répondant 
 _Ce bot n'assure pas la garde de vos fonds. Nous agissons toujours dans votre intérêt et nous sommes consciens de devoir faire des compromis en raison de l'absence de KYC. Les fonds de votre portefeuille sont aujourd'hui considérés comme une donation. Ne nous donnez pas tout votre argent. Ce bot est une version beta, faites attention s'il vous plaît. À utiliser à vos risques et périls._
 
 ❤️ *Donation*
-_Ce bot ne vous facture pas de frais mais coûte des Satoshis à opérer. Si vous aimez ce bot, n'hésitez pas à faire un don pour soutenir le développement. Pour donner, utilisez_ `/donate 1000`"""
+_Ce bot ne vous facture pas de frais mais coûte des Satoshis à opérer. Si vous aimez ce bot, n'hésitez pas à faire un don pour soutenir le développement. Pour donner, utilisez_ `/send 1000 0x8859a71ff4569543@sats.mobi`"""
 
 helpNoUsernameMessage = """👋 Définissez un nom d'utilisateur sur Telegram afin d'utiliser ce bot."""
 
@@ -174,12 +173,12 @@ confirmSendMessage         = """Voulez-vous envoyer à %s?\n\n💸 Montant : %d 
 confirmSendAppendMemo      = """\n✉️ %s"""
 sendCancelledMessage       = """🚫 Envoi annulé."""
 errorTryLaterMessage       = """🚫 Erreur. Merci de réésayer."""
-sendSyntaxErrorMessage     = """Avez-vous ajouté un montant et un destinataire ? Utilisez la commande /send pour envoyer à un utilisateur Telegram comme %s ou bien à une adresse Lightning comme LightningTipBot@ln.tips."""
+sendSyntaxErrorMessage     = """Avez-vous ajouté un montant et un destinataire ? Utilisez la commande /send pour envoyer à un utilisateur Telegram comme %s ou bien à une adresse Lightning comme someuser@sats.mobi."""
 sendHelpText               = """📖 Oops, cela n'a pas fonctionné. %s
 
 *Usage:* `/send <montant> <utilisateur> [<memo>]`
-*Exemple:* `/send 1000 @LightningTipBot J'adore le bot ! ❤️`
-*Exemple:* `/send 1234 LightningTipBot@ln.tips`"""
+*Exemple:* `/send 1000 0x8859a71ff4569543@sats.mobi J'adore le bot ! ❤️`
+*Exemple:* `/send 1234 0x8859a71ff4569543@sats.mobi`"""
 
 # INVOICE
 
@@ -219,8 +218,8 @@ donateEnterAmountMessage = """Avez-vous choisi un montant ?"""
 donateValidAmountMessage = """Avez-vous choisi un montant correct ?"""
 donateHelpText           = """📖 Oops, cela n'a pas fonctionné. %s
 
-*Usage:* `/donate <montant>`
-*Exemple:* `/donate 1000`"""
+*Usage:* `/send <montant> 0x8859a71ff4569543@sats.mobi`
+*Exemple:* `/send 1000 0x8859a71ff4569543@sats.mobi`"""
 
 # PHOTO
 

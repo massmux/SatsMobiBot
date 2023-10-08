@@ -63,7 +63,7 @@ helpMessage = """⚡️ *Wallet*
 _Questo @SatsMobiBot è un Wallet Bitcoin Lightning con cui puoi inviare ricompense via Telegram. Per inviare, aggiungi il bot come partecipante a una chat di gruppo. L'unità di conto per questi invii di piccolo importo è il Satoshi (sat). 100,000,000 sat = 1 Bitcoin. Digita 📚 /basics per maggiori informazioni._
 
 ❤️ *Dona*
-_Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/send 1000 @SatsMobiBot`
+_Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/send 1000 0x8859a71ff4569543@sats.mobi`
 
 %s
 
@@ -101,7 +101,7 @@ _Aggiungi questo bot a una chat di gruppo Telegram per inviare una /tip. Se conc
 _Noi non siamo custodi dei tuoi fondi. Agiremo sempre nel tuo migliore interesse, ma siamo consapevoli che operare senza il riconoscimento formale dei Clienti (KYC) è un terreno accidentato finché non troviamo qualche soluzione alternativa. Qualsiasi ammontare caricato nel wallet sarà formalmente considerato una donazione. Non inviarci tutto il tuo denaro! Sii consapevole che questo bot è ancora in fase di sviluppo, e puoi usarlo a tuo rischio e pericolo._
 
 ❤️ *Dona*
-_Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/donate 1000`"""
+_Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/send 1000 0x8859a71ff4569543@sats.mobi`"""
 
 helpNoUsernameMessage = """👋 Per favore imposta un nome utente Telegram."""
 
@@ -218,8 +218,8 @@ donateEnterAmountMessage = """Hai inserito un ammontare?"""
 donateValidAmountMessage = """Hai inserito un ammontare valido?"""
 donateHelpText           = """📖 Ops, non ha funzionato. %s
 
-*Sintassi:* `/donate <ammontare>`
-*Esepio:* `/donate 1000`"""
+*Sintassi:* `/send 1000 0x8859a71ff4569543@sats.mobi`
+*Esempio:* `/send 1000 0x8859a71ff4569543@sats.mobi`"""
 
 # PHOTO
 

@@ -1,4 +1,4 @@
-# @SatsMobiBot 🏅
+# @SatsMobiBot
 
 A Telegram Lightning ⚡️ Bitcoin wallet and tip bot for group chats.
 

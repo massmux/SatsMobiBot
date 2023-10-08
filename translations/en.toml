@@ -67,7 +67,7 @@ helpMessage = """⚡️ *Wallet*
 _This @SatsMobiBot is a Bitcoin Lightning wallet that can send/receive tips on Telegram. It works smoothly with @BitcoinVoucherBot and Nostr, based on LightningTipBot. Use this Bot as a transit wallet to get tips and move to your own node_
 
 ❤️ *Donate*
-_This bot charges no fees but costs Satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/send 1000 @SatsMobiBot`
+_This bot charges no fees but costs Satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/send 1000 0x8859a71ff4569543@sats.mobi`
 
 %s
 
@@ -105,7 +105,7 @@ _Add this bot to your Telegram group chat to /tip posts. If you make the bot adm
 _We are not custodian of your funds. We will act in your best interest but we're also aware that the situation without KYC is tricky until we figure something out. Any amount you load onto your wallet will be considered a donation. Do not give us all your money.  Be aware that this bot is in beta development. Use at your own risk._
 
 ❤️ *Donate*
-_This bot charges no fees but costs satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/send 1000 @SatsMobiBot`"""
+_This bot charges no fees but costs satoshis to operate. If you like the bot, please consider supporting this project with a donation. To donate, use_ `/send 1000 0x8859a71ff4569543@sats.mobi`"""
 
 helpNoUsernameMessage = """👋 Please, set a Telegram username."""
 
@@ -224,8 +224,8 @@ donateEnterAmountMessage = """Did you enter an amount?"""
 donateValidAmountMessage = """Did you enter a valid amount?"""
 donateHelpText           = """📖 Oops, that didn't work. %s
 
-*Usage:* `/donate <amount>`
-*Example:* `/donate 1000`"""
+*Usage:* `/send <amount> 0x8859a71ff4569543@sats.mobi`
+*Example:* `/send 1000 0x8859a71ff4569543@sats.mobi`"""
 
 # PHOTO
 
