@@ -134,10 +134,10 @@ func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, err
 	}
 
 	// check for memo in command
-	memo := "Powered by nepay.ch @NepayCHBot"
+	memo := Translate(ctx, "appNameMessage")
 	if len(strings.Split(m.Text, " ")) > 2 {
 		memo = GetMemoFromCommand(m.Text, 2)
-		tag := " (@NepayCHBot)"
+		tag := Translate(ctx,"appNameTag")
 		memoMaxLen := 159 - len(tag)
 		if len(memo) > memoMaxLen {
 			memo = memo[:memoMaxLen-len(tag)]

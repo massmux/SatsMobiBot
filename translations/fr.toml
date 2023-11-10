@@ -134,6 +134,8 @@ errorReasonMessage             = """🚫 Erreur: %s"""
 
 # START
 
+appNameMessage = """Powered by nepay.ch @NepayCHBot"""
+appNameTag = """ (@NepayCHBot)"""
 startSettingWalletMessage = """🧮 Création de votre wallet..."""
 startWalletCreatedMessage = """🧮 Wallet créé."""
 startWalletReadyMessage   = """✅ *Votre wallet est prêt.*"""
