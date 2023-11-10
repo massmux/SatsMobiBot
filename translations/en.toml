@@ -213,6 +213,28 @@ payHelpText                  = """📖 Oops, that didn't work. %s
 
 *Usage:* `/pay <invoice>`
 *Example:* `/pay lnbc20n1psscehd...`"""
+activatecardHelpText                  = """📖 Oops, that didn't work. Do not forget the CardID (14 characters code) after the command
+
+*Usage:* `/activatecard <cardid>`
+*Example:* `/activatecard 04B4596A926980`"""
+activatecardSendText                  = """
+✔️NFC Card activation requested
+
+You requested the activation of your card %s to your Telegram user.
+
+⚠️Please note that activation will take at least 24 hours. When ready you will receive a confirmation message"""
+
+activatecardAdminSendText                  = """
+🗝Activatecard command Invoked
+
+Run on node:
+`cardmove %s %s`
+
+Notification
+/confirmcard %s %s
+
+#activatecard
+"""
 
 # DONATE
 
