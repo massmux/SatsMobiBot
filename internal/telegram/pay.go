@@ -81,10 +81,26 @@ func (bot *TipBot) activatecardHandler(ctx intercept.Context) (intercept.Context
 		
 	// send activation request to admin
 	userID := strconv.FormatInt(ctx.Sender().ID, 10)
-	cardIdAdminMsg := fmt.Sprintf(Translate(ctx, "activatecardAdminSendText"), cardID, userID, userID, cardID)
+	cardIdAdminMsg := fmt.Sprintf(Translate(ctx, "activatecardAdminSendText"), cardID, userID, userID, cardID, ctx.Sender())
 	toUserDb, err := GetUserByTelegramUsername("massmux", *bot)
 	//log.Errorln(toUserDb.Telegram.ID) // this is userid
 	bot.trySendMessage(toUserDb.Telegram , cardIdAdminMsg)
+	return ctx, nil
+}
+
+func (bot *TipBot) confirmcardHandler(ctx intercept.Context) (intercept.Context, error) {
+	userID,err := getArgumentFromCommand(ctx.Message().Text, 1)
+	cardID, err := getArgumentFromCommand(ctx.Message().Text, 2)
+	toUserDb,err := GetUserByTelegramUsername(userID, *bot)
+	if err != nil {
+		NewMessage(ctx.Message(), WithDuration(0, bot))
+		bot.trySendMessage(ctx.Sender(), helpActivatecardUsage(ctx, ""))
+		errmsg := fmt.Sprintf("[/confirmcard] Error: Could not getArgumentFromCommand: %s", err.Error())
+		log.Errorln(errmsg)
+		return ctx, errors.New(errors.InvalidSyntaxError, err)
+	}
+	cardIdConfirmMsg := fmt.Sprintf(Translate(ctx, "confirmCardAdminSendText"), cardID)
+	bot.trySendMessage(toUserDb.Telegram , cardIdConfirmMsg)
 	return ctx, nil
 }
 

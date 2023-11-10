@@ -235,7 +235,14 @@ Run on node:
 Notification
 /confirmcard %s %s
 
+%s
+
 #activatecard
+"""
+confirmCardAdminSendText                  = """
+Activation confirmed
+
+Your NFC card %s has been completed successfully
 """
 
 # DONATE
