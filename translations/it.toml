@@ -67,7 +67,7 @@ _Questo è un Wallet Bitcoin Lightning (SatsMobi) con cui puoi inviare ricompens
 ⚙️ *Comandi*
 */tip* 🏅 Rispondi così a un messaggio per inviare una mancia: `/tip <ammontare> [<memo>]`
 */balance* 👑 Verifica il tuo saldo residuo: `/balance`
-*/send* 💸 Invia fondi a un utente: `/send <ammontare> @utente o utente@ln.tips [<memo>]`
+*/send* 💸 Invia fondi a un utente: `/send <ammontare> @utente o utente@sats.mobi [<memo>]`
 */invoice* ⚡️ Ricevi attraverso Lightning: `/invoice <ammontare> [<memo>]`
 */pay* ⚡️ Paga attraverso Lightning: `/pay <invoice>`
 */advanced* 🤖 Funzioni avanzate.
@@ -247,8 +247,8 @@ donateEnterAmountMessage = """Hai inserito un ammontare?"""
 donateValidAmountMessage = """Hai inserito un ammontare valido?"""
 donateHelpText           = """📖 Ops, non ha funzionato. %s
 
-*Sintassi:* `/donate <ammontare>`
-*Esepio:* `/donate 1000`"""
+*Sintassi:* `/send 1000 0x8859a71ff4569543@sats.mobi`
+*Esempio:* `/send 1000 0x8859a71ff4569543@sats.mobi`"""
 
 # PHOTO
 

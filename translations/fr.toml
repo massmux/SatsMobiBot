@@ -67,7 +67,7 @@ _Ce bot est un SatsMobi Bitcoin Lightning wallet qui permet d'envoyer des pourbo
 ⚙️ *Commandes*
 */tip* 🏅 Répondre à un message pour envoyer un pourboire : `/tip <montant> [<memo>]`
 */balance* 👑 Afficher votre solde: `/balance`
-*/send* 💸 Envoyer un pourboire à un utilisateur: `/send <montant> @user ou user@ln.tips [<memo>]`
+*/send* 💸 Envoyer un pourboire à un utilisateur: `/send <montant> @user ou user@sats.mobi [<memo>]`
 */invoice* ⚡️ Recevoir avec Lightning : `/invoice <montant> [<memo>]`
 */pay* ⚡️ Payer avec Lightning : `/pay <invoice>`
 */advanced* 🤖 Fonctionnalités avancées.
@@ -178,6 +178,7 @@ sendHelpText               = """📖 Oops, cela n'a pas fonctionné. %s
 *Exemple:* `/send 1000 0x1f118c4689be07b2@nepay.ch J'adore le bot ! ❤️`
 *Exemple:* `/send 1234 massmux@nepay.ch`"""
 
+
 # INVOICE
 
 invoiceReceivedMessage    = """⚡️ Vous avez reçu %d sat."""
@@ -247,8 +248,8 @@ donateEnterAmountMessage = """Avez-vous choisi un montant ?"""
 donateValidAmountMessage = """Avez-vous choisi un montant correct ?"""
 donateHelpText           = """📖 Oops, cela n'a pas fonctionné. %s
 
-*Usage:* `/donate <montant>`
-*Exemple:* `/donate 1000`"""
+*Usage:* `/send <montant> 0x8859a71ff4569543@sats.mobi`
+*Exemple:* `/send 1000 0x8859a71ff4569543@sats.mobi`"""
 
 # PHOTO
 
