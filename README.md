@@ -1,8 +1,8 @@
-# @NepayCHBot (nepay.ch) 🏅
+# @SatsMobiBot
 
 A Telegram Lightning ⚡️ Bitcoin wallet and tip bot for group chats.
 
-This repository contains everything you need to set up and run your own tip bot. If you simply want to use this bot in your group chat without having to install anything just start a conversation with [@NepayChBot](https://t.me/NepayChBot) and invite it into your group chat.
+This repository contains everything you need to set up and run your own tip bot. If you simply want to use this bot in your group chat without having to install anything just start a conversation with [@SatsMobiBot](https://t.me/SatsMobiBot) and invite it into your group chat.
 
 ## Setting up the bot
 

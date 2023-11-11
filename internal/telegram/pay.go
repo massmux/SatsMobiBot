@@ -69,20 +69,19 @@ func (bot *TipBot) activatecardHandler(ctx intercept.Context) (intercept.Context
 	if err != nil {
 		NewMessage(ctx.Message(), WithDuration(0, bot))
 		bot.trySendMessage(ctx.Sender(), helpActivatecardUsage(ctx, ""))
-		//bot.trySendMessage(ctx.Sender(), helpActivatecardUsage(ctx, Translate(ctx, "invalidInvoiceHelpMessage")))
 		errmsg := fmt.Sprintf("[/activatecard] Error: Could not getArgumentFromCommand: %s", err.Error())
 		log.Errorln(errmsg)
 		return ctx, errors.New(errors.InvalidSyntaxError, err)
 	}
 
-	// send confirmation to user
+	// send confirmation to final user
 	cardIdMsg := fmt.Sprintf(Translate(ctx, "activatecardSendText"), cardID)
 	bot.trySendMessage(ctx.Sender(), cardIdMsg)
 		
-	// send activation request to admin
+	// send activation request to node admin
 	userID := strconv.FormatInt(ctx.Sender().ID, 10)
 	cardIdAdminMsg := fmt.Sprintf(Translate(ctx, "activatecardAdminSendText"), cardID, userID, userID, cardID, ctx.Sender())
-	toUserDb, err := GetUserByTelegramUsername("massmux", *bot)
+	toUserDb, err := GetUserByTelegramUsername("SatsRouting", *bot)
 	//log.Errorln(toUserDb.Telegram.ID) // this is userid
 	bot.trySendMessage(toUserDb.Telegram , cardIdAdminMsg)
 	return ctx, nil
