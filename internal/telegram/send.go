@@ -81,6 +81,11 @@ func (bot *TipBot) sendHandler(ctx intercept.Context) (intercept.Context, error)
 	// 	NewMessage(m, WithDuration(0, bot))
 	// 	return
 	// }
+	if ok, errstr := bot.SendCheckSyntax(ctx, ctx.Message()); !ok {
+		bot.trySendMessage(ctx.Message().Sender, helpSendUsage(ctx, errstr))
+		NewMessage(ctx.Message(), WithDuration(0, bot))
+		return ctx, errors.Create(errors.InvalidSyntaxError)
+	}
 
 	// get send amount, returns 0 if no amount is given
 	amount, err := decodeAmountFromCommand(ctx.Text())
