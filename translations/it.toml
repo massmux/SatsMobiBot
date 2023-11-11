@@ -210,11 +210,11 @@ activatecardHelpText                  = """📖 Oops, non ha funzionato. Non dim
 *Usage:* `/activatecard <cardid>`
 *Example:* `/activatecard 04B4596A926980`"""
 activatecardSendText                  = """
-✔️NFC Card activation requested    
+✅NFC Card activation requested
 
 Hai appena richiesto attivazione della carta %s sul tuo Telegram user.
 
-⚠️ NB: questa attivazione impiega circa 24 ore. Quando pronta riceverai un messaggio di conferma"""
+❗️NB: questa operazione impiega circa 24 ore. Quando completa, riceverai un messaggio di conferma"""
 
 activatecardAdminSendText                  = """
 🗝 Activatecard command Invoked
@@ -230,9 +230,9 @@ Notification
 #activatecard
 """
 confirmCardAdminSendText                  = """
-Attivazione confermata
+✅Attivazione completata
 
-La tua NFC Card %s è stata attivata con successo
+La tua NFC Card %s è stata attivata con successo sul tuo account Telegram.
 """
 
 
