@@ -60,10 +60,7 @@ infoButtonMessage = """Info"""
 # HELP
 
 helpMessage = """⚡️ *Wallet*
-_Questo @NepayChBot è un Wallet Bitcoin Lightning con cui puoi inviare ricompense via Telegram. Per inviare, aggiungi il bot come partecipante a una chat di gruppo. L'unità di conto per questi invii di piccolo importo è il Satoshi (sat). 100,000,000 sat = 1 Bitcoin. Digita 📚 /basics per maggiori informazioni._
-
-❤️ *Dona*
-_Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/send 1000 0x1f118c4689be07b2@nepay.ch`
+_Questo è un Wallet Bitcoin Lightning (SatsMobi) con cui puoi inviare ricompense via Telegram. Per inviare, aggiungi il bot come partecipante a una chat di gruppo. L'unità di conto per questi invii di piccolo importo è il Satoshi (sat). 100,000,000 sat = 1 Bitcoin. Digita 📚 /basics per maggiori informazioni._
 
 %s
 
@@ -100,8 +97,7 @@ _Aggiungi questo bot a una chat di gruppo Telegram per inviare una /tip. Se conc
 🏛 *Termini e condizioni*
 _Noi non siamo custodi dei tuoi fondi. Agiremo sempre nel tuo migliore interesse, ma siamo consapevoli che operare senza il riconoscimento formale dei Clienti (KYC) è un terreno accidentato finché non troviamo qualche soluzione alternativa. Qualsiasi ammontare caricato nel wallet sarà formalmente considerato una donazione. Non inviarci tutto il tuo denaro! Sii consapevole che questo bot è ancora in fase di sviluppo, e puoi usarlo a tuo rischio e pericolo._
 
-❤️ *Dona*
-_Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/send 1000 0x1f118c4689be07b2@nepay.ch`"""
+"""
 
 helpNoUsernameMessage = """👋 Per favore imposta un nome utente Telegram."""
 

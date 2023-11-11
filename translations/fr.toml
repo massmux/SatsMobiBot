@@ -60,10 +60,7 @@ infoButtonMessage = """Info"""
 # AIDE
 
 helpMessage = """⚡️ *Wallet*
-_Ce bot est un Bitcoin Lightning wallet qui permet d'envoyer des pourboires sur Telegram. Pour envoyer des pourboires, ajoutez le bot à un groupe. L'unité de base des pourboires est les Satoshis (sat). 100,000,000 sat = 1 Bitcoin. Tapez 📚 /basics pour plus d'info._
-
-❤️ *Donation*
-_Ce bot ne vous facture pas de frais mais nous coûte des Satoshis à opérerer. Si vous aimez ce bot, n'hésitez pas à faire un don pour soutenir le développement. Pour donner, utilisez_ `/send 1000 0x1f118c4689be07b2@nepay.ch`
+_Ce bot est un SatsMobi Bitcoin Lightning wallet qui permet d'envoyer des pourboires sur Telegram. Pour envoyer des pourboires, ajoutez le bot à un groupe. L'unité de base des pourboires est les Satoshis (sat). 100,000,000 sat = 1 Bitcoin. Tapez 📚 /basics pour plus d'info._
 
 %s
 
@@ -100,8 +97,7 @@ _Ajoutez ce bot à un groupe Telegram pour envoyer des pourboires en répondant 
 🏛 *Conditions d'utilisation*
 _Ce bot n'assure pas la garde de vos fonds. Nous agissons toujours dans votre intérêt et nous sommes consciens de devoir faire des compromis en raison de l'absence de KYC. Les fonds de votre portefeuille sont aujourd'hui considérés comme une donation. Ne nous donnez pas tout votre argent. Ce bot est une version beta, faites attention s'il vous plaît. À utiliser à vos risques et périls._
 
-❤️ *Donation*
-_Ce bot ne vous facture pas de frais mais coûte des Satoshis à opérer. Si vous aimez ce bot, n'hésitez pas à faire un don pour soutenir le développement. Pour donner, utilisez_ `/send 1000 0x1f118c4689be07b2@nepay.ch`"""
+"""
 
 helpNoUsernameMessage = """👋 Définissez un nom d'utilisateur sur Telegram afin d'utiliser ce bot."""
 
