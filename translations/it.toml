@@ -60,10 +60,7 @@ infoButtonMessage = """Info"""
 # HELP
 
 helpMessage = """⚡️ *Wallet*
-_Questo @SatsMobiBot è un Wallet Bitcoin Lightning con cui puoi inviare ricompense (tips) via Telegram. Per inviare, aggiungi il bot come partecipante a una chat di gruppo. Questo Bot è compatibile con @BitcoinVoucherBot._
-
-❤️ *Dona*
-_Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/send 1000 0x8859a71ff4569543@sats.mobi`
+_Questo è un Wallet Bitcoin Lightning (SatsMobi) con cui puoi inviare ricompense via Telegram. Per inviare, aggiungi il bot come partecipante a una chat di gruppo. L'unità di conto per questi invii di piccolo importo è il Satoshi (sat). 100,000,000 sat = 1 Bitcoin. Digita 📚 /basics per maggiori informazioni._
 
 %s
 
@@ -100,8 +97,7 @@ _Aggiungi questo bot a una chat di gruppo Telegram per inviare una /tip. Se conc
 🏛 *Termini e condizioni*
 _Noi non siamo custodi dei tuoi fondi. Agiremo sempre nel tuo migliore interesse, ma siamo consapevoli che operare senza il riconoscimento formale dei Clienti (KYC) è un terreno accidentato finché non troviamo qualche soluzione alternativa. Qualsiasi ammontare caricato nel wallet sarà formalmente considerato una donazione. Non inviarci tutto il tuo denaro! Sii consapevole che questo bot è ancora in fase di sviluppo, e puoi usarlo a tuo rischio e pericolo._
 
-❤️ *Dona*
-_Questo bot non applica commissioni agli utenti, ma costa alcuni Satoshi gestirlo. Se ti piace, valuta se sostenere questo progetto con una donazione. Per donare, usa il comando_ `/send 1000 0x8859a71ff4569543@sats.mobi`"""
+"""
 
 helpNoUsernameMessage = """👋 Per favore imposta un nome utente Telegram."""
 
@@ -134,6 +130,8 @@ errorReasonMessage             = """🚫 Errore: %s"""
 
 # START
 
+appNameMessage = """Powered by nepay.ch @NepayCHBot"""
+appNameTag = """ (@NepayCHBot)"""
 startSettingWalletMessage = """🧮 Sto creando il tuo wallet..."""
 startWalletCreatedMessage = """🧮 Wallet creato."""
 startWalletReadyMessage   = """✅ *Il tuo wallet è pronto.*"""
@@ -173,11 +171,11 @@ confirmSendMessage         = """Vuoi inviare un pagamento a %s?\n\n💸 Ammontar
 confirmSendAppendMemo      = """\n✉️ %s"""
 sendCancelledMessage       = """🚫 Invio cancellato."""
 errorTryLaterMessage       = """🚫 Errore. Per favore riprova più tardi."""
-sendSyntaxErrorMessage     = """Hai specificato un ammontare e un destinatario? Puoi usare il comando /send per inviare sia a utenti Telegram come %s sia a un indirizzo Lightning del tipo USERNAME@sats.mobi ."""
+sendSyntaxErrorMessage     = """Hai specificato un ammontare e un destinatario? Puoi usare il comando /send per inviare sia a utenti Telegram come %s sia a un indirizzo Lightning del tipo USERNAME@nepay.ch ."""
 sendHelpText               = """📖 Ops, non ha funzionato. %s
 
 *Sintassi:* `/send <ammontare> <utente> [<memo>]`
-*Esempio:* `/send 1000 0x8859a71ff4569543@sats.mobi Amo questo bot ❤️`
+*Esempio:* `/send 1000 @NepayChBot Amo questo bot ❤️`
 """
 
 # INVOICE
@@ -207,6 +205,37 @@ payHelpText                  = """📖 Ops, non ha funzionato. %s
 
 *Sintassi:* `/pay <invoice>`
 *Esempio:* `/pay lnbc20n1psscehd...`"""
+activatecardHelpText                  = """📖 Oops, non ha funzionato. Non dimenticare il codice CardID (14 caratteri) dopo il comando
+
+*Usage:* `/activatecard <cardid>`
+*Example:* `/activatecard 04B4596A926980`"""
+activatecardSendText                  = """
+✔️NFC Card activation requested    
+
+Hai appena richiesto attivazione della carta %s sul tuo Telegram user.
+
+⚠️ NB: questa attivazione impiega circa 24 ore. Quando pronta riceverai un messaggio di conferma"""
+
+activatecardAdminSendText                  = """
+🗝 Activatecard command Invoked
+
+Run on node:
+`cardmove %s %s`
+
+Notification
+/confirmcard %s %s
+
+%s
+
+#activatecard
+"""
+confirmCardAdminSendText                  = """
+Attivazione confermata
+
+La tua NFC Card %s è stata attivata con successo
+"""
+
+
 
 # DONATE
 
@@ -250,6 +279,8 @@ walletConnectMessage = """🔗 *Collega il tuo wallet*
 - *BlueWallet:* Premi *+ (Aggiungi Portafoglio)*, *Importa portafoglio*, *scansionare un codice QR*, e scansiona il codice QR .
 - *Zeus:* Copia la URL qui sotto, premi *Add a new node*, *Import* (incolla la URL), *Save Node Config*."""
 couldNotLinkMessage = """🚫 Non sono riuscito a collegare il tuo wallet. Per favore riprova più tardi."""
+linkHiddenMessage               = """🔍 Link nascosto. Usa /link per vederlo ancora."""
+
 
 # FAUCET
 

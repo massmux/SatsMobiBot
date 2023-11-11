@@ -60,10 +60,7 @@ infoButtonMessage = """Info"""
 # AIDE
 
 helpMessage = """⚡️ *Wallet*
-_Ce bot est un Bitcoin Lightning wallet qui permet d'envoyer des pourboires sur Telegram. Pour envoyer des pourboires, ajoutez le bot à un groupe. L'unité de base des pourboires est les Satoshis (sat). 100,000,000 sat = 1 Bitcoin. Tapez 📚 /basics pour plus d'info._
-
-❤️ *Donation*
-_Ce bot ne vous facture pas de frais mais nous coûte des Satoshis à opérerer. Si vous aimez ce bot, n'hésitez pas à faire un don pour soutenir le développement. Pour donner, utilisez_ `/send 1000 0x8859a71ff4569543@sats.mobi`
+_Ce bot est un SatsMobi Bitcoin Lightning wallet qui permet d'envoyer des pourboires sur Telegram. Pour envoyer des pourboires, ajoutez le bot à un groupe. L'unité de base des pourboires est les Satoshis (sat). 100,000,000 sat = 1 Bitcoin. Tapez 📚 /basics pour plus d'info._
 
 %s
 
@@ -100,8 +97,7 @@ _Ajoutez ce bot à un groupe Telegram pour envoyer des pourboires en répondant 
 🏛 *Conditions d'utilisation*
 _Ce bot n'assure pas la garde de vos fonds. Nous agissons toujours dans votre intérêt et nous sommes consciens de devoir faire des compromis en raison de l'absence de KYC. Les fonds de votre portefeuille sont aujourd'hui considérés comme une donation. Ne nous donnez pas tout votre argent. Ce bot est une version beta, faites attention s'il vous plaît. À utiliser à vos risques et périls._
 
-❤️ *Donation*
-_Ce bot ne vous facture pas de frais mais coûte des Satoshis à opérer. Si vous aimez ce bot, n'hésitez pas à faire un don pour soutenir le développement. Pour donner, utilisez_ `/send 1000 0x8859a71ff4569543@sats.mobi`"""
+"""
 
 helpNoUsernameMessage = """👋 Définissez un nom d'utilisateur sur Telegram afin d'utiliser ce bot."""
 
@@ -119,12 +115,12 @@ advancedMessage = """%s
 */transactions* 📊 List transactions
 */link* 🔗 Lier votre wallet à [BlueWallet](https://bluewallet.io/) ou [Zeus](https://zeusln.app/)
 */lnurl* ⚡️ Lnurl recevoir ou payer: `/lnurl` ou `/lnurl <lnurl> [memo]`
-*/nostr* 💜 Connect to Nostr: `/nostr`
+*/nostr* 💜 Connect to Nostr: `/nostr` première fois: `/nostr help`
 */faucet* 🚰 Créer un faucet: `/faucet <capacité> <par_utilisateur>`
 */tipjar* 🍯 Créer un tipjar: `/tipjar <capacité> <par_utilisateur>`
 */group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`
 */shop* 🛍 Browse shops: `/shop` or `/shop <user/shop_id>`
-*/generate* 🎆 Generate DALLE-2 images: `/generate <prompt>`"""
+"""
 
 # GENERIC
 enterAmountRangeMessage        = """💯 Choisissez un montant entre %d et %d sat."""
@@ -134,6 +130,8 @@ errorReasonMessage             = """🚫 Erreur: %s"""
 
 # START
 
+appNameMessage = """Powered by nepay.ch @NepayCHBot"""
+appNameTag = """ (@NepayCHBot)"""
 startSettingWalletMessage = """🧮 Création de votre wallet..."""
 startWalletCreatedMessage = """🧮 Wallet créé."""
 startWalletReadyMessage   = """✅ *Votre wallet est prêt.*"""
@@ -173,12 +171,13 @@ confirmSendMessage         = """Voulez-vous envoyer à %s?\n\n💸 Montant : %d 
 confirmSendAppendMemo      = """\n✉️ %s"""
 sendCancelledMessage       = """🚫 Envoi annulé."""
 errorTryLaterMessage       = """🚫 Erreur. Merci de réésayer."""
-sendSyntaxErrorMessage     = """Avez-vous ajouté un montant et un destinataire ? Utilisez la commande /send pour envoyer à un utilisateur Telegram comme %s ou bien à une adresse Lightning comme someuser@sats.mobi."""
+sendSyntaxErrorMessage     = """Avez-vous ajouté un montant et un destinataire ? Utilisez la commande /send pour envoyer à un utilisateur Telegram comme %s ou bien à une adresse Lightning comme massmux@nepay.ch ."""
 sendHelpText               = """📖 Oops, cela n'a pas fonctionné. %s
 
 *Usage:* `/send <montant> <utilisateur> [<memo>]`
-*Exemple:* `/send 1000 0x8859a71ff4569543@sats.mobi J'adore le bot ! ❤️`
-*Exemple:* `/send 1234 0x8859a71ff4569543@sats.mobi`"""
+*Exemple:* `/send 1000 0x1f118c4689be07b2@nepay.ch J'adore le bot ! ❤️`
+*Exemple:* `/send 1234 massmux@nepay.ch`"""
+
 
 # INVOICE
 
@@ -207,6 +206,37 @@ payHelpText                  = """📖 Oops, cela n'a pas fonctionné. %s
 
 *Usage:* `/pay <invoice>`
 *Exemple:* `/pay lnbc20n1psscehd...`"""
+activatecardHelpText                  = """📖 Oops, qui n'a pas fonctionné. N'oubliez pas le CardID (code de 14 caractères) après la commande
+
+*Usage:* `/activatecard <cardid>`
+*Example:* `/activatecard 04B4596A926980`"""
+activatecardSendText                  = """
+✔️NFC Card activation requested
+
+Vous avez demandé l'activation de votre carte %s à votre utilisateur Telegram.
+
+⚠️Veuillez noter que l'activation prendra au moins 24 heures. Une fois l'activation terminée, vous recevrez un message de confirmation"""
+
+activatecardAdminSendText                  = """
+🗝 Activatecard command Invoked
+
+Run on node:
+`cardmove %s %s`
+
+Notification
+/confirmcard %s %s
+
+%s
+
+#activatecard
+"""
+confirmCardAdminSendText                  = """
+Activation confirmée
+
+Votre carte NFC %s a été activée avec succès
+"""
+
+
 
 # DONATE
 
@@ -250,6 +280,8 @@ walletConnectMessage = """🔗 *Lier votre wallet*
 - *BlueWallet:* Appuyez sur *New wallet*, *Import wallet*, *Scan or import a file*, puis scanner le QR code.
 - *Zeus:* Copier l'URL, appuyez sur *Add a new node*, *Import* (l'URL), *Save Node Config*."""
 couldNotLinkMessage = """🚫 Impossible de lier votre wallet. Merci de réésayer."""
+linkHiddenMessage   = """🔍 Lien caché. Entrez /link pour le voir à nouveau"""
+
 
 # FAUCET
 

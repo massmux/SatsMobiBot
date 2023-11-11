@@ -50,6 +50,7 @@ type TelegramConfiguration struct {
 	MessageDisposeDuration int64  `yaml:"message_dispose_duration"`
 	ApiKey                 string `yaml:"api_key"`
 }
+
 type DatabaseConfiguration struct {
 	DbPath           string `yaml:"db_path"`
 	ShopBuntDbPath   string `yaml:"shop_buntdb_path"`
