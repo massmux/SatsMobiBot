@@ -219,7 +219,7 @@ activatecardHelpText                  = """📖 Oops, that didn't work. Do not f
 activatecardSendText                  = """
 ✅NFC Card activation requested
 
-You requested the activation of your card %s to your Telegram user.
+You requested the activation for your card %s to your Telegram user.
 
 ❗️Please note that activation will take at least 24 hours. When ready you will receive a confirmation message"""
 
@@ -230,16 +230,18 @@ Run on node:
 `cardmove %s %s`
 
 Notification
-/confirmcard %s %s
-
-%s
+`/confirmcard %s %s`
 
 #activatecard
 """
 confirmCardAdminSendText                  = """
 ✅Card Activation confirmed
 
-Your NFC card %s has been completed successfully
+Your NFC card ID
+
+`%s`
+
+has been successfully activated on your Telegram Account!
 """
 
 # DONATE

@@ -1,7 +1,7 @@
 package telegram
 
 import (
-    "strconv"
+	"strconv"
 )
 
 import (
@@ -62,7 +62,6 @@ type PayData struct {
 	TelegramMessage *tb.Message          `json:"telegrammessage"`
 }
 
-
 // activate NFC card function
 func (bot *TipBot) activatecardHandler(ctx intercept.Context) (intercept.Context, error) {
 	cardID, err := getArgumentFromCommand(ctx.Message().Text, 1)
@@ -77,20 +76,21 @@ func (bot *TipBot) activatecardHandler(ctx intercept.Context) (intercept.Context
 	// send confirmation to final user
 	cardIdMsg := fmt.Sprintf(Translate(ctx, "activatecardSendText"), cardID)
 	bot.trySendMessage(ctx.Sender(), cardIdMsg)
-		
+
 	// send activation request to node admin
 	userID := strconv.FormatInt(ctx.Sender().ID, 10)
-	cardIdAdminMsg := fmt.Sprintf(Translate(ctx, "activatecardAdminSendText"), cardID, userID, userID, cardID, ctx.Sender())
+	cardIdAdminMsg := fmt.Sprintf(Translate(ctx, "activatecardAdminSendText"), cardID, userID, ctx.Sender().Username, cardID)
 	toUserDb, err := GetUserByTelegramUsername("SatsRouting", *bot)
 	//log.Errorln(toUserDb.Telegram.ID) // this is userid
-	bot.trySendMessage(toUserDb.Telegram , cardIdAdminMsg)
+	bot.trySendMessage(toUserDb.Telegram, cardIdAdminMsg)
 	return ctx, nil
 }
 
 func (bot *TipBot) confirmcardHandler(ctx intercept.Context) (intercept.Context, error) {
-	userID,err := getArgumentFromCommand(ctx.Message().Text, 1)
+	userID, err := getArgumentFromCommand(ctx.Message().Text, 1)
 	cardID, err := getArgumentFromCommand(ctx.Message().Text, 2)
-	toUserDb,err := GetUserByTelegramUsername(userID, *bot)
+	toUserDb, err := GetUserByTelegramUsername(userID, *bot)
+	adminUserID, err := GetUserByTelegramUsername("SatsRouting", *bot)
 	if err != nil {
 		NewMessage(ctx.Message(), WithDuration(0, bot))
 		bot.trySendMessage(ctx.Sender(), helpActivatecardUsage(ctx, ""))
@@ -99,7 +99,8 @@ func (bot *TipBot) confirmcardHandler(ctx intercept.Context) (intercept.Context,
 		return ctx, errors.New(errors.InvalidSyntaxError, err)
 	}
 	cardIdConfirmMsg := fmt.Sprintf(Translate(ctx, "confirmCardAdminSendText"), cardID)
-	bot.trySendMessage(toUserDb.Telegram , cardIdConfirmMsg)
+	bot.trySendMessage(toUserDb.Telegram, cardIdConfirmMsg)
+	bot.trySendMessage(adminUserID.Telegram, "Message sent!")
 	return ctx, nil
 }
 

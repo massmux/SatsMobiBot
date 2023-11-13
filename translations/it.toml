@@ -223,16 +223,18 @@ Run on node:
 `cardmove %s %s`
 
 Notification
-/confirmcard %s %s
-
-%s
+`/confirmcard %s %s`
 
 #activatecard
 """
 confirmCardAdminSendText                  = """
 ✅Attivazione completata
 
-La tua NFC Card %s è stata attivata con successo sul tuo account Telegram.
+La tua NFC Card ID
+
+%s
+
+è stata attivata con successo sul tuo account Telegram.
 """
 
 
