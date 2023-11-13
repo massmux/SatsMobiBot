@@ -87,10 +87,15 @@ func (bot *TipBot) activatecardHandler(ctx intercept.Context) (intercept.Context
 }
 
 func (bot *TipBot) confirmcardHandler(ctx intercept.Context) (intercept.Context, error) {
+	if ctx.Sender().Username != "SatsRouting" {
+		// Not admin. do nothing exit
+		return ctx, nil
+	}
 	userID, err := getArgumentFromCommand(ctx.Message().Text, 1)
 	cardID, err := getArgumentFromCommand(ctx.Message().Text, 2)
 	toUserDb, err := GetUserByTelegramUsername(userID, *bot)
 	adminUserID, err := GetUserByTelegramUsername("SatsRouting", *bot)
+
 	if err != nil {
 		NewMessage(ctx.Message(), WithDuration(0, bot))
 		bot.trySendMessage(ctx.Sender(), helpActivatecardUsage(ctx, ""))
