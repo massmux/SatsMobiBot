@@ -245,6 +245,11 @@ func (bot *TipBot) lnurlReceiveEvent(event Event) {
 			}
 		}
 
+		if tx.Amount < 21 {
+			log.Debugf("[lnurl-p] Filtered LNURL comment for %s of %d sat.", GetUserStr(invoiceEvent.User.Telegram), tx.Amount)
+			return
+		}
+
 		// notify user with LNURL comment and sender Information
 		if len(tx.Comment) > 0 {
 			if len(tx.From) == 0 {
