@@ -76,11 +76,6 @@ func (bot *TipBot) sendHandler(ctx intercept.Context) (intercept.Context, error)
 
 	}
 
-	// if ok, errstr := bot.SendCheckSyntax(ctx, m); !ok {
-	// 	bot.trySendMessage(m.Sender, helpSendUsage(ctx, errstr))
-	// 	NewMessage(m, WithDuration(0, bot))
-	// 	return
-	// }
 	if ok, errstr := bot.SendCheckSyntax(ctx, ctx.Message()); !ok {
 		bot.trySendMessage(ctx.Message().Sender, helpSendUsage(ctx, errstr))
 		NewMessage(ctx.Message(), WithDuration(0, bot))
