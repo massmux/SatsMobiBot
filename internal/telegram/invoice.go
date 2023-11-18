@@ -250,7 +250,6 @@ func (bot *TipBot) lnurlReceiveEvent(event Event) {
 			return
 		}
 
-
 		// notify user with LNURL comment and sender Information
 		if len(tx.Comment) > 0 {
 			if len(tx.From) == 0 {
