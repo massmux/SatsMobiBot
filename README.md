@@ -19,7 +19,6 @@ First, create a new Telegram bot by starting a conversation with the [@BotFather
 
 Thanks to my friend Calle
 
-
 ## Made with
 
 - [LNbits](https://github.com/lnbits/lnbits) – Free and open-source lightning-network wallet/accounts system.
