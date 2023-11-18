@@ -19,7 +19,6 @@ First, create a new Telegram bot by starting a conversation with the [@BotFather
 
 Thanks to my friend Calle
 
-
 ## Made with
 
 - [LNbits](https://github.com/lnbits/lnbits) – Free and open-source lightning-network wallet/accounts system.
@@ -27,3 +26,4 @@ Thanks to my friend Calle
 - [gozxing](https://github.com/makiuchi-d/gozxing) – barcode image processing library in Go.
 - [ln-decodepay](https://github.com/fiatjaf/ln-decodepay) – Lightning Network BOLT11 invoice decoder.
 - [go-lnurl](https://github.com/fiatjaf/go-lnurl) - Helpers for building lnurl support into services.
+
