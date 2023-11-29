@@ -60,7 +60,9 @@ infoButtonMessage = """Info"""
 # HELP
 
 helpMessage = """⚡️ *Wallet*
-_Questo è un Wallet Bitcoin Lightning (SatsMobi) con cui puoi inviare ricompense via Telegram. Per inviare, aggiungi il bot come partecipante a una chat di gruppo. L'unità di conto per questi invii di piccolo importo è il Satoshi (sat). 100,000,000 sat = 1 Bitcoin. Digita 📚 /basics per maggiori informazioni._
+_Questo è un Wallet Bitcoin Lightning (SatsMobi) con cui puoi inviare tip via Telegram e gestire le carte NFC.
+Funziona con Nostr, basato su LightningTipBot. Utilizza questo Bot come portafoglio di transito per ottenere tip per spostarle poi sul proprio nodo.
+L'importo massimo consentito è di 1M di Sats. Digita 📚 /basics per maggiori informazioni._
 
 %s
 

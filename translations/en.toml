@@ -64,7 +64,8 @@ payButtonEmoji = """💸"""
 # HELP
 
 helpMessage = """⚡️ *Wallet*
-_This is a SatsMobi Bitcoin Lightning wallet that can send/receive tips on Telegram. It works smoothly with Nostr, based on LightningTipBot. Use this Bot as a transit wallet to get tips and move to your own node. Hit 📚 /basics for more info._
+_This is a SatsMobi Bitcoin Lightning wallet that can send/receive tips on Telegram and manage NFC Cards. It works smoothly with Nostr, based on LightningTipBot.
+Use this Bot as a transit wallet to get tips and move to your own node. Maximum amount allowed is 1M Sats. Hit 📚 /basics for more info._
 
 %s
 

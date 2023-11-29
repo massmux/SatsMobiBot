@@ -60,7 +60,9 @@ infoButtonMessage = """Info"""
 # AIDE
 
 helpMessage = """⚡️ *Wallet*
-_Ce bot est un SatsMobi Bitcoin Lightning wallet qui permet d'envoyer des pourboires sur Telegram. Pour envoyer des pourboires, ajoutez le bot à un groupe. L'unité de base des pourboires est les Satoshis (sat). 100,000,000 sat = 1 Bitcoin. Tapez 📚 /basics pour plus d'info._
+_Ce bot est un SatsMobi Bitcoin Lightning wallet qui permet d'envoyer des pourboires sur Telegram et gérer les cartes NFC.
+Il fonctionne parfaitement avec Nostr, basé sur LightningTipBot.
+Utilisez ce Bot comme un portefeuille de transit pour obtenir des tips et passer à votre propre nœud. Le montant maximum autorisé est de 1M Sats. Tapez 📚 /basics pour plus d'info._
 
 %s
 
