@@ -64,7 +64,7 @@ payButtonEmoji = """💸"""
 # HELP
 
 helpMessage = """⚡️ *Wallet*
-_This is a SatsMobi Bitcoin Lightning wallet that can send/receive tips on Telegram and manage NFC Cards. It works smoothly with Nostr, based on LightningTipBot.
+_This is a SatsMobi Bitcoin Lightning wallet that can send/receive tips on Telegram and manage NFC Cards. It works smoothly with Nostr.
 Use this Bot as a transit wallet to get tips and move to your own node. Maximum amount allowed is 1M Sats. Hit 📚 /basics for more info._
 
 %s
@@ -81,27 +81,24 @@ Use this Bot as a transit wallet to get tips and move to your own node. Maximum 
 infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Your Lightning address is `%s`"""
 
-basicsMessage = """🧡 *Bitcoin*
-_Bitcoin is the currency of the internet. It is permissionless and decentralized and has no masters and no controling authority. Bitcoin is sound money that is faster, more secure, and more inclusive than the legacy financial system._
-
+basicsMessage = """
 🧮 *Economnics*
-_The smallest unit of Bitcoin are Satoshis (sat) and 100,000,000 sat = 1 Bitcoin. There will only ever be 21 Million Bitcoin. The fiat currency value of Bitcoin can change daily. However, if you live on a Bitcoin standard 1 sat will always equal 1 sat._
+_This wallet has been created as a transit towards your own node. In any case no more than 1M Sats are allowed in this facility. This is a strict and hard limit. _
 
 ⚡️ *The Lightning Network*
-_The Lightning Network is a payment protocol that enables fast and cheap Bitcoin payments that require almost no energy. It is what scales Bitcoin to the billions of people around the world._
+_You can connect this Wallet to Zeus easily using /link command._
 
 📲 *Lightning Wallets*
 _Your funds on this bot can be sent to any other Lightning wallet and vice versa. Recommended Lightning wallets for your phone are_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), or_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(easy)_.
 
 📄 *Open Source*
-_This bot is free and_ [open source](https://github.com/LightningTipBot/LightningTipBot) _software. You can run it on your own computer and use it in your own community._
+_This bot is free and_ [open source](https://github.com/massmux/SatsMobiBot) _software. You can run it on your own computer and use it in your own community._
 
 ✈️ *Telegram*
 _Add this bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
 
 🏛 *Terms*
-_We are not custodian of your funds. We will act in your best interest but we're also aware that the situation without KYC is tricky until we figure something out. Any amount you load onto your wallet will be considered a donation. Do not give us all your money.  Be aware that this bot is in beta development. Use at your own risk._
-
+_We are not custodian of your funds. We will act in your best interest. Be aware that this bot is in beta development. Use at your own risk._
 """
 
 

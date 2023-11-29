@@ -61,7 +61,7 @@ infoButtonMessage = """Info"""
 
 helpMessage = """⚡️ *Wallet*
 _Ce bot est un SatsMobi Bitcoin Lightning wallet qui permet d'envoyer des pourboires sur Telegram et gérer les cartes NFC.
-Il fonctionne parfaitement avec Nostr, basé sur LightningTipBot.
+Il fonctionne parfaitement avec Nostr.
 Utilisez ce Bot comme un portefeuille de transit pour obtenir des tips et passer à votre propre nœud. Le montant maximum autorisé est de 1M Sats. Tapez 📚 /basics pour plus d'info._
 
 %s
@@ -78,26 +78,24 @@ Utilisez ce Bot comme un portefeuille de transit pour obtenir des tips et passer
 infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Votre adresse Lightning est `%s`"""
 
-basicsMessage = """🧡 *Bitcoin*
-_Bitcoin est la monnaie d'internet. Aucune authorité ne contrôle ce réseau décentralisé et accessible à tous. Bitcoin est une monnaie saine qui est rapide, fiable et plus inclusive que le système financier traditionnel._
-
+basicsMessage = """
 🧮 *Économie*
-_La plus petite unité du Bitcoin est un Satoshis (sat). 100,000,000 sat = 1 Bitcoin. Il n'existe que 21 millions de Bitcoin. La valeur du Bitcoin fluctue tous les jours. Néanmoins, si vous vivez avec le standard du Bitcoin, 1 sat sera toujours égal à 1 sat._
+_Vous devez utiliser ce portefeuille comme moyen de transit vers votre propre nœud. Dans tous les cas, pas plus de 1M Sats sont autorisés dans cette installation. Il s'agit d'une limite stricte._
 
 ⚡️ *Le Lightning Network*
-_Le Lightning Network est un protocole de paiement qui permet d'envoyer et de recevoir rapidement du Bitcoin, à moindre coût et sans grande consommation d'énergie. Ce réseau rend accessible Bitcoin à des milliards de personnes._
+_Vous pouvez connecter ce Wallet à Zeus facilement en utilisant la commande /link._
 
 📲 *Lightning Wallets*
 _Vos fonds sur ce bot peuvent être envoyés à n'importe quel Lightning Wallet. Nous recommandons de télécharger sur votre téléphone les wallets suivant_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), ou_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(facile)_.
 
 📄 *Logiciel libre*
-_Ce bot est gratuit et_ [libre de droits](https://github.com/LightningTipBot/LightningTipBot)_. Vous pouvez éxecuter le bot sur votre ordinateur et l'utiliser dans votre communauté._
+_Ce bot est gratuit et_ [libre de droits](https://github.com/massmux/SatsMobiBot)_. Vous pouvez éxecuter le bot sur votre ordinateur et l'utiliser dans votre communauté._
 
 ✈️ *Telegram*
 _Ajoutez ce bot à un groupe Telegram pour envoyer des pourboires en répondant à des messages. Si vous faites de ce bot un adminstrateur d'un groupe, il va réorganiser les commandes pour plus de lisibilité._
 
 🏛 *Conditions d'utilisation*
-_Ce bot n'assure pas la garde de vos fonds. Nous agissons toujours dans votre intérêt et nous sommes consciens de devoir faire des compromis en raison de l'absence de KYC. Les fonds de votre portefeuille sont aujourd'hui considérés comme une donation. Ne nous donnez pas tout votre argent. Ce bot est une version beta, faites attention s'il vous plaît. À utiliser à vos risques et périls._
+_Nous ne sommes pas dépositaires de vos fonds. Nous agissons au mieux de vos intérêts. Sachez que ce robot est en phase de développement bêta. Utilisez-le à vos risques et périls. Pas plus de 1M Sats sont autorisés dans cette installation. Nous n'assumons aucune responsabilité._
 
 """
 
