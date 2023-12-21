@@ -267,6 +267,10 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 				Reason: fmt.Sprintf("Comment too long (max: %d characters).", CommentAllowed)},
 		}, fmt.Errorf("comment too long")
 	}
+	// get rid of LNURL spam
+	if amount_msat < 21_000 {
+		comment = ""
+	}
 	user, tx := db.FindUser(w.database, username)
 	if tx.Error != nil {
 		return &lnurl.LNURLPayValues{
@@ -281,6 +285,13 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 				Status: api.StatusError,
 				Reason: fmt.Sprintf("Invalid user.")},
 		}, fmt.Errorf("[serveLNURLpSecond] user %s not found", username)
+	}
+	// get user settings
+	user2, err := db.FindUserSettings(user, w.bot.DB.Users.Preload("Settings"))
+	if err != nil {
+		fmt.Errorf("[serveLNURLpSecond] Couldn't fetch user settings from database: %v", err)
+	} else {
+		user = user2
 	}
 	// user is ok now create invoice
 	// set wallet lnbits client
@@ -403,9 +414,10 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 	// save the invoice Event that will be loaded when the invoice is paid and trigger the comment display callback
 	runtime.IgnoreError(w.buntdb.Set(
 		telegram.InvoiceEvent{
-			Invoice:  invoiceStruct,
-			User:     user,
-			Callback: telegram.InvoiceCallbackLNURLPayReceive,
+			Invoice:      invoiceStruct,
+			User:         user,
+			Callback:     telegram.InvoiceCallbackLNURLPayReceive,
+			UserCurrency: user.Settings.Display.DisplayCurrency,
 		}))
 
 	return &lnurl.LNURLPayValues{
