@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# search a word in all the text files
+
+where="./internal"
+
+clear
+echo "Searching '$1'in $where"
+echo
+find $where -type f -exec grep -li $1 {} \;

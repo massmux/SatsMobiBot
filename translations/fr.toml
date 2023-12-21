@@ -62,39 +62,41 @@ infoButtonMessage = """Info"""
 helpMessage = """⚡️ *Wallet*
 _Ce bot est un SatsMobi Bitcoin Lightning wallet qui permet d'envoyer des pourboires sur Telegram et gérer les cartes NFC.
 Il fonctionne parfaitement avec Nostr.
-Utilisez ce Bot comme un portefeuille de transit pour obtenir des tips et passer à votre propre nœud. Le montant maximum autorisé est de 1M Sats. Tapez 📚 /basics pour plus d'info._
+Utilisez ce Bot comme un portefeuille de transit pour obtenir des tips et passer à votre propre nœud. Le montant maximum autorisé est de 1M Sats. Tapez /basics pour plus d'info._
 
 %s
 
 ⚙️ *Commandes*
-*/tip* 🏅 Répondre à un message pour envoyer un pourboire : `/tip <montant> [<memo>]`
-*/balance* 👑 Afficher votre solde: `/balance`
-*/send* 💸 Envoyer un pourboire à un utilisateur: `/send <montant> @user ou user@sats.mobi [<memo>]`
-*/invoice* ⚡️ Recevoir avec Lightning : `/invoice <montant> [<memo>]`
-*/pay* ⚡️ Payer avec Lightning : `/pay <invoice>`
-*/advanced* 🤖 Fonctionnalités avancées.
-*/help* 📖 Aide."""
+*/tip*: Répondre à un message pour envoyer un pourboire : `/tip <montant> [<memo>]`
+*/balance*: Afficher votre solde: `/balance`
+*/send*: Envoyer un pourboire à un utilisateur: `/send <montant> @user ou user@sats.mobi [<memo>]`
+*/invoice*: Recevoir avec Lightning : `/invoice <montant> [<memo>]`
+*/pay*: Payer avec Lightning : `/pay <invoice>`
+*/cashback*: QRCODE pour recevoir cashback.
+*/activatecard*: Demande d'activation de la carte NFC `/activatecard <CardID>`
+*/advanced*: Fonctionnalités avancées.
+*/help*: Aide."""
 
 infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Votre adresse Lightning est `%s`"""
 
 basicsMessage = """
-🧮 *Économie*
+*Économie*
 _Vous devez utiliser ce portefeuille comme moyen de transit vers votre propre nœud. Dans tous les cas, pas plus de 1M Sats sont autorisés dans cette installation. Il s'agit d'une limite stricte._
 
-⚡️ *Le Lightning Network*
+*Le Lightning Network*
 _Vous pouvez connecter ce Wallet à Zeus facilement en utilisant la commande /link._
 
-📲 *Lightning Wallets*
+*Lightning Wallets*
 _Vos fonds sur ce bot peuvent être envoyés à n'importe quel Lightning Wallet. Nous recommandons de télécharger sur votre téléphone les wallets suivant_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), ou_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(facile)_.
 
-📄 *Logiciel libre*
+*Logiciel libre*
 _Ce bot est gratuit et_ [libre de droits](https://github.com/massmux/SatsMobiBot)_. Vous pouvez éxecuter le bot sur votre ordinateur et l'utiliser dans votre communauté._
 
-✈️ *Telegram*
+*Telegram*
 _Ajoutez ce bot à un groupe Telegram pour envoyer des pourboires en répondant à des messages. Si vous faites de ce bot un adminstrateur d'un groupe, il va réorganiser les commandes pour plus de lisibilité._
 
-🏛 *Conditions d'utilisation*
+*Conditions d'utilisation*
 _Nous ne sommes pas dépositaires de vos fonds. Nous agissons au mieux de vos intérêts. Sachez que ce robot est en phase de développement bêta. Utilisez-le à vos risques et périls. Pas plus de 1M Sats sont autorisés dans cette installation. Nous n'assumons aucune responsabilité._
 
 """
@@ -104,22 +106,22 @@ helpNoUsernameMessage = """👋 Définissez un nom d'utilisateur sur Telegram af
 advancedMessage = """%s
 
 👉 *Inline commands*
-*send* 💸 Envoyer des sats : `%s send <montant> [<utilisateur>] [<memo>]`
-*receive* 🏅 Demander un paiement : `... receive <montant> [<utilisateur>] [<memo>]`
-*faucet* 🚰 Créer un faucet: `... faucet <capacité> <par_utilisateur> [<memo>]`
-*tipjar* 🍯 Créer un tipjar: `... tipjar <capacité> <par_utilisateur> [<memo>]`
+*send*: Envoyer des sats : `%s send <montant> [<utilisateur>] [<memo>]`
+*receive*: Demander un paiement : `... receive <montant> [<utilisateur>] [<memo>]`
+*faucet*: Créer un faucet: `... faucet <capacité> <par_utilisateur> [<memo>]`
+*tipjar*: Créer un tipjar: `... tipjar <capacité> <par_utilisateur> [<memo>]`
 
 📖 Vous pouvez utiliser ces commandes dans tous les chats et même dans les conversations privées. Attendez une seconde après avoir tapé une commandé puis *click* sur le résultat, n'appuyez pas sur entrée.
 
 ⚙️ *Commandes avancées*
 */transactions* 📊 List transactions
-*/link* 🔗 Lier votre wallet à [BlueWallet](https://bluewallet.io/) ou [Zeus](https://zeusln.app/)
-*/lnurl* ⚡️ Lnurl recevoir ou payer: `/lnurl` ou `/lnurl <lnurl> [memo]`
-*/nostr* 💜 Connect to Nostr: `/nostr` première fois: `/nostr help`
-*/faucet* 🚰 Créer un faucet: `/faucet <capacité> <par_utilisateur>`
-*/tipjar* 🍯 Créer un tipjar: `/tipjar <capacité> <par_utilisateur>`
-*/group* 🎟 Create group tickets: `/group add <mygroup> [<ticket_price>]`
-*/shop* 🛍 Browse shops: `/shop` or `/shop <user/shop_id>`
+*/link*: Lier votre wallet à [BlueWallet](https://bluewallet.io/) ou [Zeus](https://zeusln.app/)
+*/lnurl*: Lnurl recevoir ou payer: `/lnurl` ou `/lnurl <lnurl> [memo]`
+*/nostr*: Connect to Nostr: `/nostr` première fois: `/nostr help`
+*/faucet*: Créer un faucet: `/faucet <capacité> <par_utilisateur>`
+*/tipjar*: Créer un tipjar: `/tipjar <capacité> <par_utilisateur>`
+*/group*: Create group tickets: `/group add <mygroup> [<ticket_price>]`
+*/shop*: Browse shops: `/shop` or `/shop <user/shop_id>`
 """
 
 # GENERIC
@@ -262,6 +264,7 @@ photoQrRecognizedMessage = """✅ QR code:
 
 # LNURL
 
+cashbackReceiveInfoText        = """Mon QRCODE personnel pour recevoir le Cashback."""
 lnurlReceiveInfoText           = """👇 Vous pouvez utiliser cet LNURL pour recevoir des paiements."""
 lnurlResolvingUrlMessage       = """🧮 Recherche de l'adresse..."""
 lnurlGettingUserMessage        = """🧮 Préparation du paiement..."""

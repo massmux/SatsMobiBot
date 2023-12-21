@@ -64,40 +64,42 @@ payButtonEmoji = """💸"""
 # HELP
 
 helpMessage = """⚡️ *Wallet*
-_This is a SatsMobi Bitcoin Lightning wallet that can send/receive tips on Telegram and manage NFC Cards. It works smoothly with Nostr.
-Use this Bot as a transit wallet to get tips and move to your own node. Maximum amount allowed is 1M Sats. Hit 📚 /basics for more info._
+_This is a SatsMobi Bitcoin Lightning wallet that can send /receive tips on Telegram and manage NFC Cards. It works smoothly with Nostr.
+Use this Bot as a transit wallet to get tips and move to your own node. Maximum amount allowed is 1M Sats. Hit /basics for more info._
 
 %s
 
 ⚙️ *Commands*
-*/tip* 🏅 Reply to a message to tip: `/tip <amount> [<memo>]`
-*/balance* 👑 Check your balance: `/balance`
-*/send* 💸 Send funds to a user: `/send <amount> @user or user@nepay.ch [<memo>]`
-*/invoice* ⚡️ Receive with Lightning: `/invoice <amount> [<memo>]`
-*/pay* ⚡️ Pay with Lightning: `/pay <invoice>`
-*/advanced* 🤖 Advanced features.
-*/help* 📖 Read this help."""
+*/tip*: Reply to a message to tip: `/tip <amount> [<memo>]`
+*/balance*: Check your balance: `/balance`
+*/send*: Send funds to a user: `/send <amount> @user or user@nepay.ch [<memo>]`
+*/invoice*: Receive with Lightning: `/invoice <amount> [<memo>]`
+*/pay*: Pay with Lightning: `/pay <invoice>`
+*/cashback*: QRCODE for receiving cashback.
+*/activatecard*: Request activation of NFC Card `/activatecard <CardID>`
+*/advanced*: Advanced features.
+*/help*: Read this help."""
 
 infoHelpMessage = """ℹ️ *Info*"""
 infoYourLightningAddress = """Your Lightning address is `%s`"""
 
 basicsMessage = """
-🧮 *Economnics*
+*Economics*
 _This wallet has been created as a transit towards your own node. In any case no more than 1M Sats are allowed in this facility. This is a strict and hard limit. _
 
-⚡️ *The Lightning Network*
+*The Lightning Network*
 _You can connect this Wallet to Zeus easily using /link command._
 
-📲 *Lightning Wallets*
+*Lightning Wallets*
 _Your funds on this bot can be sent to any other Lightning wallet and vice versa. Recommended Lightning wallets for your phone are_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), or_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(easy)_.
 
-📄 *Open Source*
+*Open Source*
 _This bot is free and_ [open source](https://github.com/massmux/SatsMobiBot) _software. You can run it on your own computer and use it in your own community._
 
-✈️ *Telegram*
+*Telegram*
 _Add this bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
 
-🏛 *Terms*
+*Terms of Service*
 _We are not custodian of your funds. We will act in your best interest. Be aware that this bot is in beta development. Use at your own risk._
 """
 
@@ -107,22 +109,22 @@ helpNoUsernameMessage = """👋 Please, set a Telegram username."""
 advancedMessage = """%s
 
 👉 *Inline commands*
-*send* 💸 Send sats to chat: `%s send <amount> [<user>] [<memo>]`
-*receive* 🏅 Request a payment: `... receive <amount> [<user>] [<memo>]`
-*faucet* 🚰 Create a faucet: `... faucet <capacity> <per_user> [<memo>]`
-*tipjar* 🍯 Create a tipjar: `... tipjar <capacity> <per_user> [<memo>]`
+*send*: Send sats to chat: `%s send <amount> [<user>] [<memo>]`
+*receive*: Request a payment: `... receive <amount> [<user>] [<memo>]`
+*faucet*: Create a faucet: `... faucet <capacity> <per_user> [<memo>]`
+*tipjar*: Create a tipjar: `... tipjar <capacity> <per_user> [<memo>]`
 
 📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and *click* the result, don't press enter.
 
 ⚙️ *Advanced commands*
-*/transactions* 📊 List transactions
-*/link* 🔗 Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)
-*/lnurl* ⚡️ Lnurl receive or pay: `/lnurl` or `/lnurl <lnurl> [memo]`
-*/nostr* 💜 Connect to Nostr: `/nostr` first time: `/nostr help`
-*/faucet* 🚰 Create a faucet: `/faucet <capacity> <per_user>`
-*/tipjar* 🍯 Create a tipjar: `/tipjar <capacity> <per_user>`
-*/group* 🎟 Group chat features: `/group`
-*/shop* 🛍 Browse shops: `/shop` or `/shop <user/shop_id>`
+*/transactions*: Transactions list
+*/link*: Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)
+*/lnurl*: Lnurl receive or pay: `/lnurl` or `/lnurl <lnurl> [memo]`
+*/nostr*: Connect to Nostr: `/nostr` first time: `/nostr help`
+*/faucet*: Create a faucet: `/faucet <capacity> <per_user>`
+*/tipjar*: Create a tipjar: `/tipjar <capacity> <per_user>`
+*/group*: Group chat features: `/group`
+*/shop*: Browse shops: `/shop` or `/shop <user/shop_id>`
 """
 
 # GENERIC
@@ -264,6 +266,7 @@ photoQrRecognizedMessage = """✅ QR code:
 
 # LNURL
 
+cashbackReceiveInfoText        = """My Personal QRCODE for cashback."""
 lnurlReceiveInfoText           = """👇 You can use this static LNURL to receive payments."""
 lnurlResolvingUrlMessage       = """🧮 Resolving address..."""
 lnurlGettingUserMessage        = """🧮 Preparing payment..."""

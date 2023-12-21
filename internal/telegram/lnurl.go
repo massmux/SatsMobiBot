@@ -27,6 +27,32 @@ import (
 func (bot *TipBot) cancelLnUrlHandler(c *tb.Callback) {
 }
 
+func (bot *TipBot) cashbackHandler(ctx intercept.Context) (intercept.Context, error) {
+	// this returns a LNURL for getting a Sats cashback
+	// commands: /cashback
+	m := ctx.Message()
+	if m.Chat.Type != tb.ChatPrivate {
+		return ctx, errors.Create(errors.NoPrivateChatError)
+	}
+	log.Infof("[lnurlHandler] %s", m.Text)
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return ctx, errors.Create(errors.UserNoWalletError)
+	}
+	if m.Text == "/cashback" {
+		// create qr code
+		lnurlEncode, err := UserGetLNURL(user)
+		qr, err := qrcode.Encode(lnurlEncode, qrcode.Medium, 256)
+		if err != nil {
+			errmsg := fmt.Sprintf("[userLnurlHandler] Failed to create QR code for LNURL: %s", err.Error())
+			log.Errorln(errmsg)
+			return ctx, err
+		}
+		bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", Translate(ctx, "cashbackReceiveInfoText"))})
+	}
+	return ctx, nil
+}
+
 // lnurlHandler is invoked on /lnurl command
 func (bot *TipBot) lnurlHandler(ctx intercept.Context) (intercept.Context, error) {
 	// commands:
