@@ -63,9 +63,9 @@ payButtonEmoji = """💸"""
 
 # HELP
 
-helpMessage = """⚡️ *Wallet*
-_This is a SatsMobi Bitcoin Lightning wallet that can send /receive tips on Telegram and manage NFC Cards. It works smoothly with Nostr.
-Use this Bot as a transit wallet to get tips and move to your own node. Maximum amount allowed is 1M Sats. Hit /basics for more info._
+helpMessage = """⚡️ *NEPAY*
+_This is a Bitcoin Lightning Wallet that can send and receive tips on Telegram and manage NFC Cards. Nostr enabled.
+ Maximum amount allowed is 1M Sats. Hit /basics for more info._
 
 %s
 
@@ -81,11 +81,11 @@ Use this Bot as a transit wallet to get tips and move to your own node. Maximum 
 */help*: Read this help."""
 
 infoHelpMessage = """ℹ️ *Info*"""
-infoYourLightningAddress = """Your Lightning address is `%s`"""
+infoYourLightningAddress = """Your Lightning address is: `%s`"""
 
 basicsMessage = """
 *Economics*
-_This wallet has been created as a transit towards your own node. In any case no more than 1M Sats are allowed in this facility. This is a strict and hard limit. _
+_This Wallet has been created as a transit towards your own node. In any case no more than 1M Sats are allowed in this facility. This is a strict and hard limit. _
 
 *The Lightning Network*
 _You can connect this Wallet to Zeus easily using /link command._
@@ -94,10 +94,10 @@ _You can connect this Wallet to Zeus easily using /link command._
 _Your funds on this bot can be sent to any other Lightning wallet and vice versa. Recommended Lightning wallets for your phone are_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), or_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(easy)_.
 
 *Open Source*
-_This bot is free and_ [open source](https://github.com/massmux/SatsMobiBot) _software. You can run it on your own computer and use it in your own community._
+_This Bot is free and opensource software. You can run it on your own computer and use it in your own community._
 
 *Telegram*
-_Add this bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
+_Add this Bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
 
 *Terms of Service*
 _We are not custodian of your funds. We will act in your best interest. Be aware that this bot is in beta development. Use at your own risk._
@@ -217,6 +217,9 @@ activatecardHelpText                  = """📖 Oops, that didn't work. Do not f
 
 *Usage:* `/activatecard <cardid>`
 *Example:* `/activatecard 04B4596A926980`"""
+
+# NFC CARDS
+
 activatecardSendText                  = """
 ✅NFC Card activation requested
 

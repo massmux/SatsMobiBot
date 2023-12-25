@@ -59,10 +59,9 @@ infoButtonMessage = """Info"""
 
 # AIDE
 
-helpMessage = """⚡️ *Wallet*
-_Ce bot est un SatsMobi Bitcoin Lightning wallet qui permet d'envoyer des pourboires sur Telegram et gérer les cartes NFC.
-Il fonctionne parfaitement avec Nostr.
-Utilisez ce Bot comme un portefeuille de transit pour obtenir des tips et passer à votre propre nœud. Le montant maximum autorisé est de 1M Sats. Tapez /basics pour plus d'info._
+helpMessage = """⚡️ *NEPAY*
+_Ce bot est un Bitcoin Lightning Wallet qui permet d'envoyer des Tips sur Telegram et gérer les cartes NFC.
+Il fonctionne avec Nostr. Le montant maximum autorisé est de 1M Sats. Tapez /basics pour plus d'info._
 
 %s
 
@@ -88,13 +87,13 @@ _Vous devez utiliser ce portefeuille comme moyen de transit vers votre propre n�
 _Vous pouvez connecter ce Wallet à Zeus facilement en utilisant la commande /link._
 
 *Lightning Wallets*
-_Vos fonds sur ce bot peuvent être envoyés à n'importe quel Lightning Wallet. Nous recommandons de télécharger sur votre téléphone les wallets suivant_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), ou_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(facile)_.
+_Vos fonds sur ce Bot peuvent être envoyés à n'importe quel Lightning Wallet. Nous recommandons de télécharger sur votre téléphone les wallets suivant_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), ou_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(facile)_.
 
 *Logiciel libre*
-_Ce bot est gratuit et_ [libre de droits](https://github.com/massmux/SatsMobiBot)_. Vous pouvez éxecuter le bot sur votre ordinateur et l'utiliser dans votre communauté._
+_Ce bot est gratuit et opensource_. Vous pouvez éxecuter le bot sur votre ordinateur et l'utiliser dans votre communauté._
 
 *Telegram*
-_Ajoutez ce bot à un groupe Telegram pour envoyer des pourboires en répondant à des messages. Si vous faites de ce bot un adminstrateur d'un groupe, il va réorganiser les commandes pour plus de lisibilité._
+_Ajoutez ce Bot à un groupe Telegram pour envoyer des pourboires en répondant à des messages. Si vous faites de ce bot un adminstrateur d'un groupe, il va réorganiser les commandes pour plus de lisibilité._
 
 *Conditions d'utilisation*
 _Nous ne sommes pas dépositaires de vos fonds. Nous agissons au mieux de vos intérêts. Sachez que ce robot est en phase de développement bêta. Utilisez-le à vos risques et périls. Pas plus de 1M Sats sont autorisés dans cette installation. Nous n'assumons aucune responsabilité._
@@ -213,6 +212,10 @@ activatecardHelpText                  = """📖 Oops, qui n'a pas fonctionné. N
 
 *Usage:* `/activatecard <cardid>`
 *Example:* `/activatecard 04B4596A926980`"""
+
+# NFC CARDS
+
+
 activatecardSendText                  = """
 ✅NFC Card activation requested
 

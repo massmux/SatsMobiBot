@@ -1,0 +1,11 @@
+sed -i "s/SatsMobi/NEPAY/g" en.toml
+sed -i "s/sats.mobi/nepay.ch/g" en.toml
+sed -i "s/SatsMobiBot/NepayCHBot/g" en.toml
+
+sed -i "s/SatsMobi/NEPAY/g" fr.toml
+sed -i "s/sats.mobi/nepay.ch/g" fr.toml
+sed -i "s/SatsMobiBot/NepayCHBot/g" fr.toml
+
+sed -i "s/SatsMobi/NEPAY/g" it.toml
+sed -i "s/sats.mobi/nepay.ch/g" it.toml
+sed -i "s/SatsMobiBot/NepayCHBot/g" it.toml
