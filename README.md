@@ -27,3 +27,17 @@ Thanks to my friend Calle
 - [ln-decodepay](https://github.com/fiatjaf/ln-decodepay) – Lightning Network BOLT11 invoice decoder.
 - [go-lnurl](https://github.com/fiatjaf/go-lnurl) - Helpers for building lnurl support into services.
 
+## What this Bot can do
+
+This is a Lightning Wallet into a Telegram Bot, but more functionalities have been added:
+
+- /casback command to show a code to get a CashBack from a shop owner. In this case the amount is received and can be spent using the NFC Card connected to the Bot
+- Activation of the NFC Card can be asked
+- Notifications of Cards activations
+
+You can give the use of this Bot to your community. For example a physical shop manager can use this Bot + the NFC Cards. They can give the cards to their clients and send cashback for each purchase, thanks to the cashback command. The client will be able to spend the money just using his card everywhere.
+
+## Subprojects using it:
+
+- [sats.mobi](https://www.satsmobi.com)
+- [NEPay](https://www.nepay.ch)
