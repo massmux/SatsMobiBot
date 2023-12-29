@@ -8,7 +8,7 @@ This repository contains everything you need to set up and run your own tip bot.
 
 ### Installation
 
-This Bot is a customized version of LightningTipBot, meaning that it has been modified for the needed tasks, so it may be more specific than the forked repo. For a general purpose Bot maybe better to refer to forked repo. A complete guide to install and run SatsMobiBot (LightningTipBot) + LNBITS (on docker with PostgreSQL) on the same VPS with an external LND funding source has been prepared by Massimo Musumeci (@massmux) and it is available: [LightningTipBot full install](https://www.massmux.com/howto-complete-lightningtipbot-lnbits-setup-vps/)
+This Bot adds features to the project it is forked from. It has been created to become a suite together to NFC Cards and other services connected. Being an open source project you are welcome to PR or to install yourself. This Bot by default is created with docker and runs a postgreSQL instance as database backend. Sqlite version is not used and deprecated.
 
 
 #### Create a Telegram bot
@@ -34,6 +34,8 @@ This is a Lightning Wallet into a Telegram Bot, but more functionalities have be
 - /casback command to show a code to get a CashBack from a shop owner. In this case the amount is received and can be spent using the NFC Card connected to the Bot
 - Activation of the NFC Card can be asked
 - Notifications of Cards activations
+
+more to come
 
 You can give the use of this Bot to your community. For example a physical shop manager can use this Bot + the NFC Cards. They can give the cards to their clients and send cashback for each purchase, thanks to the cashback command. The client will be able to spend the money just using his card everywhere.
 
