@@ -267,7 +267,7 @@ photoQrRecognizedMessage = """✅ QR code:
 
 # LNURL
 
-cashbackReceiveInfoText        = """Mon QRCODE personnel pour recevoir des *Cashback*."""
+cashbackReceiveInfoText        = """Mon QRCODE personnel pour recevoir des Cashback."""
 lnurlReceiveInfoText           = """👇 Vous pouvez utiliser cet LNURL pour recevoir des paiements."""
 lnurlResolvingUrlMessage       = """🧮 Recherche de l'adresse..."""
 lnurlGettingUserMessage        = """🧮 Préparation du paiement..."""
