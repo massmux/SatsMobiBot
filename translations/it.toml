@@ -59,7 +59,7 @@ infoButtonMessage = """Info"""
 
 # HELP
 
-helpMessage = """⚡️ *NEPAY*
+helpMessage = """⚡️ *SatsMobi*
 _Questo è un Wallet Bitcoin Lightning con cui puoi inviare tip via Telegram e gestire le carte NFC.
  Abilitato per Nostr. L'importo massimo consentito è di 1M Sats. Digita /basics per maggiori informazioni._
 
@@ -72,7 +72,7 @@ _Questo è un Wallet Bitcoin Lightning con cui puoi inviare tip via Telegram e g
 */invoice*: Ricevi attraverso Lightning: `/invoice <ammontare> [<memo>]`
 */pay*: Paga attraverso Lightning: `/pay <invoice>`
 */cashback*: QRCODE per ricevere cashback.
-*/activatecard*: Richiedi attivazione di una NFC Card `/activatecard <CardID>`
+*/activatecard*: Richiedi attivazione di una SatsMobi NFC Card `/activatecard <CardID>`
 */advanced*: Funzioni avanzate.
 */help*: Richiama questo help."""
 
@@ -87,7 +87,7 @@ _Questo Wallet è concepito per essere usato come transito verso il proprio nodo
 _È possibile collegare questo Wallet a Zeus facilmente utilizzando il comando /link._
 
 *Lightning Wallets*
-_I tuoi fondi conservati in questo bot possono essere mandati a un altro wallet Lightning e viceversa. Altri wallet Lightning per il tuo smartphone sono_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), oppure_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(semplice da usare)_.
+_I tuoi fondi conservati in questo bot possono essere mandati a un altro wallet Lightning e viceversa_.
 
 *Open Source*
 _Questo Bot è software libero e opensource_. Puoi farlo girare sul tuo computer e usarlo per la tua comunità._
@@ -130,8 +130,8 @@ errorReasonMessage             = """🚫 Errore: %s"""
 
 # START
 
-appNameMessage = """Powered by nepay.ch @NepayCHBot"""
-appNameTag = """ (@NepayCHBot)"""
+appNameMessage = """Powered by sats.mobi @SatsMobiBot"""
+appNameTag = """ (@SatsMobiBot)"""
 startSettingWalletMessage = """🧮 Sto creando il tuo wallet..."""
 startWalletCreatedMessage = """🧮 Wallet creato."""
 startWalletReadyMessage   = """✅ *Il tuo wallet è pronto.*"""
@@ -171,7 +171,7 @@ confirmSendMessage         = """Vuoi inviare un pagamento a %s?\n\n💸 Ammontar
 confirmSendAppendMemo      = """\n✉️ %s"""
 sendCancelledMessage       = """🚫 Invio cancellato."""
 errorTryLaterMessage       = """🚫 Errore. Per favore riprova più tardi."""
-sendSyntaxErrorMessage     = """Hai specificato un ammontare e un destinatario? Puoi usare il comando /send per inviare sia a utenti Telegram come %s sia a un indirizzo Lightning del tipo USERNAME@nepay.ch ."""
+sendSyntaxErrorMessage     = """Hai specificato un ammontare e un destinatario? Puoi usare il comando /send per inviare sia a utenti Telegram come %s sia a un indirizzo Lightning del tipo USERNAME@sats.mobi ."""
 sendHelpText               = """📖 Ops, non ha funzionato. %s
 
 *Sintassi:* `/send <ammontare> <utente> [<memo>]`
@@ -216,7 +216,7 @@ activatecardHelpText                  = """📖 Oops, non ha funzionato. Non dim
 activatecardSendText                  = """
 ✅NFC Card activation requested
 
-Hai appena richiesto attivazione della carta %s sul tuo Telegram user.
+Hai appena richiesto attivazione della carta %s sul tuo Telegram user. Questa funzione è disponibile solo per le card SatsMobi NFC, non per quelle generiche.
 
 ❗️NB: questa operazione impiega circa 24 ore. Quando completa, riceverai un messaggio di conferma"""
 
@@ -264,7 +264,7 @@ photoQrRecognizedMessage = """✅ Codice QR:
 
 # LNURL
 
-cashbackReceiveInfoText        = """Il mio QRCODE personale per ricevere Cashback."""
+cashbackReceiveInfoText        = """Il mio QRCODE personale per ricevere *Cashback*."""
 lnurlReceiveInfoText           = """👇 Puoi usare questo LNURL statico per ricevere pagamenti."""
 lnurlResolvingUrlMessage       = """🧮 Recupero indirizzo..."""
 lnurlGettingUserMessage        = """🧮 Preparazione pagamento..."""

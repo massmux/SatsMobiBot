@@ -59,7 +59,7 @@ infoButtonMessage = """Info"""
 
 # AIDE
 
-helpMessage = """⚡️ *NEPAY*
+helpMessage = """⚡️ *SatsMobi*
 _Ce bot est un Bitcoin Lightning Wallet qui permet d'envoyer des Tips sur Telegram et gérer les cartes NFC.
 Il fonctionne avec Nostr. Le montant maximum autorisé est de 1M Sats. Tapez /basics pour plus d'info._
 
@@ -72,7 +72,7 @@ Il fonctionne avec Nostr. Le montant maximum autorisé est de 1M Sats. Tapez /ba
 */invoice*: Recevoir avec Lightning : `/invoice <montant> [<memo>]`
 */pay*: Payer avec Lightning : `/pay <invoice>`
 */cashback*: QRCODE pour recevoir cashback.
-*/activatecard*: Demande d'activation de la carte NFC `/activatecard <CardID>`
+*/activatecard*: Demande d'activation de la carte SatsMobi NFC `/activatecard <CardID>`
 */advanced*: Fonctionnalités avancées.
 */help*: Aide."""
 
@@ -87,7 +87,7 @@ _Vous devez utiliser ce portefeuille comme moyen de transit vers votre propre n�
 _Vous pouvez connecter ce Wallet à Zeus facilement en utilisant la commande /link._
 
 *Lightning Wallets*
-_Vos fonds sur ce Bot peuvent être envoyés à n'importe quel Lightning Wallet. Nous recommandons de télécharger sur votre téléphone les wallets suivant_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), ou_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(facile)_.
+_Vos fonds sur ce Bot peuvent être envoyés à n'importe quel Lightning Wallet_.
 
 *Logiciel libre*
 _Ce bot est gratuit et opensource_. Vous pouvez éxecuter le bot sur votre ordinateur et l'utiliser dans votre communauté._
@@ -131,8 +131,8 @@ errorReasonMessage             = """🚫 Erreur: %s"""
 
 # START
 
-appNameMessage = """Powered by nepay.ch @NepayCHBot"""
-appNameTag = """ (@NepayCHBot)"""
+appNameMessage = """Powered by sats.mobi @SatsMobiBot"""
+appNameTag = """ (@SatsMobiBot)"""
 startSettingWalletMessage = """🧮 Création de votre wallet..."""
 startWalletCreatedMessage = """🧮 Wallet créé."""
 startWalletReadyMessage   = """✅ *Votre wallet est prêt.*"""
@@ -172,12 +172,12 @@ confirmSendMessage         = """Voulez-vous envoyer à %s?\n\n💸 Montant : %d 
 confirmSendAppendMemo      = """\n✉️ %s"""
 sendCancelledMessage       = """🚫 Envoi annulé."""
 errorTryLaterMessage       = """🚫 Erreur. Merci de réésayer."""
-sendSyntaxErrorMessage     = """Avez-vous ajouté un montant et un destinataire ? Utilisez la commande /send pour envoyer à un utilisateur Telegram comme %s ou bien à une adresse Lightning comme massmux@nepay.ch ."""
+sendSyntaxErrorMessage     = """Avez-vous ajouté un montant et un destinataire ? Utilisez la commande /send pour envoyer à un utilisateur Telegram comme %s ou bien à une adresse Lightning comme massmux@sats.mobi ."""
 sendHelpText               = """📖 Oops, cela n'a pas fonctionné. %s
 
 *Usage:* `/send <montant> <utilisateur> [<memo>]`
-*Exemple:* `/send 1000 0x1f118c4689be07b2@nepay.ch J'adore le bot ! ❤️`
-*Exemple:* `/send 1234 massmux@nepay.ch`"""
+*Exemple:* `/send 1000 0x1f118c4689be07b2@sats.mobi J'adore le bot ! ❤️`
+*Exemple:* `/send 1234 massmux@sats.mobi`"""
 
 
 # INVOICE
@@ -219,7 +219,7 @@ activatecardHelpText                  = """📖 Oops, qui n'a pas fonctionné. N
 activatecardSendText                  = """
 ✅NFC Card activation requested
 
-Vous avez demandé l'activation de votre carte %s à votre utilisateur Telegram.
+Vous avez demandé l'activation de votre carte %s à votre utilisateur Telegram. Cette fonction n'est disponible que pour les cartes NFC SatsMobi, pas pour les cartes génériques.
 
 ❗️Veuillez noter que l'activation prendra au moins 24 heures. Une fois l'activation terminée, vous recevrez un message de confirmation"""
 
@@ -267,7 +267,7 @@ photoQrRecognizedMessage = """✅ QR code:
 
 # LNURL
 
-cashbackReceiveInfoText        = """Mon QRCODE personnel pour recevoir le Cashback."""
+cashbackReceiveInfoText        = """Mon QRCODE personnel pour recevoir des *Cashback*."""
 lnurlReceiveInfoText           = """👇 Vous pouvez utiliser cet LNURL pour recevoir des paiements."""
 lnurlResolvingUrlMessage       = """🧮 Recherche de l'adresse..."""
 lnurlGettingUserMessage        = """🧮 Préparation du paiement..."""

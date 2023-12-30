@@ -63,7 +63,7 @@ payButtonEmoji = """💸"""
 
 # HELP
 
-helpMessage = """⚡️ *NEPAY*
+helpMessage = """⚡️ *SatsMobi*
 _This is a Bitcoin Lightning Wallet that can send and receive tips on Telegram and manage NFC Cards. Nostr enabled.
  Maximum amount allowed is 1M Sats. Hit /basics for more info._
 
@@ -72,16 +72,16 @@ _This is a Bitcoin Lightning Wallet that can send and receive tips on Telegram a
 ⚙️ *Commands*
 */tip*: Reply to a message to tip: `/tip <amount> [<memo>]`
 */balance*: Check your balance: `/balance`
-*/send*: Send funds to a user: `/send <amount> @user or user@nepay.ch [<memo>]`
+*/send*: Send funds to a user: `/send <amount> @user or user@sats.mobi [<memo>]`
 */invoice*: Receive with Lightning: `/invoice <amount> [<memo>]`
 */pay*: Pay with Lightning: `/pay <invoice>`
 */cashback*: QRCODE for receiving cashback.
-*/activatecard*: Request activation of NFC Card `/activatecard <CardID>`
+*/activatecard*: Request activation of a SatsMobi NFC Card `/activatecard <CardID>`
 */advanced*: Advanced features.
 */help*: Read this help."""
 
 infoHelpMessage = """ℹ️ *Info*"""
-infoYourLightningAddress = """Your Lightning address is: `%s`"""
+infoYourLightningAddress = """Your Lightning Address is: `%s`"""
 
 basicsMessage = """
 *Economics*
@@ -91,7 +91,7 @@ _This Wallet has been created as a transit towards your own node. In any case no
 _You can connect this Wallet to Zeus easily using /link command._
 
 *Lightning Wallets*
-_Your funds on this bot can be sent to any other Lightning wallet and vice versa. Recommended Lightning wallets for your phone are_ [Phoenix](https://phoenix.acinq.co/)_,_ [Breez](https://breez.technology/)_,_ [Muun](https://muun.com/)_ (non-custodial), or_ [Wallet of Satoshi](https://www.walletofsatoshi.com/) _(easy)_.
+_Your funds on this Bot can be sent to any other Lightning wallet and vice versa_.
 
 *Open Source*
 _This Bot is free and opensource software. You can run it on your own computer and use it in your own community._
@@ -136,8 +136,8 @@ errorReasonMessage             = """🚫 Error: %s"""
 
 # START
 
-appNameMessage = """Powered by nepay.ch @NepayCHBot"""
-appNameTag = """ (@NepayCHBot)"""
+appNameMessage = """Powered by sats.mobi @SatsMobiBot"""
+appNameTag = """ (@SatsMobiBot)"""
 startSettingWalletMessage = """🧮 Setting up your wallet..."""
 startWalletCreatedMessage = """🧮 Wallet created."""
 startWalletReadyMessage   = """✅ *Your wallet is ready.*"""
@@ -177,7 +177,7 @@ confirmSendMessage         = """Do you want to pay to %s?\n\n💸 Amount: %d sat
 confirmSendAppendMemo      = """\n✉️ %s"""
 sendCancelledMessage       = """🚫 Send cancelled."""
 errorTryLaterMessage       = """🚫 Error. Please try again later."""
-sendSyntaxErrorMessage     = """Did you enter an amount and a recipient? You can use the /send command to either send to Telegram users like %s or to a Lightning address like USERNAME@nepay.ch ."""
+sendSyntaxErrorMessage     = """Did you enter an amount and a recipient? You can use the /send command to either send to Telegram users like %s or to a Lightning address like USERNAME@sats.mobi ."""
 sendHelpText               = """📖 Oops, that didn't work. %s
 
 *Usage:* `/send <amount> <user> [<memo>]`
@@ -223,7 +223,7 @@ activatecardHelpText                  = """📖 Oops, that didn't work. Do not f
 activatecardSendText                  = """
 ✅NFC Card activation requested
 
-You requested the activation for your card %s to your Telegram user.
+You requested the activation for your card %s to your Telegram user. This option is available only for SatsMobi cards, not for generic ones.
 
 ❗️Please note that activation will take at least 24 hours. When ready you will receive a confirmation message"""
 
@@ -269,7 +269,7 @@ photoQrRecognizedMessage = """✅ QR code:
 
 # LNURL
 
-cashbackReceiveInfoText        = """My Personal QRCODE for cashback."""
+cashbackReceiveInfoText        = """My Personal QRCODE for *Cashback*."""
 lnurlReceiveInfoText           = """👇 You can use this static LNURL to receive payments."""
 lnurlResolvingUrlMessage       = """🧮 Resolving address..."""
 lnurlGettingUserMessage        = """🧮 Preparing payment..."""
