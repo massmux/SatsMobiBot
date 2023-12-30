@@ -175,7 +175,7 @@ sendSyntaxErrorMessage     = """Hai specificato un ammontare e un destinatario? 
 sendHelpText               = """📖 Ops, non ha funzionato. %s
 
 *Sintassi:* `/send <ammontare> <utente> [<memo>]`
-*Esempio:* `/send 1000 @NepayChBot Amo questo bot ❤️`
+*Esempio:* `/send 1000 @SatsMobiBot Amo questo bot ❤️`
 """
 
 # INVOICE
@@ -296,7 +296,7 @@ inlineQueryFaucetDescription  = """Sintassi: @%s faucet <totale> <per_utente>"""
 inlineResultFaucetTitle       = """🚰 Crea una distribuzione per un totale di %d sat."""
 inlineResultFaucetDescription = """👉 Clicca qui per creare una distribuzione di fondi in questa chat."""
 
-inlineFaucetMessage                     = """Premi ✅ per riscuotere %d sat da questa distribuzione da %s.
+inlineFaucetMessage           = """Premi ✅ per riscuotere %d sat da questa distribuzione da %s.
 
 🚰 Rimanente: %d/%d sat (distribuiti a %d/%d utenti)
 %s"""

@@ -181,7 +181,7 @@ sendSyntaxErrorMessage     = """Did you enter an amount and a recipient? You can
 sendHelpText               = """📖 Oops, that didn't work. %s
 
 *Usage:* `/send <amount> <user> [<memo>]`
-*Example:* `/send 1000 @NepayChBot I just like the bot ❤️`
+*Example:* `/send 1000 @SatsMobiBot I just like the bot ❤️`
 """
 
 # INVOICE
@@ -291,11 +291,11 @@ loginCancelledMessage           = """🚫 Login cancelled."""
 
 # LNURL WITHDRAW
 
-confirmLnurlWithdrawMessage     = """Do you want to make this withdrawal?\n\n💸 Amount: %d sat"""
+confirmLnurlWithdrawMessage   = """Do you want to make this withdrawal?\n\n💸 Amount: %d sat"""
 lnurlPreparingWithdraw        = """🧮 Preparing withdrawal..."""
-lnurlWithdrawFailed             = """🚫 Withdrawal failed."""
-lnurlWithdrawCancelled             = """🚫 Withdrawal cancelled."""
-lnurlWithdrawSuccess             = """✅ Withdrawal requested."""
+lnurlWithdrawFailed           = """🚫 Withdrawal failed."""
+lnurlWithdrawCancelled        = """🚫 Withdrawal cancelled."""
+lnurlWithdrawSuccess          = """✅ Withdrawal requested."""
 
 # LINK
 

@@ -1,11 +1,14 @@
 sed -i "s/NEPAY/SatsMobi/g" en.toml
 sed -i "s/nepay.ch/sats.mobi/g" en.toml
 sed -i "s/NepayCHBot/SatsMobiBot/g" en.toml
+sed -i "s/NepayChBot/SatsMobiBot/g" en.toml
 
 sed -i "s/NEPAY/SatsMobi/g" fr.toml
 sed -i "s/nepay.ch/sats.mobi/g" fr.toml
 sed -i "s/NepayCHBot/SatsMobiBot/g" fr.toml
+sed -i "s/NepayChBot/SatsMobiBot/g" fr.toml
 
 sed -i "s/NEPAY/SatsMobi/g" it.toml
 sed -i "s/nepay.ch/sats.mobi/g" it.toml
 sed -i "s/NepayCHBot/SatsMobiBot/g" it.toml
+sed -i "s/NepayChBot/SatsMobiBot/g" it.toml
