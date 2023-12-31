@@ -140,7 +140,7 @@ func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, err
 	memo := Translate(ctx, "appNameMessage")
 	if len(strings.Split(m.Text, " ")) > 2 {
 		memo = GetMemoFromCommand(m.Text, 2)
-		tag := Translate(ctx,"appNameTag")
+		tag := Translate(ctx, "appNameTag")
 		memoMaxLen := 159 - len(tag)
 		if len(memo) > memoMaxLen {
 			memo = memo[:memoMaxLen-len(tag)]
@@ -178,7 +178,7 @@ func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, err
 
 	// send the invoice data to user
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
-	log.Printf("[/invoice] Incvoice created. User: %s, amount: %d sat.", userStr, amount)
+	log.Printf("[/invoice] Invoice created. User: %s, amount: %d sat.", userStr, amount)
 	return ctx, nil
 }
 

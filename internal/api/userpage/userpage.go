@@ -68,7 +68,7 @@ func (s Service) getTelegramUserPictureURL(username string) (string, error) {
 }
 
 func (s Service) UserPageHandler(w http.ResponseWriter, r *http.Request) {
-	// https://ln.tips/@<username>
+	// https://sats.mobi/@<username>
 	username := strings.ToLower(mux.Vars(r)["username"])
 	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, username)
 	log.Infof("[UserPage] rendering page of %s", username)
@@ -93,7 +93,7 @@ func (s Service) UserPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s Service) UserWebAppHandler(w http.ResponseWriter, r *http.Request) {
-	// https://ln.tips/app/<username>
+	// https://sats.mobi/app/<username>
 	username := strings.ToLower(mux.Vars(r)["username"])
 	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, username)
 	log.Infof("[UserPage] rendering webapp of %s", username)

@@ -1,0 +1,4 @@
+sed -i "s/nepay.ch/sats.mobi/g" userpage.html
+sed -i "s/nepay.ch/sats.mobi/g" webapp.html
+sed -i "s/NePayChBot/SatsMobiBot/g" webapp.html
+sed -i "s/NePayChBot/SatsMobiBot/g" userpage.html

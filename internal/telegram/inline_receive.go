@@ -296,7 +296,7 @@ func (bot *TipBot) inlineReceiveInvoice(ctx intercept.Context, inlineReceive *In
 	bot.tryEditMessage(inlineReceive.Message, fmt.Sprintf("%s\n\nPay this invoice:\n```%s```", inlineReceive.MessageText, invoice.PaymentRequest))
 	invoice.InvoiceMessage = msg
 	runtime.IgnoreError(bot.Bunt.Set(invoice))
-	log.Printf("[/invoice] Incvoice created. User: %s, amount: %d sat.", GetUserStr(inlineReceive.To.Telegram), inlineReceive.Amount)
+	log.Printf("[/invoice] Invoice created. User: %s, amount: %d sat.", GetUserStr(inlineReceive.To.Telegram), inlineReceive.Amount)
 
 }
 func (bot *TipBot) inlineReceiveEvent(event Event) {
