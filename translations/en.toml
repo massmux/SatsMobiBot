@@ -123,6 +123,7 @@ advancedMessage = """%s
 */nostr*: Connect to Nostr: `/nostr` first time: `/nostr help`
 */faucet*: Create a faucet: `/faucet <capacity> <per_user>`
 */tipjar*: Create a tipjar: `/tipjar <capacity> <per_user>`
+*/pos*: Get your POS ready: `/pos`
 */group*: Group chat features: `/group`
 */shop*: Browse shops: `/shop` or `/shop <user/shop_id>`
 """
@@ -198,9 +199,9 @@ invoicePaidText           = """✅ Invoice paid."""
 
 # PAY
 
-paymentCancelledMessage     = """🚫 Payment cancelled."""
-invoicePaidMessage          = """⚡️ Payment sent."""
-invoicePublicPaidMessage    = """⚡️ Payment sent by %s."""
+paymentCancelledMessage      = """🚫 Payment cancelled."""
+invoicePaidMessage           = """⚡️ Payment sent."""
+invoicePublicPaidMessage     = """⚡️ Payment sent by %s."""
 invalidInvoiceHelpMessage    = """Did you enter a valid Lightning invoice? Try /send if you want to send to a Telegram user or to a Lightning address."""
 invoiceNoAmountMessage       = """🚫 Can't pay invoices without an amount."""
 insufficientFundsMessage     = """🚫 Insufficient funds. You have %d sat but you need at least %d sat."""
@@ -213,7 +214,7 @@ payHelpText                  = """📖 Oops, that didn't work. %s
 
 *Usage:* `/pay <invoice>`
 *Example:* `/pay lnbc20n1psscehd...`"""
-activatecardHelpText                  = """📖 Oops, that didn't work. Do not forget the CardID (14 characters code) after the command
+activatecardHelpText         = """📖 Oops, that didn't work. Do not forget the CardID (14 characters code) after the command
 
 *Usage:* `/activatecard <cardid>`
 *Example:* `/activatecard 04B4596A926980`"""
@@ -296,6 +297,19 @@ lnurlPreparingWithdraw        = """🧮 Preparing withdrawal..."""
 lnurlWithdrawFailed           = """🚫 Withdrawal failed."""
 lnurlWithdrawCancelled        = """🚫 Withdrawal cancelled."""
 lnurlWithdrawSuccess          = """✅ Withdrawal requested."""
+
+# POS
+
+posSendText = """*Your POS*
+
+Just open this link wherever you want. The payment you get with this POS will be automatically available on your Account
+
+This is your activated POS:
+
+User: %s
+%stpos/%s
+
+"""
 
 # LINK
 

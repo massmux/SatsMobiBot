@@ -119,8 +119,9 @@ advancedMessage = """%s
 */nostr*: Connect to Nostr: `/nostr` première fois: `/nostr help`
 */faucet*: Créer un faucet: `/faucet <capacité> <par_utilisateur>`
 */tipjar*: Créer un tipjar: `/tipjar <capacité> <par_utilisateur>`
-*/group*: Create group tickets: `/group add <mygroup> [<ticket_price>]`
-*/shop*: Browse shops: `/shop` or `/shop <user/shop_id>`
+*/pos*: Obtenir un POS: `/pos`
+*/group*: Créer tickets pour groupe: `/group add <mygroup> [<ticket_price>]`
+*/shop*: Voir les shops: `/shop` or `/shop <user/shop_id>`
 """
 
 # GENERIC
@@ -193,9 +194,9 @@ invoiceHelpText           = """📖 Oops, cela n'a pas fonctionné. %s
 
 # PAY
 
-paymentCancelledMessage     = """🚫 Paiement annulé."""
-invoicePaidMessage          = """⚡️ Paiement envoyé."""
-invoicePublicPaidMessage    = """⚡️ Paiement envoyé par %s."""
+paymentCancelledMessage      = """🚫 Paiement annulé."""
+invoicePaidMessage           = """⚡️ Paiement envoyé."""
+invoicePublicPaidMessage     = """⚡️ Paiement envoyé par %s."""
 invalidInvoiceHelpMessage    = """Avez-vous ajouté un Lightning invoice valide ? Essayez /send pour envoyer à un utilisateur Telegram ou à une adresse Lightning."""
 invoiceNoAmountMessage       = """🚫 Vous ne pouvez pas payer une facture sans montant."""
 insufficientFundsMessage     = """🚫 Fonds insuffisants. Vous avez %d sat et vous avez besoin d'un minimum de %d sat."""
@@ -208,7 +209,7 @@ payHelpText                  = """📖 Oops, cela n'a pas fonctionné. %s
 
 *Usage:* `/pay <invoice>`
 *Exemple:* `/pay lnbc20n1psscehd...`"""
-activatecardHelpText                  = """📖 Oops, qui n'a pas fonctionné. N'oubliez pas le CardID (code de 14 caractères) après la commande
+activatecardHelpText         = """📖 Oops, qui n'a pas fonctionné. N'oubliez pas le CardID (code de 14 caractères) après la commande
 
 *Usage:* `/activatecard <cardid>`
 *Example:* `/activatecard 04B4596A926980`"""
@@ -279,6 +280,19 @@ lnurlHelpText                  = """📖 Oops, cela n'a pas fonctionné. %s
 
 *Usage:* `/lnurl [montant] <lnurl>`
 *Exemple:* `/lnurl LNURL1DP68GUR...`"""
+
+# POS
+
+posSendText = """*Votre POS*
+
+Ouvrez simplement ce lien où vous voulez. Le paiement que vous obtenez avec ce POS sera automatiquement disponible sur votre compte.
+
+Votre POS activé :
+
+User: %s
+%stpos/%s
+
+"""
 
 # LINK
 
