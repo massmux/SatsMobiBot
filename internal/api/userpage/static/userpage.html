@@ -4,17 +4,17 @@
 
 <!DOCTYPE html>
 <meta charset="utf-8" />
-<meta property="og:title" content="Pay to {{.Username}}@sats.mobi">
-<meta property="og:site_name" content="{{.Username}}@sats.mobi">
-<meta property="og:description" content="Send bitcoin to {{.Username}} over Lightning. Get your own Lightning address at https://t.me/SatsMobiBot 👈">
+<meta property="og:title" content="Pay to {{.Username}}@{{.BotName}}">
+<meta property="og:site_name" content="{{.Username}}@{{.BotName}}">
+<meta property="og:description" content="Send bitcoin to {{.Username}} over Lightning. Get your own Lightning address at https://t.me/{{.BotUsername}} 👈">
 <meta property="og:type" content="article" />
 <meta property="og:image" content="{{.Image}}">
-<meta property="og:url" content="https://sats.mobi/@{{.Username}}">
+<meta property="og:url" content="https://{{.BotName}}/@{{.Username}}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image:alt" content="Pay to {{.Username}}@{{.BotName}}">
 <meta name="lightning" content="lnurlp:{{.Username}}@{{.BotName}}"/>
 
-<title>{{.Username}}@sats.mobi</title>
+<title>{{.Username}}@{{.BotName}}</title>
 <script src="https://unpkg.com/kjua@0.6.0/dist/kjua.min.js"></script>
 <style>
   body {
