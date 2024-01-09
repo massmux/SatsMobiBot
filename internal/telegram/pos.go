@@ -19,11 +19,7 @@ func (bot *TipBot) posHandler(ctx intercept.Context) (intercept.Context, error) 
 	fromUser := LoadUser(ctx)
 
 	posManager := lnbits.Tpos{ApiKey: fromUser.Wallet.Adminkey, LnbitsPublicUrl: internal.Configuration.Lnbits.LnbitsPublicUrl}
-	//myres := a.PosList()
-	//log.Errorln(myres)
-	//exist := a.PosExists("test2")
-	//log.Errorln(exist)
-	createPos := posManager.PosCreate(ctx.Sender().Username, "CHF")
+	createPos := posManager.PosCreate(ctx.Sender().Username, internal.Configuration.Pos.Currency)
 	log.Infof("[/pos] User: %s, posID: %s ", ctx.Sender().Username, createPos)
 
 	// send confirmation to final user

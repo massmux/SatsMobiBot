@@ -16,7 +16,12 @@ var Configuration = struct {
 	Lnbits   LnbitsConfiguration   `yaml:"lnbits"`
 	Generate GenerateConfiguration `yaml:"generate"`
 	Nostr    NostrConfiguration    `yaml:"nostr"`
+	Pos      PosConfiguration      `yaml:"pos"`
 }{}
+
+type PosConfiguration struct {
+	Currency string `yaml:"currency"`
+}
 
 type NostrConfiguration struct {
 	PrivateKey string `yaml:"private_key"`

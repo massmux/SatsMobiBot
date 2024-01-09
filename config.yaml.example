@@ -32,3 +32,6 @@ generate:
   worker: 2
 nostr:
   private_key: "hex private key here"
+pos:
+ currency: "EUR"
+

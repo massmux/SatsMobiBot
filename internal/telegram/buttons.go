@@ -91,7 +91,8 @@ func (bot *TipBot) appendWebAppLinkToButton(btn *tb.Btn, user *lnbits.User) {
 // appendPosAppLinkToButton adds a posApp object to a Button with the user's webapp page
 func (bot *TipBot) appendPosAppLinkToButton(btn *tb.Btn, user *lnbits.User) {
 	posManager := lnbits.Tpos{ApiKey: user.Wallet.Adminkey, LnbitsPublicUrl: internal.Configuration.Lnbits.LnbitsPublicUrl}
-	createPos := posManager.PosCreate(user.Telegram.Username, "CHF")
+	createPos := posManager.PosCreate(user.Telegram.Username, internal.Configuration.Pos.Currency)
+	//createPos := posManager.PosCreate(user.Telegram.Username, "CHF")
 	posUrl := fmt.Sprintf("%stpos/%s", internal.Configuration.Lnbits.LnbitsPublicUrl, createPos)
 	btn.WebApp = &tb.WebAppInfo{Url: posUrl}
 }
