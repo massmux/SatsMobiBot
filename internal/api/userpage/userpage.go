@@ -72,6 +72,8 @@ func (s Service) UserPageHandler(w http.ResponseWriter, r *http.Request) {
 	// https://sats.mobi/@<username>
 	username := strings.ToLower(mux.Vars(r)["username"])
 	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, username)
+	botName := internal.Configuration.Bot.Name
+	botUsername := internal.Configuration.Bot.Username
 	log.Infof("[UserPage] rendering page of %s", username)
 	lnurlEncode, err := lnurl.LNURLEncode(callback)
 	if err != nil {
@@ -85,10 +87,12 @@ func (s Service) UserPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := userpage_tmpl.ExecuteTemplate(w, "userpage", struct {
-		Username string
-		Image    string
-		LNURLPay string
-	}{username, image, lnurlEncode}); err != nil {
+		Username    string
+		Image       string
+		LNURLPay    string
+		BotUsername string
+		BotName     string
+	}{username, image, lnurlEncode, botUsername, botName}); err != nil {
 		log.Errorf("failed to render template")
 	}
 }
@@ -97,6 +101,8 @@ func (s Service) UserWebAppHandler(w http.ResponseWriter, r *http.Request) {
 	// https://sats.mobi/app/<username>
 	username := strings.ToLower(mux.Vars(r)["username"])
 	callback := fmt.Sprintf("%s/.well-known/lnurlp/%s", internal.Configuration.Bot.LNURLHostName, username)
+	botName := internal.Configuration.Bot.Name
+	botUsername := internal.Configuration.Bot.Username
 	log.Infof("[UserPage] rendering webapp of %s", username)
 	lnurlEncode, err := lnurl.LNURLEncode(callback)
 	if err != nil {
@@ -104,10 +110,12 @@ func (s Service) UserWebAppHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := qr_tmpl.ExecuteTemplate(w, "webapp", struct {
-		Username string
-		LNURLPay string
-		Callback string
-	}{username, lnurlEncode, callback}); err != nil {
+		Username    string
+		LNURLPay    string
+		Callback    string
+		BotUsername string
+		BotName     string
+	}{username, lnurlEncode, callback, botUsername, botName}); err != nil {
 		log.Errorf("failed to render template")
 	}
 }
