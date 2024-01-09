@@ -81,7 +81,6 @@ func (bot *TipBot) activatecardHandler(ctx intercept.Context) (intercept.Context
 	userID := strconv.FormatInt(ctx.Sender().ID, 10)
 	cardIdAdminMsg := fmt.Sprintf(Translate(ctx, "activatecardAdminSendText"), cardID, userID, ctx.Sender().Username, cardID)
 	toUserDb, err := GetUserByTelegramUsername("SatsRouting", *bot)
-	//log.Errorln(toUserDb.Telegram.ID) // this is userid
 	bot.trySendMessage(toUserDb.Telegram, cardIdAdminMsg)
 
 	return ctx, nil

@@ -163,6 +163,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 				},
 			},
 		},
+
 		{
 			Endpoints: []interface{}{"/activatecard"},
 			Handler:   bot.activatecardHandler,

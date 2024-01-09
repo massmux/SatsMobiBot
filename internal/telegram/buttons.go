@@ -23,6 +23,7 @@ const (
 	MainMenuCommandBalance = "Balance"
 	MainMenuCommandInvoice = "⚡️ Invoice"
 	MainMenuCommandHelp    = "📖 Help"
+	MainMenuCommandPosApp  = "💳 PosApp"
 	MainMenuCommandSend    = "⤴️"
 	SendMenuCommandEnter   = "👤 Enter"
 )
@@ -30,6 +31,7 @@ const (
 var (
 	mainMenu           = &tb.ReplyMarkup{ResizeKeyboard: true}
 	btnHelpMainMenu    = mainMenu.Text(MainMenuCommandHelp)
+	btnPosAppMainMenu  = mainMenu.Text(MainMenuCommandPosApp)
 	btnWebAppMainMenu  = mainMenu.Text(MainMenuCommandWebApp)
 	btnSendMainMenu    = mainMenu.Text(MainMenuCommandSend)
 	btnBalanceMainMenu = mainMenu.Text(MainMenuCommandBalance)
@@ -45,7 +47,8 @@ func init() {
 	mainMenu.Reply(
 		mainMenu.Row(btnBalanceMainMenu),
 		// mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnSendMainMenu, btnHelpMainMenu), // TODO: fix btnSendMainMenu
-		mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnHelpMainMenu),
+		mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnPosAppMainMenu),
+		//mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnHelpMainMenu),
 	)
 }
 
@@ -78,11 +81,20 @@ func (bot *TipBot) appendWebAppLinkToButton(btn *tb.Btn, user *lnbits.User) {
 	} else {
 		url = fmt.Sprintf("%s/app/@%s", internal.Configuration.Bot.LNURLHostName, user.AnonIDSha256)
 	}
+	//url = fmt.Sprintf("https://seven.gwoq.com/tpos/SDEjkDCNVuKfWpjxqgUwE4")
 	if strings.HasPrefix(url, "https://") {
 		// prevent adding a link if not https is used, otherwise
 		// Telegram returns an error and does not show the keyboard
 		btn.WebApp = &tb.WebAppInfo{Url: url}
 	}
+}
+
+// appendPosAppLinkToButton adds a posApp object to a Button with the user's webapp page
+func (bot *TipBot) appendPosAppLinkToButton(btn *tb.Btn, user *lnbits.User) {
+	posManager := lnbits.Tpos{ApiKey: user.Wallet.Adminkey, LnbitsPublicUrl: internal.Configuration.Lnbits.LnbitsPublicUrl}
+	createPos := posManager.PosCreate(user.Telegram.Username, "CHF")
+	posUrl := fmt.Sprintf("%stpos/%s", internal.Configuration.Lnbits.LnbitsPublicUrl, createPos)
+	btn.WebApp = &tb.WebAppInfo{Url: posUrl}
 }
 
 // mainMenuBalanceButtonUpdate updates the balance button in the mainMenu
@@ -105,10 +117,12 @@ func (bot *TipBot) mainMenuBalanceButtonUpdate(to int64) {
 		}
 
 		bot.appendWebAppLinkToButton(&btnWebAppMainMenu, user)
+		bot.appendPosAppLinkToButton(&btnPosAppMainMenu, user)
 		mainMenu.Reply(
 			mainMenu.Row(btnBalanceMainMenu),
 			// mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnSendMainMenu, btnHelpMainMenu), // TODO: fix btnSendMainMenu
-			mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnHelpMainMenu),
+			mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnPosAppMainMenu),
+			//mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnHelpMainMenu),
 		)
 	}
 }
