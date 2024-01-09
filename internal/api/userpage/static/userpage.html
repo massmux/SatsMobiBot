@@ -11,8 +11,8 @@
 <meta property="og:image" content="{{.Image}}">
 <meta property="og:url" content="https://sats.mobi/@{{.Username}}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image:alt" content="Pay to {{.Username}}@sats.mobi">
-<meta name="lightning" content="lnurlp:{{.Username}}@sats.mobi"/>
+<meta name="twitter:image:alt" content="Pay to {{.Username}}@{{.BotName}}">
+<meta name="lightning" content="lnurlp:{{.Username}}@{{.BotName}}"/>
 
 <title>{{.Username}}@sats.mobi</title>
 <script src="https://unpkg.com/kjua@0.6.0/dist/kjua.min.js"></script>
@@ -60,11 +60,11 @@
 </style>
 
 <a href="https://t.me/{{.Username}}"><img id="photo" class="image-cropper" src="{{.Image}}"/></a>
-<h1>Pay to <a class="white" href="https://t.me/{{.Username}}">{{.Username}}@sats.mobi</a></h1>
+<h1>Pay to <a class="white" href="https://t.me/{{.Username}}">{{.Username}}@{{.BotName}}</a></h1>
 
 <div><a href="lightning:{{.LNURLPay}}" id="qr"></a></div>
 <div class="white" id="invoice">{{.LNURLPay}}</div>
-<div class="sm">Get your own Lightning address here: <a class="sm" href="https://sats.mobi">sats.mobi</a></div>
+<div class="sm">Get your own Lightning address here: <a class="sm" href="https://{{.BotName}}">{{.BotName}}</a></div>
 <script>
   qr.appendChild(
     kjua({
