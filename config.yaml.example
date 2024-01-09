@@ -10,6 +10,8 @@ bot:
   lnurl_server: "http://127.0.0.1:5454" # or http://0.0.0.0:5454 depending on your configuration
   lnurl_image: true
   admin_api_host: localhost:6060
+  username: "@SatsMobiBot"
+  name: "sats.mobi"
 telegram:
   message_dispose_duration: 10
   api_key: "1234"
