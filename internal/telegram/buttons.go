@@ -81,7 +81,6 @@ func (bot *TipBot) appendWebAppLinkToButton(btn *tb.Btn, user *lnbits.User) {
 	} else {
 		url = fmt.Sprintf("%s/app/@%s", internal.Configuration.Bot.LNURLHostName, user.AnonIDSha256)
 	}
-	//url = fmt.Sprintf("https://seven.gwoq.com/tpos/SDEjkDCNVuKfWpjxqgUwE4")
 	if strings.HasPrefix(url, "https://") {
 		// prevent adding a link if not https is used, otherwise
 		// Telegram returns an error and does not show the keyboard

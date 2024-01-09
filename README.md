@@ -1,14 +1,16 @@
 # @SatsMobiBot
 
-A Telegram Lightning ⚡️ Bitcoin wallet and tip bot for group chats.
+A Telegram Lightning ⚡️ Bitcoin wallet.
 
-This repository contains everything you need to set up and run your own tip bot. If you simply want to use this bot in your group chat without having to install anything just start a conversation with [@SatsMobiBot](https://t.me/SatsMobiBot) and invite it into your group chat.
+This repository contains everything you need to set up and run your own Tip bot and POS facility. If you simply want to use this bot in your group chat without having to install anything just start a conversation with [@SatsMobiBot](https://t.me/SatsMobiBot) and invite it into your group chat.
+
+The system automatically creates a POS facility connected to your user. Getting payments in Lightning is immediate and requires no additional software installed and no externa APPs.
 
 ## Setting up the Bot
 
 ### Installation
 
-This Bot adds features to the project it is forked from. It has been created to become a suite together to NFC Cards and other services connected. Being an open source project you are welcome to PR or to install yourself. This Bot by default is created with docker and runs a postgreSQL instance as database backend. Sqlite version is not used and deprecated.
+This Bot adds features to the project it is forked from. It has been created to become a suite together to NFC Cards and other services connected. Being an open source project you are welcome to PR or to install yourself. This Bot by default is created with docker and runs a postgreSQL instance as database backend. I marked the Sqlite version as deprecated.
 
 
 #### Create a Telegram bot
@@ -37,7 +39,7 @@ This is a Lightning Wallet into a Telegram Bot, but more functionalities have be
 
 more to come
 
-You can give the use of this Bot to your community. For example a physical shop manager can use this Bot + the NFC Cards. They can give the cards to their clients and send cashback for each purchase, thanks to the cashback command. The client will be able to spend the money just using his card everywhere.
+You can give the use of this Bot to your community. For example a physical shop manager can use this Bot + the NFC Cards + POS facility, all together. They can give the cards to their clients and send cashback for each purchase, thanks to the cashback command. The client will be able to spend the money just using his card everywhere.
 
 ## Subprojects using it:
 
