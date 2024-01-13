@@ -131,8 +131,8 @@ errorReasonMessage             = """🚫 Errore: %s"""
 
 # START
 
-appNameMessage = """Powered by sats.mobi @SatsMobiBot"""
-appNameTag = """ (@SatsMobiBot)"""
+#appNameMessage = """Powered by sats.mobi @SatsMobiBot"""
+#appNameTag = """ (@SatsMobiBot)"""
 startSettingWalletMessage = """🧮 Sto creando il tuo wallet..."""
 startWalletCreatedMessage = """🧮 Wallet creato."""
 startWalletReadyMessage   = """✅ *Il tuo wallet è pronto.*"""
