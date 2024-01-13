@@ -137,11 +137,9 @@ func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, err
 	}
 
 	// check for memo in command
-	//memo := Translate(ctx, "appNameMessage")
 	memo := fmt.Sprintf("Powered by %s %s", internal.Configuration.Bot.Name, internal.Configuration.Bot.Username)
 	if len(strings.Split(m.Text, " ")) > 2 {
 		memo = GetMemoFromCommand(m.Text, 2)
-		//tag := Translate(ctx, "appNameTag")
 		tag := fmt.Sprintf("(%s)", internal.Configuration.Bot.Username)
 		memoMaxLen := 159 - len(tag)
 		if len(memo) > memoMaxLen {
