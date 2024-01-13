@@ -356,3 +356,27 @@ inlineReceiveCreateWalletMessage = """Chatta con %s 👈 per gestire il tuo wall
 inlineReceiveYourselfMessage     = """📖 Non puoi inviare un pagamento a te stesso."""
 inlineReceiveFailedMessage       = """🚫 Pagamento non riuscito."""
 inlineReceiveCancelledMessage    = """🚫 Pagamento cancellato."""
+
+# TIPJAR
+
+inlineQueryTipjarTitle        = """🍯 Crea una tipjar."""
+inlineQueryTipjarDescription  = """Uso: @%s tipjar <capacity> <per_user>"""
+inlineResultTipjarTitle       = """🍯 Crea una %d sat tipjar."""
+inlineResultTipjarDescription = """👉 Click qui per creare un tipjar in questa chat."""
+
+inlineTipjarMessage           = """Premi 💸 per *pagare %d sat* a questa tipjar di %s.
+
+🙏 Dato: *%d*/%d sat (da %d users)
+%s"""
+inlineTipjarEndedMessage                = """🍯 %s's tipjar è piena ⭐️\n\n🏅 %d sat dati da %d utenti."""
+inlineTipjarAppendMemo                  = """\n✉️ %s"""
+inlineTipjarCancelledMessage            = """🚫 Tipjar cancellata."""
+inlineTipjarInvalidPeruserAmountMessage = """🚫 Amount per utente non divisibile per la capacità."""
+inlineTipjarInvalidAmountMessage        = """🚫 Importo invalido."""
+inlineTipjarSentMessage                 = """🍯 %d sat inviati a %s."""
+inlineTipjarReceivedMessage             = """🍯 %s ti ha mandato %d sat."""
+inlineTipjarHelpTipjarInGroup           = """Crea una tipjar in un gruppo in cui cè il bot o usa 👉 inline command (/advanced per più info)."""
+inlineTipjarHelpText                    = """📖 Oops, non ha funzionato. %s
+
+*Usage:* `/tipjar <capacity> <per_user>`
+*Example:* `/tipjar 210 21`"""
