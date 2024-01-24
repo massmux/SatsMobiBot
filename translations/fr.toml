@@ -120,6 +120,7 @@ advancedMessage = """%s
 */faucet*: Créer un faucet: `/faucet <capacité> <par_utilisateur>`
 */tipjar*: Créer un tipjar: `/tipjar <capacité> <par_utilisateur>`
 */pos*: Obtenir un POS: `/pos`
+*/scrub*: Activer/désactiver Scrub: `/scrub <Destination-LN-Address|off>`
 */group*: Créer tickets pour groupe: `/group add <mygroup> [<ticket_price>]`
 */shop*: Voir les shops: `/shop` or `/shop <user/shop_id>`
 """
@@ -290,6 +291,26 @@ Votre POS activé :
 User: %s
 %stpos/%s
 
+"""
+
+# SCRUB
+
+scrubSendText = """↗️*Scrub Service ON*
+
+Le service Scrub a été ACTIVE' sur votre compte. Il transmettra à l'adresse Lightning que vous avez spécifiée tous les paiements entrant dans votre compte. Il est de votre responsabilité de fournir une adresse Lightning correcte dont vous êtes le propriétaire.
+Il s'agit de vos données d'activation :
+
+User: %s
+Destination Lightning address: %s
+
+Pour modifier l'adresse de destination, il suffit de réexécuter la commande avec une adresse Lightning différente
+"""
+
+scrubOffSendText = """↘️*Scrub Service OFF*
+
+Le service Scrub a été SUPPRIMÉ. Cela signifie que les paiements entrants ne seront plus transférés à l'extérieur. Il suffit de rappeler la commande avec une adresse de destination pour la rétablir.
+
+User: %s
 """
 
 # LINK
