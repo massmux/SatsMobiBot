@@ -124,6 +124,7 @@ advancedMessage = """%s
 */faucet*: Create a faucet: `/faucet <capacity> <per_user>`
 */tipjar*: Create a tipjar: `/tipjar <capacity> <per_user>`
 */pos*: Get your POS ready: `/pos`
+*/scrub*: Activate/Deactivate Scrub: `/scrub <Destination-LN-Address|off>`
 */group*: Group chat features: `/group`
 */shop*: Browse shops: `/shop` or `/shop <user/shop_id>`
 """
@@ -307,6 +308,27 @@ This is your activated POS:
 User: %s
 %stpos/%s
 
+"""
+
+# SCRUB
+
+scrubSendText = """↗️*Scrub Service ON*
+
+The Scrub Service has been ACTIVATED on your account. This will forward to the Lightning address you specified, all payments coming in your account. It's your responsibility to provide a correct Lightning addreess you own.
+
+This is your activation details:
+
+User: %s
+Destination Lightning address: %s
+
+In order to change the destination address, just rerun the command with a different Lightning address
+"""
+
+scrubOffSendText = """↘️*Scrub Service OFF*
+
+The Scrub service has been DEACTIVATED. This means that incoming payments will not be forwarded outside anymore. Just call again the command with a destination address in order to set it back again.
+
+User: %s
 """
 
 # LINK

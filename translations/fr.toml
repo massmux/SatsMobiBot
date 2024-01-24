@@ -120,6 +120,7 @@ advancedMessage = """%s
 */faucet*: Créer un faucet: `/faucet <capacité> <par_utilisateur>`
 */tipjar*: Créer un tipjar: `/tipjar <capacité> <par_utilisateur>`
 */pos*: Obtenir un POS: `/pos`
+*/scrub*: Activer/désactiver Scrub: `/scrub <Destination-LN-Address|off>`
 */group*: Créer tickets pour groupe: `/group add <mygroup> [<ticket_price>]`
 */shop*: Voir les shops: `/shop` or `/shop <user/shop_id>`
 """
@@ -292,6 +293,26 @@ User: %s
 
 """
 
+# SCRUB
+
+scrubSendText = """↗️*Scrub Service ON*
+
+Le service Scrub a été ACTIVE' sur votre compte. Il transmettra à l'adresse Lightning que vous avez spécifiée tous les paiements entrant dans votre compte. Il est de votre responsabilité de fournir une adresse Lightning correcte dont vous êtes le propriétaire.
+Il s'agit de vos données d'activation :
+
+User: %s
+Destination Lightning address: %s
+
+Pour modifier l'adresse de destination, il suffit de réexécuter la commande avec une adresse Lightning différente
+"""
+
+scrubOffSendText = """↘️*Scrub Service OFF*
+
+Le service Scrub a été SUPPRIMÉ. Cela signifie que les paiements entrants ne seront plus transférés à l'extérieur. Il suffit de rappeler la commande avec une adresse de destination pour la rétablir.
+
+User: %s
+"""
+
 # LINK
 
 walletConnectMessage = """🔗 *Lier votre wallet*
@@ -359,3 +380,28 @@ inlineReceiveCreateWalletMessage = """Chat avec %s 👈 pour gérer votre wallet
 inlineReceiveYourselfMessage     = """📖 Vous ne pouvez pas vous envoyer de pourboires."""
 inlineReceiveFailedMessage       = """🚫 La réception a échoué."""
 inlineReceiveCancelledMessage    = """🚫 Réception annulée."""
+
+
+# TIPJAR
+
+inlineQueryTipjarTitle        = """🍯 créer une tipjar."""
+inlineQueryTipjarDescription  = """Usage: @%s tipjar <capacity> <per_user>"""
+inlineResultTipjarTitle       = """🍯 Créer une %d sat tipjar."""
+inlineResultTipjarDescription = """👉 Click ici pour créer une tipjar dans cette chat."""
+
+inlineTipjarMessage           = """Appoyez sur 💸 pour *paier %d sat* à cette tipjar de %s.
+
+🙏 Reçu: *%d*/%d sat (par %d utilisateurs)
+%s"""
+inlineTipjarEndedMessage                = """🍯 %s's tipjar est plein ⭐️\n\n🏅 %d sat reçu par %d utilisateurs."""
+inlineTipjarAppendMemo                  = """\n✉️ %s"""
+inlineTipjarCancelledMessage            = """🚫 Tipjar supprimé."""
+inlineTipjarInvalidPeruserAmountMessage = """🚫 Montant par utilisateur non divisible par la capacité."""
+inlineTipjarInvalidAmountMessage        = """🚫 Montant non valide."""
+inlineTipjarSentMessage                 = """🍯 %d sat envoyé à %s."""
+inlineTipjarReceivedMessage             = """🍯 %s a envoyé %d sat."""
+inlineTipjarHelpTipjarInGroup           = """Créer un tipjar dans un groupe où se trouve le bot ou utiliser la commande 👉 inline (/advanced plus info)."""
+inlineTipjarHelpText                    = """📖 Oops, ça n'a pas marché. %s
+
+*Usage:* `/tipjar <capacity> <per_user>`
+*Example:* `/tipjar 210 21`"""

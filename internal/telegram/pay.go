@@ -95,7 +95,6 @@ func (bot *TipBot) confirmcardHandler(ctx intercept.Context) (intercept.Context,
 	cardID, err := getArgumentFromCommand(ctx.Message().Text, 2)
 	toUserDb, err := GetUserByTelegramUsername(userID, *bot)
 	adminUserID, err := GetUserByTelegramUsername("SatsRouting", *bot)
-
 	if err != nil {
 		NewMessage(ctx.Message(), WithDuration(0, bot))
 		bot.trySendMessage(ctx.Sender(), helpActivatecardUsage(ctx, ""))
