@@ -54,7 +54,6 @@ func (t *Tpos) PosCreate(posName string, posCurrency string) string {
 	if err != nil {
 		log.Fatalf("Error occurred during marshaling data: %v", err)
 	}
-	log.Errorln(string(jsonValue))
 
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
 	req.Header.Set("Content-Type", "application/json")
