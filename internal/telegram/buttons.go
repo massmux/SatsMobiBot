@@ -3,12 +3,12 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/LightningTipBot/LightningTipBot/internal"
 	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
+	"strings"
+	"time"
 )
 
 // we can't use space in the label of buttons, because string splitting will mess everything up.
@@ -92,7 +92,7 @@ func (bot *TipBot) appendWebAppLinkToButton(btn *tb.Btn, user *lnbits.User) {
 func (bot *TipBot) appendPosAppLinkToButton(btn *tb.Btn, user *lnbits.User) {
 	posManager := lnbits.Tpos{ApiKey: user.Wallet.Adminkey, LnbitsPublicUrl: internal.Configuration.Lnbits.LnbitsPublicUrl}
 	createPos := posManager.PosCreate(user.Telegram.Username, internal.Configuration.Pos.Currency)
-	//createPos := posManager.PosCreate(user.Telegram.Username, "CHF")
+	time.Sleep(1 * time.Second)
 	posUrl := fmt.Sprintf("%stpos/%s", internal.Configuration.Lnbits.LnbitsPublicUrl, createPos)
 	btn.WebApp = &tb.WebAppInfo{Url: posUrl}
 }

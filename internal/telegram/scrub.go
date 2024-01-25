@@ -15,7 +15,7 @@ func (bot *TipBot) scrubHandler(ctx intercept.Context) (intercept.Context, error
 	lnaddress, err := getArgumentFromCommand(ctx.Message().Text, 1)
 	if err != nil {
 		NewMessage(ctx.Message(), WithDuration(0, bot))
-		bot.trySendMessage(ctx.Sender(), helpActivatecardUsage(ctx, ""))
+		bot.trySendMessage(ctx.Sender(), Translate(ctx, "activateScrubHelpText"))
 		errmsg := fmt.Sprintf("[/scrub] Error: Could not getArgumentFromCommand: %s", err.Error())
 		log.Errorln(errmsg)
 		return ctx, errors.New(errors.InvalidSyntaxError, err)
