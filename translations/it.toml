@@ -206,10 +206,16 @@ payHelpText                  = """📖 Ops, non ha funzionato. %s
 
 *Sintassi:* `/pay <invoice>`
 *Esempio:* `/pay lnbc20n1psscehd...`"""
+
 activatecardHelpText         = """📖 Oops, non ha funzionato. Non dimenticare il codice CardID (14 caratteri) dopo il comando
 
 *Usage:* `/activatecard <cardid>`
 *Example:* `/activatecard 04B4596A926980`"""
+
+activateScrubHelpText         = """📖 Oops, non ha funzionato, non dimenticare l'argomento dopo il comando
+
+*Uso:* `/scrub <Lighting-address|off>`
+*Esempio:* `/scrub someuser@getalby.com` invia i fondi a quell'address oppure `/scrub off` disattiva il Scrub service"""
 
 # NFC CARDS
 

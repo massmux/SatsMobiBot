@@ -213,10 +213,17 @@ payHelpText                  = """📖 Oops, that didn't work. %s
 
 *Usage:* `/pay <invoice>`
 *Example:* `/pay lnbc20n1psscehd...`"""
+
 activatecardHelpText         = """📖 Oops, that didn't work. Do not forget the CardID (14 characters code) after the command
 
 *Usage:* `/activatecard <cardid>`
 *Example:* `/activatecard 04B4596A926980`"""
+
+activateScrubHelpText         = """📖 Oops, that didn't work. Do not forget the argument after the command
+
+*Usage:* `/scrub <Lighting-address|off>`
+*Example:* `/scrub someuser@getalby.com` send funds to that address or `/scrub off` disable Scrub service"""
+
 
 # NFC CARDS
 
