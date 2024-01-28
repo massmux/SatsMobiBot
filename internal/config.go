@@ -20,7 +20,8 @@ var Configuration = struct {
 }{}
 
 type PosConfiguration struct {
-	Currency string `yaml:"currency"`
+	Currency    string `yaml:"currency"`
+	Max_balance int64  `yaml:"max_balance"`
 }
 
 type NostrConfiguration struct {

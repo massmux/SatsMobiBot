@@ -142,6 +142,13 @@ startNoUsernameMessage    = """☝️ Sembra che tu non abbia un nome utente Tel
 
 balanceMessage      = """👑 *Il tuo saldo è:* %d sat"""
 balanceErrorMessage = """🚫 Non riesco a recupare il tuo saldo. Per favore riprova più tardi."""
+balanceOverMax      = """❗️ Il saldo massimo consentito è stato superato. Si prega di spostare i fondi dal portafoglio fino a raggiungere il saldo massimo consentito. Il saldo massimo consentito è
+
+*%s Sats*
+
+L'utente è tenuto a mantenere il saldo sempre al di sotto di questa soglia. Grazie per la comprensione.
+"""
+
 
 # TIP
 

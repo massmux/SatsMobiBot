@@ -148,6 +148,12 @@ startNoUsernameMessage    = """☝️ It looks like you don't have a Telegram @u
 
 balanceMessage      = """👑 *Your balance:* %d sat"""
 balanceErrorMessage = """🚫 Could not fetch your balance. Please try again later."""
+balanceOverMax      = """❗️ You are over max balance allowed. Please move funds out from your Wallet until reaching the maximum allowed balance. Maximum allowed balance is
+
+*%s Sats*
+
+You are required to keep your balance always below this threshold. Thank you for understanding.
+"""
 
 # TIP
 

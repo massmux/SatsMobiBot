@@ -36,4 +36,4 @@ nostr:
   private_key: "hex private key here"
 pos:
  currency: "EUR"
-
+ max_balance: 1000000
