@@ -143,6 +143,13 @@ startNoUsernameMessage    = """☝️ Vous n'avez pas encore de nom d'utilisateu
 
 balanceMessage      = """👑 *Votre solde:* %d sat"""
 balanceErrorMessage = """🚫 Impossible de récupérer votre solde. Essayez à nouveau."""
+balanceOverMax      = """❗️ Vous avez dépassé le solde maximum autorisé. Veuillez retirer des fonds de votre Portefeuille jusqu'à ce que vous atteigniez le solde maximum autorisé. Le solde maximum autorisé est de
+
+*%s Sats*
+
+Vous êtes tenu de maintenir votre solde en permanence en dessous de ce seuil. Merci de votre compréhension.
+"""
+
 
 # TIP
 
