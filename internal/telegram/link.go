@@ -26,6 +26,11 @@ func (bot *TipBot) lndhubHandler(ctx intercept.Context) (intercept.Context, erro
 
 	lndhubUrl := fmt.Sprintf("lndhub://admin:%s@%slndhub/ext/", fromUser.Wallet.Adminkey, internal.Configuration.Lnbits.LnbitsPublicUrl)
 
+	lndhubpassword := fromUser.Wallet.Adminkey
+	lndhuburl := fmt.Sprintf("%slndhub/ext/", internal.Configuration.Lnbits.LnbitsPublicUrl)
+
+	lndhubdetails := fmt.Sprintf("\nLndhub details\n\nUser: `admin`\nPassword: `%s`\nURL: `%s`", lndhubpassword, lndhuburl)
+
 	// create qr code
 	qr, err := qrcode.Encode(lndhubUrl, qrcode.Medium, 256)
 	if err != nil {
@@ -35,7 +40,7 @@ func (bot *TipBot) lndhubHandler(ctx intercept.Context) (intercept.Context, erro
 	}
 
 	// send the link to the user
-	qrmsg := bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", lndhubUrl)})
+	qrmsg := bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`\n%s", lndhubUrl, lndhubdetails)})
 	// auto delete
 	go func() {
 		time.Sleep(time.Second * 60)
