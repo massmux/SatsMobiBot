@@ -52,6 +52,7 @@ type BotConfiguration struct {
 	AdminAPIHost   string              `yaml:"admin_api_host"`
 	Name           string              `yaml:"name"`
 	Username       string              `yaml:"username"`
+	Botadmin       string              `yaml:"botadmin"`
 }
 
 type TelegramConfiguration struct {
