@@ -12,6 +12,7 @@ bot:
   admin_api_host: localhost:6060
   username: "@SatsMobiBot"
   name: "sats.mobi"
+  botadmin: "SatsRouting"
 telegram:
   message_dispose_duration: 10
   api_key: "1234"
