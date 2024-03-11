@@ -1,6 +1,6 @@
 # @SatsMobiBot
 
-A Telegram Lightning ⚡️ Bitcoin wallet.
+A Telegram Lightning ⚡️ Bitcoin wallet, with built-in POS, Scrub function and NFC Cards management
 
 This repository contains everything you need to set up and run your own Tip bot and POS facility. If you simply want to use this bot in your group chat without having to install anything just start a conversation with [@SatsMobiBot](https://t.me/SatsMobiBot) and invite it into your group chat.
 
@@ -8,20 +8,6 @@ The system automatically creates a POS facility connected to your user. Getting 
 
 The system now provides also Scrub service. This service can be activated and deactivated realtime. This makes possible to automatic forward all incoming payments to an external Lightning Address. You can always change this address whenever you want or disable the service at all.
 
-## Setting up the Bot
-
-### Installation
-
-This Bot adds features to the project it is forked from. It has been created to become a suite together to NFC Cards and other services connected. Being an open source project you are welcome to PR or to install yourself. This Bot by default is created with docker and runs a postgreSQL instance as database backend. I marked the Sqlite version as deprecated.
-
-
-#### Create a Telegram bot
-
-First, create a new Telegram bot by starting a conversation with the [@BotFather](https://core.telegram.org/bots#6-botfather). After you have created your bot, you will get an **Api Token** which you need to add to `telegram_api_key` in config.yaml accordingly.
-
-#### Set up LNbits
-
-Thanks to my friend Calle
 
 ## Made with
 
