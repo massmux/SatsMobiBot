@@ -65,11 +65,11 @@ payButtonEmoji = """💸"""
 
 helpMessage = """⚡️ *SatsMobi*
 _This is a Bitcoin Lightning Wallet that can send and receive tips on Telegram and manage NFC Cards. Nostr enabled.
- Maximum amount allowed is 1M Sats. Hit /basics for more info._
+Maximum amount allowed is 1M Sats. Hit /basics for more info and Terms Of Service._
 
 %s
 
-⚙️ *Commands*
+⚙️ *Basic Commands*
 */tip*: Reply to a message to tip: `/tip <amount> [<memo>]`
 */balance*: Check your balance: `/balance`
 */send*: Send funds to a user: `/send <amount> @user or user@sats.mobi [<memo>]`
@@ -100,7 +100,8 @@ _This Bot is free and opensource software. You can run it on your own computer a
 _Add this Bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
 
 *Terms of Service*
-_We are not custodian of your funds. We will act in your best interest. Be aware that this bot is in beta development. Use at your own risk._
+_We are not custodian of your funds. We will act in your best interest. Be aware that this bot is in beta development. Use at your own risk.
+Citizen and residents in US and any sanctioned countries are not allowed to use this service._
 """
 
 
@@ -229,6 +230,17 @@ activateScrubHelpText         = """📖 Oops, that didn't work. Do not forget th
 
 *Usage:* `/scrub <Lighting-address|off>`
 *Example:* `/scrub someuser@getalby.com` send funds to that address or `/scrub off` disable Scrub service"""
+
+# BUY
+
+buyHelpText         = """📖 Oops, that didn't work. Do not forget the argument after the command
+
+*Usage:* `/buy <sending-iban-code>`
+*Example:* `/buy RO98PORL6425279776334378` you will send fiat amount from that IBAN to provided coordinates for getting Sats."""
+
+invalidIBANHelpText         = """📖 Oops, that didn't work. Please provide a valid IBAN code.
+
+This is the IBAN of fiat bank account where your payment comes from. It must be a Valid SEPA IBAN Code."""
 
 
 # NFC CARDS

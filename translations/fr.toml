@@ -61,11 +61,11 @@ infoButtonMessage = """Info"""
 
 helpMessage = """⚡️ *SatsMobi*
 _Ce bot est un Bitcoin Lightning Wallet qui permet d'envoyer des Tips sur Telegram et gérer les cartes NFC.
-Il fonctionne avec Nostr. Le montant maximum autorisé est de 1M Sats. Tapez /basics pour plus d'info._
+Il fonctionne avec Nostr. Le montant maximum autorisé est de 1M Sats. Tapez /basics pour plus d'info et les conditions d'utilisation._
 
 %s
 
-⚙️ *Commandes*
+⚙️ *Principales Commandes*
 */tip*: Répondre à un message pour envoyer un pourboire : `/tip <montant> [<memo>]`
 */balance*: Afficher votre solde: `/balance`
 */send*: Envoyer un pourboire à un utilisateur: `/send <montant> @user ou user@sats.mobi [<memo>]`
@@ -96,7 +96,8 @@ _Ce bot est gratuit et opensource_. Vous pouvez éxecuter le bot sur votre ordin
 _Ajoutez ce Bot à un groupe Telegram pour envoyer des pourboires en répondant à des messages. Si vous faites de ce bot un adminstrateur d'un groupe, il va réorganiser les commandes pour plus de lisibilité._
 
 *Conditions d'utilisation*
-_Nous ne sommes pas dépositaires de vos fonds. Nous agissons au mieux de vos intérêts. Sachez que ce robot est en phase de développement bêta. Utilisez-le à vos risques et périls. Pas plus de 1M Sats sont autorisés dans cette installation. Nous n'assumons aucune responsabilité._
+_Nous ne sommes pas dépositaires de vos fonds. Nous agissons au mieux de vos intérêts. Sachez que ce robot est en phase de développement bêta. Utilisez-le à vos risques et périls. Pas plus de 1M Sats sont autorisés dans cette installation. Nous n'assumons aucune responsabilité.
+Les citoyens et les résidents des États-Unis et de tout pays sanctionné ne sont pas autorisés à utiliser ce service._
 
 """
 

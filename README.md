@@ -8,6 +8,7 @@ The system automatically creates a POS facility connected to your user. Getting 
 
 The system now provides also Scrub service. This service can be activated and deactivated realtime. This makes possible to automatic forward all incoming payments to an external Lightning Address. You can always change this address whenever you want or disable the service at all.
 
+Special Thanks go to my friend [callebtc](https://github.com/callebtc) and to [gohumble](https://github.com/gohumble).
 
 ## Made with
 
@@ -30,7 +31,4 @@ This is a Lightning Wallet into a Telegram Bot, but more functionalities have be
 
 You can give the use of this Bot to your community. For example a physical shop manager can use this Bot + the NFC Cards + POS facility, all together. They can give the cards to their clients and send cashback for each purchase, thanks to the cashback command. The client will be able to spend the money just using his card everywhere.
 
-## Subprojects using it:
 
-- [sats.mobi](https://www.satsmobi.com)
-- [NEPAY](https://www.nepay.ch)
