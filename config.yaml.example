@@ -38,3 +38,5 @@ nostr:
 pos:
  currency: "EUR"
  max_balance: 1000000
+voucherbot:
+ endpoint: "api.gwoq.com"
