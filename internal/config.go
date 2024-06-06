@@ -26,7 +26,9 @@ type PosConfiguration struct {
 }
 
 type VoucherbotConfiguration struct {
-	Endpoint string `yaml:"endpoint"`
+	Endpoint     string `yaml:"endpoint"`
+	ApiKey       string `yaml:"api_key"`
+	PurchaseType string `yaml:"purchase_type"`
 }
 
 type NostrConfiguration struct {
