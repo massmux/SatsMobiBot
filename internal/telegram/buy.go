@@ -60,10 +60,15 @@ func (bot *TipBot) buyHandler(ctx intercept.Context) (intercept.Context, error) 
 	lnaddr, _ := bot.UserGetLightningAddress(fromUser)
 
 	// default amount to purchase in fiat
-	purchaseAmount := "100"
+	purchaseAmount := internal.Configuration.Voucherbot.DefaultAmount
 
 	// send user confirmation message
-	bot.trySendMessage(m.Sender, fmt.Sprintf("*BUY COMMAND INVOKED*\n\nUser: %s\nIBAN: %s\nRecipient: %s\nAmount fiat: %s\n\nPlease wait order confirmation.", userStr, iban.Code, lnaddr, purchaseAmount))
+	bot.trySendMessage(m.Sender, fmt.Sprintf("*BUY COMMAND INVOKED*"+
+		"\n\nUser: %s"+
+		"\nIBAN: %s"+
+		"\nRecipient: %s"+
+		"\nAmount fiat: %s"+
+		"\n\nPlease wait order confirmation.", userStr, iban.Code, lnaddr, purchaseAmount))
 
 	// logging purchase details
 	log.Infof("[buyHandler] buy details: %s %s %s %s", userStr, iban.Code, lnaddr, purchaseAmount)
@@ -71,7 +76,7 @@ func (bot *TipBot) buyHandler(ctx intercept.Context) (intercept.Context, error) 
 	// generate the order
 	voucherbotManager := &VoucherBot{APIKey: internal.Configuration.Voucherbot.ApiKey}
 
-	voucherbotManager.setLightningRecipient("massmux@sats.mobi", purchaseAmount, iban.Code)
+	voucherbotManager.setLightningRecipient(lnaddr, purchaseAmount, iban.Code)
 	orderResult := voucherbotManager.createLightningOrder()
 
 	paymentMethod, _ := orderResult["payment_method"].(map[string]interface{})
@@ -83,6 +88,7 @@ func (bot *TipBot) buyHandler(ctx intercept.Context) (intercept.Context, error) 
 	now := time.Now()
 	currency := internal.Configuration.Pos.Currency
 
+	// order is accepted by the provider
 	if orderResult["status"].(string) == "order.accepted" {
 		orderConfirmation := fmt.Sprintf("✔️*ORDER RECEIVED*\n\n"+
 			"Date: %s"+
@@ -105,13 +111,15 @@ func (bot *TipBot) buyHandler(ctx intercept.Context) (intercept.Context, error) 
 		log.Infof("[buyHandler] Order accepted: %s from IBAN: %s Amount: %s", orderResult["orderid"].(string), iban.Code, purchaseAmount)
 		bot.trySendMessage(m.Sender, fmt.Sprintf("%s", orderConfirmation))
 	} else {
+
+		// order is not accepted by the provider
 		log.Errorln(fmt.Sprintf("[/buyHandler] Error: order not accepted from: %s error: ", lnaddr, orderResult["status"].(string)))
 		errMessage := fmt.Sprintf("❌*Order NOT accepted*"+
 			"\n\nPossible causes:"+
-			"\n\nFirst order over 100 %s"+
-			"\nIBAN invalid"+
-			"\nDaily Threshold exceeded"+
-			"\nAnother order is still pending"+
+			"\n\n- First order over 100 %s"+
+			"\n- IBAN invalid"+
+			"\n- Daily Threshold exceeded"+
+			"\n- Another order is still pending"+
 			"\n\nCheck details and try again", internal.Configuration.Pos.Currency)
 		bot.trySendMessage(m.Sender, fmt.Sprintf("%s", errMessage))
 
