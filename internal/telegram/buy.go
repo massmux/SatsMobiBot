@@ -47,7 +47,6 @@ func (bot *TipBot) buyHandler(ctx intercept.Context) (intercept.Context, error) 
 
 	if err != nil {
 		fmt.Printf("%v\n", err)
-		//bot.trySendMessage(ctx.Sender(), Translate(ctx, "activateScrubHelpText"))
 		errmsg := fmt.Sprintf("[/buy] Error: invalid IBAN provided: %s", err.Error())
 		log.Errorln(errmsg)
 		bot.trySendMessage(ctx.Sender(), Translate(ctx, "invalidIBANHelpText"))
@@ -63,12 +62,7 @@ func (bot *TipBot) buyHandler(ctx intercept.Context) (intercept.Context, error) 
 	purchaseAmount := internal.Configuration.Voucherbot.DefaultAmount
 
 	// send user confirmation message
-	bot.trySendMessage(m.Sender, fmt.Sprintf("*BUY COMMAND INVOKED*"+
-		"\n\nUser: %s"+
-		"\nIBAN: %s"+
-		"\nRecipient: %s"+
-		"\nAmount fiat: %s"+
-		"\n\nPlease wait order confirmation.", userStr, iban.Code, lnaddr, purchaseAmount))
+	bot.trySendMessage(m.Sender, fmt.Sprintf(Translate(ctx, "buyCmdInvoked"), userStr, iban.Code, lnaddr, purchaseAmount))
 
 	// logging purchase details
 	log.Infof("[buyHandler] buy details: %s %s %s %s", userStr, iban.Code, lnaddr, purchaseAmount)
@@ -90,43 +84,23 @@ func (bot *TipBot) buyHandler(ctx intercept.Context) (intercept.Context, error) 
 
 	// order is accepted by the provider
 	if orderResult["status"].(string) == "order.accepted" {
-		orderConfirmation := fmt.Sprintf("✔️*ORDER RECEIVED*\n\n"+
-			"Date: %s"+
-			"\nFiat Amount: %s %s"+
-			"\nOrder type: Lightning Push to Wallet"+
-			"\n\nSEPA Bank transfer coordinates"+
-			"\nBeneficiary: `%s`"+
-			"\nAddress: `%s`"+
-			"\nBank: `%s`"+
-			"\nIBAN: `%s`"+
-			"\nBIC: `%s`"+
-			"\nNet amount to pay: %s %s"+
-			"\nPayment reason: `%s`"+
-			"\n\nFrom IBAN: %s"+
-			"\nOrderid: `%s`"+
-			"\n\n*Now, mandatory confirm payment or cancel*"+
-			"\n\n`/confirm %s` (CONFIRM PAYMENT)\n"+
-			"\n`/cancel %s` (CANCEL THIS ORDER)", now.Format("2006-01-02"), purchaseAmount, currency, creditorName, creditorAddress, creditorBankName, creditorBankIban, creditorBankBic, purchaseAmount, currency, orderResult["payment_description"].(string), iban.Code, orderResult["orderid"].(string), orderResult["orderid"].(string), orderResult["orderid"].(string))
+		orderConfirmation := fmt.Sprintf(Translate(ctx, "buyOrderConfirmation"), now.Format("2006-01-02"), purchaseAmount, currency, creditorName, creditorAddress, creditorBankName, creditorBankIban, creditorBankBic, purchaseAmount, currency, orderResult["payment_description"].(string), iban.Code, orderResult["orderid"].(string), orderResult["orderid"].(string), orderResult["orderid"].(string))
 
 		log.Infof("[buyHandler] Order accepted: %s from IBAN: %s Amount: %s", orderResult["orderid"].(string), iban.Code, purchaseAmount)
 		bot.trySendMessage(m.Sender, fmt.Sprintf("%s", orderConfirmation))
 	} else {
-
 		// order is not accepted by the provider
 		log.Errorln(fmt.Sprintf("[/buyHandler] Error: order not accepted from: %s error: ", lnaddr, orderResult["status"].(string)))
-		errMessage := fmt.Sprintf("❌*Order NOT accepted*"+
-			"\n\nPossible causes:"+
-			"\n\n- First order over 100 %s"+
-			"\n- IBAN invalid"+
-			"\n- Daily Threshold exceeded"+
-			"\n- Another order is still pending"+
-			"\n\nCheck details and try again", internal.Configuration.Pos.Currency)
+		errMessage := fmt.Sprintf(Translate(ctx, "buyOrderNotAccepted"), internal.Configuration.Pos.Currency)
+
 		bot.trySendMessage(m.Sender, fmt.Sprintf("%s", errMessage))
 
 	}
 
 	return ctx, err
 }
+
+// todo: confirm and cancel error messages
 
 func (bot *TipBot) cancelHandler(ctx intercept.Context) (intercept.Context, error) {
 	// commands: /cancel orderid
@@ -138,12 +112,11 @@ func (bot *TipBot) cancelHandler(ctx intercept.Context) (intercept.Context, erro
 	log.Infof("[cancelHandler] %s", m.Text)
 	if err != nil {
 		NewMessage(ctx.Message(), WithDuration(0, bot))
-		bot.trySendMessage(ctx.Sender(), Translate(ctx, "buyHelpText"))
-		errmsg := fmt.Sprintf("[/cancelHandler] Error: Could not getArgumentFromCommand: %s", err.Error())
+		bot.trySendMessage(ctx.Sender(), Translate(ctx, "buyHelpCancelOrder"))
+		errmsg := fmt.Sprintf("[/cancelOrder] Error: Could not getArgumentFromCommand: %s", err.Error())
 		log.Errorln(errmsg)
 		return ctx, errors.New(errors.InvalidSyntaxError, err)
 	}
-	//user := LoadUser(ctx)
 
 	voucherbotManager := &VoucherBot{APIKey: internal.Configuration.Voucherbot.ApiKey}
 	voucherbotManager.cancelOrder(orderid)
@@ -163,12 +136,11 @@ func (bot *TipBot) confirmHandler(ctx intercept.Context) (intercept.Context, err
 	log.Infof("[confirmHandler] %s", m.Text)
 	if err != nil {
 		NewMessage(ctx.Message(), WithDuration(0, bot))
-		bot.trySendMessage(ctx.Sender(), Translate(ctx, "buyHelpText"))
-		errmsg := fmt.Sprintf("[/confirmHandler] Error: Could not getArgumentFromCommand: %s", err.Error())
+		bot.trySendMessage(ctx.Sender(), Translate(ctx, "buyHelpConfirmOrder"))
+		errmsg := fmt.Sprintf("[/confirmOrder] Error: Could not getArgumentFromCommand: %s", err.Error())
 		log.Errorln(errmsg)
 		return ctx, errors.New(errors.InvalidSyntaxError, err)
 	}
-	//user := LoadUser(ctx)
 
 	voucherbotManager := &VoucherBot{APIKey: internal.Configuration.Voucherbot.ApiKey}
 	voucherbotManager.notifyPayment(orderid)

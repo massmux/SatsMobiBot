@@ -238,10 +238,67 @@ buyHelpText         = """📖 Oops, that didn't work. Do not forget the argument
 *Usage:* `/buy <sending-iban-code>`
 *Example:* `/buy RO98PORL6425279776334378` you will send fiat amount from that IBAN to provided coordinates for getting Sats."""
 
+buyHelpConfirmOrder         = """📖 Oops, that didn't work. Do not forget the argument after the command
+
+*Usage:* `/confirm <order-id>`
+*Example:* `/confirm 613878112H20240611943520` you confirm that you made the payment for this order via bank transfer."""
+
+buyHelpCancelOrder         = """📖 Oops, that didn't work. Do not forget the argument after the command
+
+*Usage:* `/cancel <order-id>`
+*Example:* `/cancel 613878112H20240611943520` you confirm that you are cancelling this order. This action cannot be reverted."""
+
 invalidIBANHelpText         = """📖 Oops, that didn't work. Please provide a valid IBAN code.
 
 This is the IBAN of fiat bank account where your payment comes from. It must be a Valid SEPA IBAN Code."""
 
+buyCmdInvoked = """
+*BUY COMMAND INVOKED*
+
+User: %s
+IBAN: %s
+Recipient: %s
+Amount fiat: %s
+
+Please wait order confirmation.
+"""
+
+buyOrderNotAccepted = """
+❌*Order NOT accepted*
+
+Possible causes:
+
+- First order over 100 %s
+- IBAN invalid
+- Daily Threshold exceeded
+- Another order is still pending
+
+Check details and try again
+"""
+
+buyOrderConfirmation = """
+✔️*ORDER RECEIVED*
+Date: %s
+
+Fiat Amount: %s %s
+Order type: Lightning Push to Wallet
+
+SEPA Bank transfer coordinates
+Beneficiary: `%s`
+Address: `%s`
+Bank: `%s`
+IBAN: `%s`
+BIC: `%s`
+Net amount to pay: %s %s
+Payment reason: `%s`
+
+From IBAN: %s
+Orderid: `%s`
+
+*Now, mandatory confirm payment or cancel*
+`/confirm %s` (CONFIRM PAYMENT)
+`/cancel %s` (CANCEL THIS ORDER)
+"""
 
 # NFC CARDS
 
