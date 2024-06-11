@@ -65,24 +65,13 @@ func (vb *VoucherBot) createLightningOrder() map[string]interface{} {
 	req.Header.Add("Authorization", vb.APIKey)
 	client := &http.Client{}
 
-	//resp, _ := client.Do(req)
-	//body, _ := ioutil.ReadAll(resp.Body)
-	//var result map[string]interface{}
-	//json.Unmarshal([]byte(body), &result)
-	//return result["orderid"].(string)
-
 	resp, _ := client.Do(req)
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 	var result map[string]interface{}
 	json.Unmarshal(body, &result)
 
-	// print debug infos
-	//fmt.Printf("%s\n", body)
-
 	return result
-
-	//return client.Do(req)
 }
 
 func (vb *VoucherBot) setOnchainRecipient(bitcoinAddress string, message string, signature string, iban string) {
