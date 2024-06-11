@@ -225,6 +225,77 @@ activateScrubHelpText         = """📖 Oops, non ha funzionato, non dimenticare
 *Uso:* `/scrub <Lighting-address|off>`
 *Esempio:* `/scrub someuser@getalby.com` invia i fondi a quell'address oppure `/scrub off` disattiva il Scrub service"""
 
+# BUY
+
+buyHelpText         = """📖 Oops, non ha funzionato. Non dimenticare l'argomento dopo il comando
+
+*Uso:* `/buy <sending-iban-code>`
+*Esempio:* `/buy RO98PORL6425279776334378` invierai importo fiat da questo IBAN alle coordinate che verranno mostrate, per ottenere Sats."""
+
+buyHelpConfirmOrder         = """📖 Oops, non ha funzionato. Non dimenticare l'argomento dopo il comando
+
+*Uso:* `/confirm <order-id>`
+*Esempio:* `/confirm 613878112H20240611943520` confermi che hai eseguito il pagamento di questo ordine tramite bonifico bancario."""
+
+buyHelpCancelOrder         = """📖 Oops, non ha funzionato. Non dimenticare l'argomento dopo il comando
+
+*Uso:* `/cancel <order-id>`
+*Esempio:* `/cancel 613878112H20240611943520` confermi che stai cancellando questo ordine. Questa azione non può essere invertita."""
+
+invalidIBANHelpText         = """📖 Oops, non ha funzionato. Per favore fornisci un codice IBAN corretto.
+
+Questo è il codice IBAN del tuo conto fiat dal quale il pagamento arriverà. Deve essere un valido SEPA IBAN code.
+"""
+
+buyCmdInvoked = """
+*BUY COMMAND INVOKED*
+
+Utente: %s
+IBAN: %s
+Destinazione: %s
+importo fiat: %s
+
+Per favore attendi la conferma di ordine.
+"""
+
+buyOrderNotAccepted = """
+❌*ORDINE NON ACCETTATO*
+
+Cause possibili:
+
+- Primo ordine oltre i 100 %s
+- IBAN non valido
+- Soglia giornaliera superata
+- Un altro ordine è ancora in corso
+
+Controlla i dettagli e prova ancora
+"""
+
+buyOrderConfirmation = """
+✔️*ORDINE RICEVUTO*
+Data: %s
+
+Importo Fiat: %s %s
+Tipo di ordine: Lightning Push to Wallet
+
+Coordinate SEPA su cui pagare
+Beneficiario: `%s`
+Indirizzo: `%s`
+Banca: `%s`
+IBAN: `%s`
+BIC: `%s`
+Importo netto da pagare: %s %s
+Causale del pagamento: `%s`
+
+Da IBAN: %s
+Orderid: `%s`
+
+*Ora è obbligatorio confermare o cancellare questo ordine*
+`/confirm %s` (CONFERMA PAGAMENTO)
+`/cancel %s` (CANCELLA QUESTO ORDINE)
+"""
+
+
 # NFC CARDS
 
 activatecardSendText                  = """
