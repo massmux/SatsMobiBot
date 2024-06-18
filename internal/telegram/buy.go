@@ -80,7 +80,7 @@ func (bot *TipBot) buyHandler(ctx intercept.Context) (intercept.Context, error) 
 	creditorBankIban, _ := paymentMethod["creditor_bank_iban"].(string)
 	creditorBankBic, _ := paymentMethod["creditor_bank_bic"].(string)
 	now := time.Now()
-	currency := internal.Configuration.Pos.Currency
+	currency := internal.Configuration.Voucherbot.Currency
 
 	// order is accepted by the provider
 	if orderResult["status"].(string) == "order.accepted" {
@@ -91,7 +91,7 @@ func (bot *TipBot) buyHandler(ctx intercept.Context) (intercept.Context, error) 
 	} else {
 		// order is not accepted by the provider
 		log.Errorln(fmt.Sprintf("[/buyHandler] Error: order not accepted from: %s error: ", lnaddr, orderResult["status"].(string)))
-		errMessage := fmt.Sprintf(Translate(ctx, "buyOrderNotAccepted"), internal.Configuration.Pos.Currency)
+		errMessage := fmt.Sprintf(Translate(ctx, "buyOrderNotAccepted"), internal.Configuration.Voucherbot.Currency)
 
 		bot.trySendMessage(m.Sender, fmt.Sprintf("%s", errMessage))
 

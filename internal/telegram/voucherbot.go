@@ -42,14 +42,13 @@ func (vb *VoucherBot) setLightningRecipient(lightningAddress string, amount stri
 	vb.Iban = iban
 }
 
-// func (vb *VoucherBot) createLightningOrder() (*http.Response, error) {
 func (vb *VoucherBot) createLightningOrder() map[string]interface{} {
 
 	url := "https://api.gwoq.com/v1/order/create_lightning"
 	payload := map[string]interface{}{
 		"event": "order.create",
 		"payload": map[string]string{
-			"currency":       internal.Configuration.Pos.Currency,
+			"currency":       internal.Configuration.Voucherbot.Currency,
 			"email":          "nomail@nomail.com",
 			"iban":           vb.Iban,
 			"amount":         vb.Amount,
@@ -87,7 +86,7 @@ func (vb *VoucherBot) createOnchainOrder() (*http.Response, error) {
 		"event": "order.create",
 		"payload": map[string]string{
 			"bitcoin_address": vb.BitcoinAddress,
-			"currency":        internal.Configuration.Pos.Currency,
+			"currency":        internal.Configuration.Voucherbot.Currency,
 			"email":           "nomail@nomail.com",
 			"iban":            vb.Iban,
 			"message":         vb.Message,

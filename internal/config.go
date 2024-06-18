@@ -30,6 +30,7 @@ type VoucherbotConfiguration struct {
 	ApiKey        string `yaml:"api_key"`
 	PurchaseType  string `yaml:"purchase_type"`
 	DefaultAmount string `yaml:"default_amount"`
+	Currency      string `yaml:"currency"`
 }
 
 type NostrConfiguration struct {
