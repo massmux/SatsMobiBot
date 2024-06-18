@@ -61,11 +61,11 @@ infoButtonMessage = """Info"""
 
 helpMessage = """⚡️ *SatsMobi*
 _Questo è un Wallet Bitcoin Lightning con cui puoi inviare tip via Telegram e gestire le carte NFC.
- Abilitato per Nostr. L'importo massimo consentito è di 1M Sats. Digita /basics per maggiori informazioni._
+Abilitato per Nostr. L'importo massimo consentito è di 1M Sats. Digita /basics per maggiori informazioni e i Termini di Servizio._
 
 %s
 
-⚙️ *Comandi*
+⚙️ *Comandi di base*
 */tip*: Rispondi così a un messaggio per inviare una mancia: `/tip <ammontare> [<memo>]`
 */balance*: Verifica il tuo saldo residuo: `/balance`
 */send*: Invia fondi a un utente: `/send <ammontare> @utente o utente@sats.mobi [<memo>]`
@@ -96,7 +96,8 @@ _Questo Bot è software libero e opensource_. Puoi farlo girare sul tuo computer
 _Aggiungi questo Bot a una chat di gruppo Telegram per inviare una /tip. Se concedi al bot i privilegi di amministratore della chat, il bot si occuperà automaticamente di eliminare i comandi inviati per tenere la chat pulita._
 
 *Termini e condizioni*
-_Non siamo depositari dei vostri fondi. Agiremo nel vostro interesse. Tenete presente che questo bot è in fase di sviluppo beta. Utilizzatelo a vostro rischio e pericolo. Non puoi inviare più di 1M Sats in questo sistema. Non ci assumiamo alcuna responsabilità._
+_Non siamo depositari dei vostri fondi. Agiremo nel vostro interesse. Tenete presente che questo bot è in fase di sviluppo beta. Utilizzatelo a vostro rischio e pericolo. Non puoi inviare più di 1M Sats in questo sistema. Non ci assumiamo alcuna responsabilità.
+I cittadini e i residenti degli Stati Uniti e di tutti i paesi sanzionati non possono usare questo servizio._
 """
 
 helpNoUsernameMessage = """👋 Per favore imposta un nome utente Telegram."""
@@ -223,6 +224,77 @@ activateScrubHelpText         = """📖 Oops, non ha funzionato, non dimenticare
 
 *Uso:* `/scrub <Lighting-address|off>`
 *Esempio:* `/scrub someuser@getalby.com` invia i fondi a quell'address oppure `/scrub off` disattiva il Scrub service"""
+
+# BUY
+
+buyHelpText         = """📖 Oops, non ha funzionato. Non dimenticare l'argomento dopo il comando
+
+*Uso:* `/buy <sending-iban-code>`
+*Esempio:* `/buy RO98PORL6425279776334378` invierai importo fiat da questo IBAN alle coordinate che verranno mostrate, per ottenere Sats."""
+
+buyHelpConfirmOrder         = """📖 Oops, non ha funzionato. Non dimenticare l'argomento dopo il comando
+
+*Uso:* `/confirm <order-id>`
+*Esempio:* `/confirm 613878112H20240611943520` confermi che hai eseguito il pagamento di questo ordine tramite bonifico bancario."""
+
+buyHelpCancelOrder         = """📖 Oops, non ha funzionato. Non dimenticare l'argomento dopo il comando
+
+*Uso:* `/cancel <order-id>`
+*Esempio:* `/cancel 613878112H20240611943520` confermi che stai cancellando questo ordine. Questa azione non può essere invertita."""
+
+invalidIBANHelpText         = """📖 Oops, non ha funzionato. Per favore fornisci un codice IBAN corretto.
+
+Questo è il codice IBAN del tuo conto fiat dal quale il pagamento arriverà. Deve essere un valido SEPA IBAN code.
+"""
+
+buyCmdInvoked = """
+*BUY COMMAND INVOKED*
+
+Utente: %s
+IBAN: %s
+Destinazione: %s
+importo fiat: %s
+
+Per favore attendi la conferma di ordine.
+"""
+
+buyOrderNotAccepted = """
+❌*ORDINE NON ACCETTATO*
+
+Cause possibili:
+
+- Primo ordine oltre i 100 %s
+- IBAN non valido
+- Soglia giornaliera superata
+- Un altro ordine è ancora in corso
+
+Controlla i dettagli e prova ancora
+"""
+
+buyOrderConfirmation = """
+✔️*ORDINE RICEVUTO*
+Data: %s
+
+Importo Fiat: %s %s
+Tipo di ordine: Lightning Push to Wallet
+
+Coordinate SEPA su cui pagare
+Beneficiario: `%s`
+Indirizzo: `%s`
+Banca: `%s`
+IBAN: `%s`
+BIC: `%s`
+Importo netto da pagare: %s %s
+Causale del pagamento: `%s`
+
+Da IBAN: %s
+Orderid: `%s`
+
+*Ora è obbligatorio confermare o cancellare questo ordine*
+`/confirm %s` (CONFERMA PAGAMENTO)
+`/cancel %s` (CANCELLA QUESTO ORDINE)
+"""
+
 
 # NFC CARDS
 

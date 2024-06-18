@@ -10,18 +10,27 @@ import (
 )
 
 var Configuration = struct {
-	Bot      BotConfiguration      `yaml:"bot"`
-	Telegram TelegramConfiguration `yaml:"telegram"`
-	Database DatabaseConfiguration `yaml:"database"`
-	Lnbits   LnbitsConfiguration   `yaml:"lnbits"`
-	Generate GenerateConfiguration `yaml:"generate"`
-	Nostr    NostrConfiguration    `yaml:"nostr"`
-	Pos      PosConfiguration      `yaml:"pos"`
+	Bot        BotConfiguration        `yaml:"bot"`
+	Telegram   TelegramConfiguration   `yaml:"telegram"`
+	Database   DatabaseConfiguration   `yaml:"database"`
+	Lnbits     LnbitsConfiguration     `yaml:"lnbits"`
+	Generate   GenerateConfiguration   `yaml:"generate"`
+	Nostr      NostrConfiguration      `yaml:"nostr"`
+	Pos        PosConfiguration        `yaml:"pos"`
+	Voucherbot VoucherbotConfiguration `yaml:"voucherbot"`
 }{}
 
 type PosConfiguration struct {
 	Currency    string `yaml:"currency"`
 	Max_balance int64  `yaml:"max_balance"`
+}
+
+type VoucherbotConfiguration struct {
+	Endpoint      string `yaml:"endpoint"`
+	ApiKey        string `yaml:"api_key"`
+	PurchaseType  string `yaml:"purchase_type"`
+	DefaultAmount string `yaml:"default_amount"`
+	Currency      string `yaml:"currency"`
 }
 
 type NostrConfiguration struct {

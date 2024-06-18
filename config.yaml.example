@@ -12,6 +12,7 @@ bot:
   admin_api_host: localhost:6060
   username: "@SatsMobiBot"
   name: "sats.mobi"
+  botadmin: "SatsRouting"
 telegram:
   message_dispose_duration: 10
   api_key: "1234"
@@ -35,5 +36,11 @@ generate:
 nostr:
   private_key: "hex private key here"
 pos:
- currency: "EUR"
- max_balance: 1000000
+  currency: "EUR"
+  max_balance: 1000000
+voucherbot:
+  endpoint: "api.gwoq.com"
+  api_key: "XXXX"
+  purchase_type: "LA-B"
+  default_amount: "100"
+  currency: "EUR"
