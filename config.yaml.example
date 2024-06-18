@@ -43,3 +43,4 @@ voucherbot:
   api_key: "XXXX"
   purchase_type: "LA-B"
   default_amount: "100"
+  currency: "EUR"
