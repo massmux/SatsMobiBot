@@ -6,7 +6,6 @@ import (
 	"github.com/LightningTipBot/LightningTipBot/internal/errors"
 	"time"
 
-	//"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
 	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
 	log "github.com/sirupsen/logrus"
 
@@ -94,7 +93,6 @@ func (bot *TipBot) buyHandler(ctx intercept.Context) (intercept.Context, error) 
 		errMessage := fmt.Sprintf(Translate(ctx, "buyOrderNotAccepted"), internal.Configuration.Voucherbot.Currency)
 
 		bot.trySendMessage(m.Sender, fmt.Sprintf("%s", errMessage))
-
 	}
 
 	return ctx, err
@@ -117,7 +115,6 @@ func (bot *TipBot) cancelHandler(ctx intercept.Context) (intercept.Context, erro
 		log.Errorln(errmsg)
 		return ctx, errors.New(errors.InvalidSyntaxError, err)
 	}
-
 	voucherbotManager := &VoucherBot{APIKey: internal.Configuration.Voucherbot.ApiKey}
 	voucherbotManager.cancelOrder(orderid)
 
@@ -141,7 +138,6 @@ func (bot *TipBot) confirmHandler(ctx intercept.Context) (intercept.Context, err
 		log.Errorln(errmsg)
 		return ctx, errors.New(errors.InvalidSyntaxError, err)
 	}
-
 	voucherbotManager := &VoucherBot{APIKey: internal.Configuration.Voucherbot.ApiKey}
 	voucherbotManager.notifyPayment(orderid)
 
