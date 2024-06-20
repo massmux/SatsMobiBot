@@ -124,6 +124,7 @@ advancedMessage = """%s
 */scrub*: Activer/désactiver Scrub: `/scrub <Destination-LN-Address|off>`
 */group*: Créer tickets pour groupe: `/group add <mygroup> [<ticket_price>]`
 */shop*: Voir les shops: `/shop` or `/shop <user/shop_id>`
+*/buy*: Acheter Sats en paiant avec Fiat `/buy <sending-iban-code>`
 """
 
 # GENERIC
