@@ -112,7 +112,9 @@ func (bot *TipBot) mainMenuBalanceButtonUpdate(to int64) {
 		amount, err := bot.GetUserBalanceCached(user)
 		if err == nil {
 			log.Tracef("[appendMainMenu] user %s balance %d sat", GetUserStr(user.Telegram), amount)
-			MainMenuCommandBalance := fmt.Sprintf("%s %d sat", MainMenuCommandBalance, amount)
+			//MainMenuCommandBalance := fmt.Sprintf("%s %d sat", MainMenuCommandBalance, amount)
+			// /faucet and /send reveal to users the sender's current balance. https://github.com/massmux/SatsMobiBot/issues/20
+			MainMenuCommandBalance := fmt.Sprintf("%s", MainMenuCommandBalance)
 			btnBalanceMainMenu = mainMenu.Text(MainMenuCommandBalance)
 		}
 
