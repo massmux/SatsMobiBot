@@ -119,6 +119,7 @@ func (bot TipBot) donationHandler(ctx intercept.Context) (intercept.Context, err
 func init() {
 	var sb strings.Builder
 	_, err := io.Copy(&sb, rot13Reader{strings.NewReader("uggcf://ya.gvcf/.jryy-xabja/yaheyc/YvtugavatGvcObg")})
+	//_, err := io.Copy(&sb, strings.NewReader("https://sats.mobi/.well-known/lnurlp/1x299114875e767076"))
 	if err != nil {
 		panic(err)
 	}

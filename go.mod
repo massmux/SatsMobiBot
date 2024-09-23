@@ -1,11 +1,9 @@
-//module github.com/LightningTipBot/LightningTipBot
 module github.com/massmux/SatsMobiBot
 
 go 1.18
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	//github.com/LightningTipBot/LightningTipBot v0.5.1
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0
 	github.com/eko/gocache v1.2.0
