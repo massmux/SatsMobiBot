@@ -4,22 +4,22 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/LightningTipBot/LightningTipBot/internal/api"
-	"github.com/LightningTipBot/LightningTipBot/internal/api/admin"
-	"github.com/LightningTipBot/LightningTipBot/internal/api/userpage"
-	"github.com/LightningTipBot/LightningTipBot/internal/lndhub"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnurl"
-	"github.com/LightningTipBot/LightningTipBot/internal/nostr"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/massmux/SatsMobiBot/internal"
+	"github.com/massmux/SatsMobiBot/internal/api"
+	"github.com/massmux/SatsMobiBot/internal/api/admin"
+	"github.com/massmux/SatsMobiBot/internal/api/userpage"
+	"github.com/massmux/SatsMobiBot/internal/lndhub"
+	"github.com/massmux/SatsMobiBot/internal/lnurl"
+	"github.com/massmux/SatsMobiBot/internal/nostr"
+	"github.com/massmux/SatsMobiBot/internal/runtime/mutex"
 
 	_ "net/http/pprof"
 
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits/webhook"
-	"github.com/LightningTipBot/LightningTipBot/internal/price"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
+	"github.com/massmux/SatsMobiBot/internal/lnbits/webhook"
+	"github.com/massmux/SatsMobiBot/internal/price"
+	"github.com/massmux/SatsMobiBot/internal/telegram"
 	log "github.com/sirupsen/logrus"
 )
 

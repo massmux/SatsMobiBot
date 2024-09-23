@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"github.com/massmux/SatsMobiBot/internal/runtime"
+	"github.com/massmux/SatsMobiBot/internal/storage"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
+	"github.com/massmux/SatsMobiBot/internal/i18n"
 	i18n2 "github.com/nicksnyder/go-i18n/v2/i18n"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"

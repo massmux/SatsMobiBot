@@ -9,15 +9,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/network"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/massmux/SatsMobiBot/internal/network"
+	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"github.com/massmux/SatsMobiBot/internal/errors"
+	"github.com/massmux/SatsMobiBot/internal/runtime/mutex"
+	"github.com/massmux/SatsMobiBot/internal/storage"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
+	"github.com/massmux/SatsMobiBot/internal/runtime"
 
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )

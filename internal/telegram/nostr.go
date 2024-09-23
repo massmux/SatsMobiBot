@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/massmux/SatsMobiBot/internal"
+	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 	"github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip19"
 	log "github.com/sirupsen/logrus"

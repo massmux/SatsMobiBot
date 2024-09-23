@@ -5,21 +5,21 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
+	"github.com/massmux/SatsMobiBot/internal"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
+	"github.com/massmux/SatsMobiBot/internal/telegram"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 
 	"net/http"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"github.com/massmux/SatsMobiBot/internal/storage"
 
 	"github.com/gorilla/mux"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
+	"github.com/massmux/SatsMobiBot/internal/i18n"
 )
 
 type Server struct {

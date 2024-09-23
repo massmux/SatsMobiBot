@@ -7,20 +7,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 	"github.com/nbd-wtf/go-nostr"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"github.com/massmux/SatsMobiBot/internal/errors"
+	"github.com/massmux/SatsMobiBot/internal/storage"
 
-	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/massmux/SatsMobiBot/internal"
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	"github.com/LightningTipBot/LightningTipBot/internal/str"
+	"github.com/massmux/SatsMobiBot/internal/i18n"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
+	"github.com/massmux/SatsMobiBot/internal/runtime"
+	"github.com/massmux/SatsMobiBot/internal/str"
 	"github.com/skip2/go-qrcode"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )

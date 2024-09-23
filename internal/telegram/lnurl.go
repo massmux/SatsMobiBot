@@ -9,15 +9,15 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/network"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/massmux/SatsMobiBot/internal/network"
+	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+	"github.com/massmux/SatsMobiBot/internal/errors"
 
-	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/massmux/SatsMobiBot/internal"
 	"github.com/tidwall/gjson"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"

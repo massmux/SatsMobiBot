@@ -2,7 +2,7 @@ package dalle
 
 import (
 	"context"
-	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/massmux/SatsMobiBot/internal"
 	"io"
 )
 

@@ -8,11 +8,11 @@ import (
 	"image/jpeg"
 	"strings"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+	"github.com/massmux/SatsMobiBot/internal/errors"
 
-	"github.com/LightningTipBot/LightningTipBot/pkg/lightning"
+	"github.com/massmux/SatsMobiBot/pkg/lightning"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
 	"github.com/nfnt/resize"

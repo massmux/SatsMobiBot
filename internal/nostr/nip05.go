@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/api"
-	db "github.com/LightningTipBot/LightningTipBot/internal/database"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
+	"github.com/massmux/SatsMobiBot/internal/api"
+	db "github.com/massmux/SatsMobiBot/internal/database"
+	"github.com/massmux/SatsMobiBot/internal/telegram"
 	"github.com/prometheus/common/log"
 	"gorm.io/gorm"
 )

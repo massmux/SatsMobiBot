@@ -3,8 +3,8 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/massmux/SatsMobiBot/internal"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 	"strings"

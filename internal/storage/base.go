@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
+	"github.com/massmux/SatsMobiBot/internal/runtime"
 	"time"
 
 	"github.com/eko/gocache/store"

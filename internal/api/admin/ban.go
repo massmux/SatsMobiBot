@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
+	"github.com/massmux/SatsMobiBot/internal/telegram"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 )

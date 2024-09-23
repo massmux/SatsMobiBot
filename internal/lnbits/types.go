@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/satdress"
+	"github.com/massmux/SatsMobiBot/internal/satdress"
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
 

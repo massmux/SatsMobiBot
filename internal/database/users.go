@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	"gorm.io/gorm"
 )
 

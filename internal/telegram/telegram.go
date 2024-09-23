@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/rate"
+	"github.com/massmux/SatsMobiBot/internal/rate"
 	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"

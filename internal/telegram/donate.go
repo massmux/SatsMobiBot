@@ -12,13 +12,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+	"github.com/massmux/SatsMobiBot/internal/errors"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/str"
+	"github.com/massmux/SatsMobiBot/internal/str"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )

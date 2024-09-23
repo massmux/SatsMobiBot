@@ -2,10 +2,10 @@ package telegram
 
 import (
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/massmux/SatsMobiBot/internal"
+	"github.com/massmux/SatsMobiBot/internal/errors"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
+	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 	log "github.com/sirupsen/logrus"
 	"strings"
 )

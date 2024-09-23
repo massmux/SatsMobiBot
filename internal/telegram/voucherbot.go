@@ -3,7 +3,7 @@ package telegram
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/massmux/SatsMobiBot/internal"
 	"io/ioutil"
 	"net/http"
 )

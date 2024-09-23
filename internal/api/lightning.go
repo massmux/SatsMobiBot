@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
+	"github.com/massmux/SatsMobiBot/internal"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
+	"github.com/massmux/SatsMobiBot/internal/telegram"
 	"github.com/gorilla/mux"
 	"github.com/r3labs/sse"
 )

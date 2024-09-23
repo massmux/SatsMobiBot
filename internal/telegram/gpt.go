@@ -2,8 +2,8 @@ package telegram
 
 import (
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal/gpt"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/massmux/SatsMobiBot/internal/gpt"
+	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/lightningtipbot/telebot.v3"

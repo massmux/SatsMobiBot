@@ -3,9 +3,9 @@ package telegram
 import (
 	"context"
 	"fmt"
-	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/massmux/SatsMobiBot/internal"
+	"github.com/massmux/SatsMobiBot/internal/errors"
+	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 	log "github.com/sirupsen/logrus"
 	"strconv"
 )
