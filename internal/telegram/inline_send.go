@@ -69,7 +69,9 @@ func (bot TipBot) handleInlineSendQuery(ctx intercept.Context) (intercept.Contex
 	}
 	fromUser := LoadUser(ctx)
 	fromUserStr := GetUserStr(q.Sender)
-	balance, err := bot.GetUserBalanceCached(fromUser)
+	//fix issue #20
+	//balance, err := bot.GetUserBalanceCached(fromUser)
+	balance, err := bot.GetUserBalance(fromUser)
 	if err != nil {
 		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
 		log.Errorln(errmsg)
