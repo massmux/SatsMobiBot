@@ -4,7 +4,7 @@ Description=satsmobi
 [Service]
 User=dev
 WorkingDirectory=/home/dev/SatsMobiBot
-ExecStart=/home/dev/SatsMobiBot/LightningTipBot
+ExecStart=/home/dev/SatsMobiBot/SatsMobiBot
 Restart=always
 RestartSec=3
 
