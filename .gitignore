@@ -3,5 +3,6 @@ config.yaml*
 data/*
 !data/.placeholder
 LightningTipBot
+SatsMobiBot
 .idea
 old
