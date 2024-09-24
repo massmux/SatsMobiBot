@@ -1,9 +1,9 @@
 package telegram
 
 import (
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/massmux/SatsMobiBot/internal/errors"
+	"github.com/massmux/SatsMobiBot/internal/runtime"
+	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 	"time"
 )

@@ -1,4 +1,4 @@
-module github.com/LightningTipBot/LightningTipBot
+module github.com/massmux/SatsMobiBot
 
 go 1.18
 

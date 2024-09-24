@@ -7,16 +7,16 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
+	"github.com/massmux/SatsMobiBot/internal/errors"
 
-	"github.com/LightningTipBot/LightningTipBot/internal"
+	"github.com/massmux/SatsMobiBot/internal"
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/str"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
+	"github.com/massmux/SatsMobiBot/internal/str"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 	"gorm.io/gorm"
 )

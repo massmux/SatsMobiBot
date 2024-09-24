@@ -6,17 +6,17 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/network"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram/intercept"
+	"github.com/massmux/SatsMobiBot/internal/network"
+	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/errors"
-	"github.com/LightningTipBot/LightningTipBot/internal/i18n"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime"
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"github.com/massmux/SatsMobiBot/internal/errors"
+	"github.com/massmux/SatsMobiBot/internal/i18n"
+	"github.com/massmux/SatsMobiBot/internal/runtime"
+	"github.com/massmux/SatsMobiBot/internal/runtime/mutex"
+	"github.com/massmux/SatsMobiBot/internal/storage"
 	"github.com/imroc/req"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
 
 	lnurl "github.com/fiatjaf/go-lnurl"
 	log "github.com/sirupsen/logrus"

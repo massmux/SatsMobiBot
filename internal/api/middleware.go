@@ -8,8 +8,8 @@ import (
 	"net/http/httputil"
 	"strings"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
+	"github.com/massmux/SatsMobiBot/internal/telegram"
 	"gorm.io/gorm"
 
 	log "github.com/sirupsen/logrus"

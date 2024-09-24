@@ -3,9 +3,9 @@ package lndhub
 import (
 	"net/http"
 
-	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/LightningTipBot/LightningTipBot/internal/api"
-	"github.com/LightningTipBot/LightningTipBot/internal/telegram"
+	"github.com/massmux/SatsMobiBot/internal"
+	"github.com/massmux/SatsMobiBot/internal/api"
+	"github.com/massmux/SatsMobiBot/internal/telegram"
 	"gorm.io/gorm"
 )
 

@@ -8,15 +8,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/LightningTipBot/LightningTipBot/internal/runtime/mutex"
+	"github.com/massmux/SatsMobiBot/internal/runtime/mutex"
 
-	limiter "github.com/LightningTipBot/LightningTipBot/internal/rate"
+	limiter "github.com/massmux/SatsMobiBot/internal/rate"
 
 	"github.com/eko/gocache/store"
 
-	"github.com/LightningTipBot/LightningTipBot/internal"
-	"github.com/LightningTipBot/LightningTipBot/internal/lnbits"
-	"github.com/LightningTipBot/LightningTipBot/internal/storage"
+	"github.com/massmux/SatsMobiBot/internal"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
+	"github.com/massmux/SatsMobiBot/internal/storage"
 	gocache "github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
