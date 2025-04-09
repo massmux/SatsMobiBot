@@ -1,0 +1,20 @@
+version: "3.3"
+
+services:
+    satsmobi:
+        container_name: satsmobi
+        hostname: satsmobi
+        image: massmux/satsmobi
+        restart: on-failure
+        volumes:
+                - ${PWD}/data:/opt/SatsMobiBot/data
+                - ${PWD}/config.yaml:/opt/SatsMobiBot/config.yaml
+        working_dir: /opt/SatsMobiBot
+        entrypoint: /opt/SatsMobiBot/SatsMobiBot
+        environment:
+                - TZ=Europe/Rome
+        ports:
+          - 5454:5454
+          - 5588:5588
+          - 6060:6060
+
