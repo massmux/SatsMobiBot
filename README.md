@@ -1,6 +1,6 @@
 # @SatsMobiBot
 
-A Telegram Lightning ⚡️ Bitcoin wallet, with built-in POS, Scrub function and NFC Cards management. This project is a fork of LightningTipBot.
+A Telegram Lightning ⚡️ Bitcoin wallet, with built-in POS, Scrub function and NFC Cards management. This project is a fork of the decommissioned LightningTipBot.
 
 This repository contains everything you need to set up and run your own Tip bot and POS facility. If you simply want to use this bot in your group chat without having to install anything just start a conversation with [@SatsMobiBot](https://t.me/SatsMobiBot) and invite it into your group chat.
 
@@ -22,7 +22,7 @@ The first time you run /start command, you will immediately get a @sats.mobi Lig
 
 This is a Lightning Wallet into a Telegram Bot, but more functionalities have been added:
 
-- /casback command to show a code to get a CashBack from a shop owner. In this case the amount is received and can be spent using the NFC Card connected to the Bot
+- Cashback command to show a code to get a CashBack from a shop owner. In this case the amount is received and can be spent using the NFC Card connected to the Bot
 - Activation of the NFC Card can be asked
 - Notifications of Cards activations
 - Integrated full POS service
@@ -31,4 +31,4 @@ This is a Lightning Wallet into a Telegram Bot, but more functionalities have be
 
 You can give the use of this Bot to your community. For example a physical shop manager can use this Bot + the NFC Cards + POS facility, all together. They can give the cards to their clients and send cashback for each purchase, thanks to the cashback command. The client will be able to spend the money just using his card everywhere.
 
-This Bot can run also as a docker image.
+This Bot can now run as a docker image as well.
