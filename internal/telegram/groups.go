@@ -381,7 +381,7 @@ func (bot *TipBot) groupGetInviteLinkHandler(event Event) {
 				Out:     false,
 				Amount:  commissionSat,
 				Memo:    "🎟 Ticket commission for group " + ticketEvent.Group.Title,
-				Webhook: internal.Configuration.Lnbits.WebhookServer},
+				Webhook: internal.Configuration.Lnbits.WebhookCall},
 			bot.Client)
 		if err != nil {
 			errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
@@ -585,7 +585,7 @@ func (bot *TipBot) createGroupTicketInvoice(ctx context.Context, payer *lnbits.U
 			Out:     false,
 			Amount:  group.Ticket.Price,
 			Memo:    memo,
-			Webhook: internal.Configuration.Lnbits.WebhookServer},
+			Webhook: internal.Configuration.Lnbits.WebhookCall},
 		bot.Client)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())

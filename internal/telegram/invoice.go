@@ -188,7 +188,7 @@ func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User
 			Out:     false,
 			Amount:  int64(amount),
 			Memo:    memo,
-			Webhook: internal.Configuration.Lnbits.WebhookServer},
+			Webhook: internal.Configuration.Lnbits.WebhookCall},
 		bot.Client)
 	if err != nil {
 		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())

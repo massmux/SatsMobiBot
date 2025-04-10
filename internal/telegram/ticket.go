@@ -59,7 +59,7 @@ func (bot *TipBot) handleTelegramNewMember(ctx intercept.Context) (intercept.Con
 			Out:     false,
 			Amount:  ticket.Ticket.Price,
 			Memo:    ticket.Ticket.Memo,
-			Webhook: internal.Configuration.Lnbits.WebhookServer},
+			Webhook: internal.Configuration.Lnbits.WebhookCall},
 		bot.Client)
 	if err != nil {
 		errmsg := fmt.Sprintf("[handleTelegramNewMember] Could not create an invoice: %s", err.Error())

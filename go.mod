@@ -1,6 +1,7 @@
 module github.com/massmux/SatsMobiBot
 
-go 1.18
+//go 1.18
+go 1.24.2
 
 require (
 	github.com/BurntSushi/toml v0.3.1

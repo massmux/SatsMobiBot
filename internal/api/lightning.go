@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/massmux/SatsMobiBot/internal"
 	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	"github.com/massmux/SatsMobiBot/internal/telegram"
-	"github.com/gorilla/mux"
 	"github.com/r3labs/sse"
 )
 
@@ -59,7 +59,7 @@ func (s Service) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 			DescriptionHash:     createInvoiceRequest.DescriptionHash,
 			UnhashedDescription: createInvoiceRequest.UnhashedDescription,
 			Memo:                createInvoiceRequest.Memo,
-			Webhook:             internal.Configuration.Lnbits.WebhookServer},
+			Webhook:             internal.Configuration.Lnbits.WebhookCall},
 		s.Bot.Client)
 	if err != nil {
 		RespondError(w, "could not create invoice")

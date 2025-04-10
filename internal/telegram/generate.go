@@ -238,7 +238,7 @@ func (bot *TipBot) dalleRefundUser(user *lnbits.User, message string) error {
 			Out:     false,
 			Amount:  int64(internal.Configuration.Generate.DallePrice),
 			Memo:    fmt.Sprintf("Refund DALLE2 %s", GetUserStr(user.Telegram)),
-			Webhook: internal.Configuration.Lnbits.WebhookServer},
+			Webhook: internal.Configuration.Lnbits.WebhookCall},
 		bot.Client)
 	if err != nil {
 		return err

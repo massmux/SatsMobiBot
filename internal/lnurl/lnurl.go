@@ -19,12 +19,12 @@ import (
 	"github.com/massmux/SatsMobiBot/internal/storage"
 	"gorm.io/gorm"
 
+	"github.com/fiatjaf/go-lnurl"
+	"github.com/gorilla/mux"
 	db "github.com/massmux/SatsMobiBot/internal/database"
 	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	"github.com/massmux/SatsMobiBot/internal/runtime"
 	"github.com/massmux/SatsMobiBot/internal/telegram"
-	"github.com/fiatjaf/go-lnurl"
-	"github.com/gorilla/mux"
 	"github.com/nbd-wtf/go-nostr"
 	log "github.com/sirupsen/logrus"
 )
@@ -54,7 +54,7 @@ type Lnurl struct {
 	database         *gorm.DB
 	callbackHostname *url.URL
 	buntdb           *storage.DB
-	WebhookServer    string
+	WebhookCall      string
 	cache            telegram.Cache
 	bot              *telegram.TipBot
 }
@@ -64,11 +64,12 @@ func New(bot *telegram.TipBot) Lnurl {
 		c:                bot.Client,
 		database:         bot.DB.Users,
 		callbackHostname: internal.Configuration.Bot.LNURLHostUrl,
-		WebhookServer:    internal.Configuration.Lnbits.WebhookServer,
-		buntdb:           bot.Bunt,
-		telegram:         bot.Telegram,
-		cache:            bot.Cache,
-		bot:              bot,
+		//WebhookServer:    internal.Configuration.Lnbits.WebhookServer,
+		WebhookCall: internal.Configuration.Lnbits.WebhookCall,
+		buntdb:      bot.Bunt,
+		telegram:    bot.Telegram,
+		cache:       bot.Cache,
+		bot:         bot,
 	}
 }
 func (lnurlInvoice Invoice) Key() string {
@@ -362,7 +363,7 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 			Amount:          amount_msat / 1000,
 			Out:             false,
 			DescriptionHash: descriptionHash,
-			Webhook:         w.WebhookServer},
+			Webhook:         w.WebhookCall},
 		w.c)
 	if err != nil {
 		err = fmt.Errorf("[serveLNURLpSecond] Couldn't create invoice: %v", err.Error())
