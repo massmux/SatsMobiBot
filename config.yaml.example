@@ -1,46 +1,47 @@
-bot:
-  socks_proxy:
-      host: 127.0.0.1:9996
-      username: test
-      password: username
-  tor_proxy:
-      host: 127.0.0.1:9050
-  http_proxy: ""
-  lnurl_public_host_name: "https://mylnurl.com"
-  lnurl_server: "http://127.0.0.1:5454" # or http://0.0.0.0:5454 depending on your configuration
-  lnurl_image: true
-  admin_api_host: localhost:6060
-  username: "@SatsMobiBot"
-  name: "sats.mobi"
-  botadmin: "SatsRouting"
-telegram:
-  message_dispose_duration: 10
-  api_key: "1234"
-lnbits:
-  url: "http://127.0.0.1:5000"
-  admin_key: "1234"
-  admin_id: "1234"
-  webhook_server: "http://0.0.0.0:5588"
-  lnbits_public_url: "link.mylnurl.com"
-database:
-  db_path: "data/bot.db"
-  buntdb_path: "data/bunt.db"
-  transactions_path: "data/transactions.db"
-  shop_buntdb_path: "data/shop.db"
-  groupsdb_path: "data/groups.db"
-generate:
-  open_ai_bearer_token: "token_here"
-  dalle_key: "asd"
-  dalle_price: 1000
-  worker: 2
-nostr:
-  private_key: "hex private key here"
+bot:  
+ socks_proxy:  
+     host:    
+     username:    
+     password:    
+ tor_proxy:  
+     host:    
+ lnurl_public_host_name: "https://PUBLIC_HOSTNAME_FOR_YOURVPS"  
+ lnurl_server: "http://satsmobi:5454"  
+ lnurl_image: true  
+ admin_api_host: satsmobi:6060  
+ username: "@yourusername"
+ name: "sats.mobi"
+ botadmin: "yourbotadmin"
+telegram:  
+ message_dispose_duration: 10  
+ api_key: "YOURTELEGRAMBOTKEY"  
+lnbits:  
+ url: "https://mylnurl.com"  
+ admin_key: "YOUR_LNBITS_ADMINKEY"  
+ admin_id: "YOUR_LNBITS_ADMINID"  
+ webhook_call: "http://PUBLIC_HOST_IP_FOR_YOURVPS:5588"
+ webhook_server: "http://satsmobi:5588"
+ lnbits_public_url: "https://YOUR_LNBITS_PUBLIC_URL/"  
+database:  
+ db_path: "data/bot.db"  
+ buntdb_path: "data/bunt.db"  
+ transactions_path: "data/transactions.db"  
+ shop_buntdb_path: "data/shop.db"  
+ groupsdb_path: "data/groups.db"  
+generate:  
+ open_ai_bearer_token: ""  
+ dalle_key: ""  
+ dalle_price: 1000  
+ worker: 0
+nostr:  
+ private_key: "YOUR_NOSTR_HEX_PRIVKEY"
 pos:
-  currency: "EUR"
-  max_balance: 1000000
+ currency: "EUR"
+ max_balance: 1000000
 voucherbot:
-  endpoint: "api.gwoq.com"
-  api_key: "XXXX"
-  purchase_type: "LA-B"
-  default_amount: "100"
-  currency: "EUR"
+ endpoint: "api.gwoq.com"
+ api_key: "YOUR_VOUCHERBOT_APIKEY"
+ purchase_type: "LA-B"
+ default_amount: "100"
+ currency: "EUR"
+

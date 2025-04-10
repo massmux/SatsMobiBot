@@ -7,7 +7,7 @@
 
 help - Read the help.
 balance - Check balance. 
-transactions - List transactions
+transactions - Transactions list.
 tip - Reply to a message to tip: /tip 50
 send - Send funds to a user: /send 100 @SatsMobiBot
 invoice - Receive with Lightning: /invoice 1000
