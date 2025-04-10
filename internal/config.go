@@ -83,6 +83,7 @@ type LnbitsConfiguration struct {
 	Url              string   `yaml:"url"`
 	LnbitsPublicUrl  string   `yaml:"lnbits_public_url"`
 	WebhookServer    string   `yaml:"webhook_server"`
+	WebhookCall      string   `yaml:"webhook_call"`
 	WebhookServerUrl *url.URL `yaml:"-"`
 }
 

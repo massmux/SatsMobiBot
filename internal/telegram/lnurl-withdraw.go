@@ -20,8 +20,8 @@ import (
 	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	"github.com/massmux/SatsMobiBot/internal/runtime"
 
-	"github.com/massmux/SatsMobiBot/internal/str"
 	lnurl "github.com/fiatjaf/go-lnurl"
+	"github.com/massmux/SatsMobiBot/internal/str"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
@@ -263,7 +263,7 @@ func (bot *TipBot) confirmWithdrawHandler(ctx intercept.Context) (intercept.Cont
 			Out:     false,
 			Amount:  int64(lnurlWithdrawState.Amount) / 1000,
 			Memo:    "Withdraw",
-			Webhook: internal.Configuration.Lnbits.WebhookServer},
+			Webhook: internal.Configuration.Lnbits.WebhookCall},
 		bot.Client)
 	if err != nil {
 		errmsg := fmt.Sprintf("[lnurlWithdrawHandlerWithdraw] Could not create an invoice: %s", err.Error())
