@@ -7,7 +7,7 @@ import (
 	"github.com/massmux/SatsMobiBot/internal/api"
 	db "github.com/massmux/SatsMobiBot/internal/database"
 	"github.com/massmux/SatsMobiBot/internal/telegram"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 

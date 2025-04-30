@@ -7,12 +7,13 @@ services:
         image: massmux/satsmobi
         restart: on-failure
         volumes:
-                - ${PWD}/data:/opt/SatsMobiBot/data
-                - ${PWD}/config.yaml:/opt/SatsMobiBot/config.yaml
+          - ${PWD}/data:/opt/SatsMobiBot/data
+          - ${PWD}/config.yaml:/opt/SatsMobiBot/config.yaml
         working_dir: /opt/SatsMobiBot
         entrypoint: /opt/SatsMobiBot/SatsMobiBot
         environment:
-                - TZ=Europe/Rome
+          - TZ=Europe/Rome
+          - BOT_WEBHOOK_PORT=5588
         ports:
           - 5454:5454
           - 5588:5588

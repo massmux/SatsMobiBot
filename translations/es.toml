@@ -67,7 +67,7 @@ payButtonEmoji = """💸"""
 
 helpMessage = """⚡️ *SatsMobi*
 _Esta es una Cartera Bitcoin Lightning que puede enviar y recibir propinas en Telegram y gestionar Tarjetas NFC. Nostr habilitado.
-La cantidad máxima permitida es de 1M de Sats. Pulsa /basics para más información y Términos de Servicio._
+La cantidad máxima permitida es de 500K de Sats. Pulsa /basics para más información y Términos de Servicio._
 
 %s
 
@@ -87,7 +87,7 @@ infoYourLightningAddress = """Su dirección de Lightning es: `%s`"""
 
 basicsMessage = """
 *Economía*
-_Esta Cartera ha sido creada como tránsito hacia su propio nodo. En cualquier caso no se permiten más de 1M de Sats en esta instalación. Este es un límite estricto y duro. _
+_Esta Cartera ha sido creada como tránsito hacia su propio nodo. En cualquier caso no se permiten más de 500K de Sats en esta instalación. Este es un límite estricto y duro. _
 
 *La red de Lightning*
 _Puedes conectar esta Cartera a Zeus fácilmente usando el comando /link._
@@ -96,13 +96,13 @@ _Puedes conectar esta Cartera a Zeus fácilmente usando el comando /link._
 _Tus fondos en este Bot pueden enviarse a cualquier otro monedero Lightning y viceversa_.
 
 *Código abierto*
-_Este Bot es software libre y de código abierto. Puedes ejecutarlo en tu propio ordenador y utilizarlo en tu propia comunidad._
+_Este Bot es software libre y de código abierto. Puedes ejecutarlo en tu propio ordenador y utilizarlo en tu propia comunidad. Es un servicio destinado a fines educativos._
 
 *Telegram*
 _Añade este Bot al chat de tu grupo de Telegram para /tip posts. Si haces al bot administrador del grupo también limpiará comandos para mantener el chat ordenado._
 
 *Condiciones de uso*
-_No somos depositarios de sus fondos. Actuaremos en su mejor interés. Tenga en cuenta que este bot está en fase beta de desarrollo. Utilícelo bajo su propia responsabilidad.
+_No somos depositarios de sus fondos. Actuaremos en su mejor interés. Tenga en cuenta que este bot está en fase beta de desarrollo. Utilícelo bajo su propia responsabilidad. El servidor puede cobrar una pequeña (0.1%, max 1000 sats) cuota para mantener el servicio en funcionamiento.
 Los ciudadanos y residentes en EE.UU. y cualquier país sancionado no están autorizados a utilizar este servicio._
 """
 
