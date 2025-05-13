@@ -163,6 +163,7 @@ func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, err
 		log.Errorln(errmsg)
 		return ctx, err
 	}
+	fmt.Println(invoice)
 
 	// create qr code
 	qr, err := qrcode.Encode(invoice.PaymentRequest, qrcode.Medium, 256)

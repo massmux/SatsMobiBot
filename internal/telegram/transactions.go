@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/eko/gocache/store"
 	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	"github.com/massmux/SatsMobiBot/internal/str"
 	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
-	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
@@ -50,8 +50,15 @@ func (txlist *TransactionsList) printTransactions(ctx intercept.Context) string 
 				txstr += "🟢"
 			}
 		}
-		timestr := time.Unix(int64(p.Time), 0).UTC().Format("2 Jan 06 15:04")
-		txstr += fmt.Sprintf("` %s`", timestr)
+
+		tt, err := time.Parse("2006-01-02T15:04:05.000000", p.Time)
+		if err != nil {
+			log.Errorln(err)
+			return "Error"
+		}
+		timeStr := tt.Format("2 Jan 06 15:04")
+
+		txstr += fmt.Sprintf("` %s`", timeStr)
 		txstr += fmt.Sprintf("` %+d sat`", p.Amount/1000)
 		if p.Fee > 0 {
 			fee := p.Fee

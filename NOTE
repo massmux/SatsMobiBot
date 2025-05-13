@@ -1,0 +1,10 @@
+changed for lnbits1.0.0
+
+
+M	internal/lnbits/types.go
+M	internal/telegram/invoice.go
+M	internal/telegram/transactions.go
+
+
+
+

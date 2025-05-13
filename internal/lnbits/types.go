@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/massmux/SatsMobiBot/internal/satdress"
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	"github.com/massmux/SatsMobiBot/internal/satdress"
 
 	"github.com/imroc/req"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
@@ -133,7 +133,7 @@ type Payment struct {
 	Amount        int64       `json:"amount"`
 	Fee           int64       `json:"fee"`
 	Memo          string      `json:"memo"`
-	Time          int         `json:"time"`
+	Time          string      `json:"time"`
 	Bolt11        string      `json:"bolt11"`
 	Preimage      string      `json:"preimage"`
 	PaymentHash   string      `json:"payment_hash"`
@@ -153,7 +153,7 @@ type Payments []Payment
 
 type Invoice struct {
 	PaymentHash    string `json:"payment_hash"`
-	PaymentRequest string `json:"payment_request"`
+	PaymentRequest string `json:"bolt11"`
 }
 
 // from fiatjaf/lnurl-go
