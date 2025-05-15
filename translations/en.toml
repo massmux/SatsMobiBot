@@ -65,7 +65,7 @@ payButtonEmoji = """💸"""
 
 helpMessage = """⚡️ *SatsMobi*
 _This is a Bitcoin Lightning Wallet that can send and receive tips on Telegram and manage NFC Cards. Nostr enabled.
-Maximum amount allowed is 500K Sats. Hit /basics for more info and Terms Of Service._
+Maximum amount allowed is 300K Sats. Hit /basics for more info and Terms Of Service._
 
 %s
 
@@ -85,7 +85,7 @@ infoYourLightningAddress = """Your Lightning Address is: `%s`"""
 
 basicsMessage = """
 *Economics*
-_This Wallet has been created as a transit towards your own node. In any case no more than 500K Sats are allowed in this facility. This is a strict and hard limit. _
+_This Wallet has been created as a transit towards your own node. In any case no more than 300K Sats are allowed in this facility. This is a strict and hard limit. _
 
 *The Lightning Network*
 _You can connect this Wallet to Zeus easily using /link command._
@@ -100,8 +100,9 @@ _This Bot is free and opensource software. You can run it on your own computer a
 _Add this Bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
 
 *Terms of Service*
-_We are not custodian of your funds. We will act in your best interest. Be aware that this bot is in beta development. Use at your own risk. The server may charge a small fee (0.1%, max 1000 sats) to keep the service working.
-Citizen and residents in US and any sanctioned countries are not allowed to use this service._
+_We are not custodian of your funds. We will act in your best interest. Be aware that this Bot is in beta development. Use at your own risk. The server may charge a small fee (0.1%, max 1000 sats) to keep the service working.
+
+Citizen and residents of the United States and any SECO sanctioned countries are prohibited to use this service. By going on, you confirm and declare you are NOT citizen of the United States or any SECO sanctioned countries._
 """
 
 

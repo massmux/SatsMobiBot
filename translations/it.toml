@@ -61,7 +61,7 @@ infoButtonMessage = """Info"""
 
 helpMessage = """⚡️ *SatsMobi*
 _Questo è un Wallet Bitcoin Lightning con cui puoi inviare tip via Telegram e gestire le carte NFC.
-Abilitato per Nostr. L'importo massimo consentito è di 500K Sats. Digita /basics per maggiori informazioni e i Termini di Servizio._
+Abilitato per Nostr. L'importo massimo consentito è di 300K Sats. Digita /basics per maggiori informazioni e i Termini di Servizio._
 
 %s
 
@@ -81,7 +81,7 @@ infoYourLightningAddress = """Il tuo indirizzo Lightning è `%s`"""
 
 basicsMessage = """
 *Economics*
-_Questo Wallet è concepito per essere usato come transito verso il proprio nodo. In ogni caso non puoi tenere più di 500K di Sats in questo sistema. Questo è un limite rigido e severo._
+_Questo Wallet è concepito per essere usato come transito verso il proprio nodo. In ogni caso non puoi tenere più di 300K di Sats in questo sistema. Questo è un limite rigido e severo._
 
 *Lightning Network*
 _È possibile collegare questo Wallet a Zeus facilmente utilizzando il comando /link._
@@ -96,8 +96,9 @@ _Questo Bot è software libero e opensource_. Puoi farlo girare sul tuo computer
 _Aggiungi questo Bot a una chat di gruppo Telegram per inviare una /tip. Se concedi al bot i privilegi di amministratore della chat, il bot si occuperà automaticamente di eliminare i comandi inviati per tenere la chat pulita._
 
 *Termini e condizioni*
-_Non siamo depositari dei vostri fondi. Agiremo nel vostro interesse. Tenete presente che questo bot è in fase di sviluppo beta. Utilizzatelo a vostro rischio e pericolo. Non puoi inviare più di 500K Sats in questo sistema. Non ci assumiamo alcuna responsabilità. Il server può addebitare una piccola fee (0.1%, max 1000 sats) per mantenere il servizio attivo.
-I cittadini e i residenti degli Stati Uniti e di tutti i paesi sanzionati non possono usare questo servizio._
+_Non siamo depositari dei vostri fondi. Agiremo nel vostro interesse. Tenete presente che questo bot è in fase di sviluppo beta. Utilizzatelo a vostro rischio e pericolo. Non puoi inviare più di 300K Sats in questo sistema. Non ci assumiamo alcuna responsabilità. Il server può addebitare una piccola fee (0.1%, max 1000 sats) per mantenere il servizio attivo.
+
+I cittadini e i residenti degli Stati Uniti e di tutti i paesi sanzionati (secondo lista SECO) non possono usare questo servizio. Se continuate ad ultilizzarlo confermate e dichiarate di non essere cittadino o residente degli Stati Uniti o di uno dei paesi sanzionati._
 """
 
 helpNoUsernameMessage = """👋 Per favore imposta un nome utente Telegram."""

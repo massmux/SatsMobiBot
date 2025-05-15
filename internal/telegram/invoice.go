@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -123,11 +124,21 @@ func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, err
 		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	userStr := GetUserStr(user.Telegram)
+	// we prevent the user from creating an invoice if the balance is over the imposed limit
+	balance, err := bot.GetUserBalance(user)
+	if balance >= internal.Configuration.Pos.Max_balance {
+		balanceWarningMessage := fmt.Sprintf(Translate(ctx, "balanceOverMax"), strconv.FormatInt(internal.Configuration.Pos.Max_balance, 10))
+		bot.trySendMessage(m.Sender, balanceWarningMessage)
+		errmsg := fmt.Sprintf("[/balance] User %s over max balance: %d Sats", userStr, balance)
+		log.Errorln(errmsg)
+		return ctx, err
+	}
 	if m.Chat.Type != tb.ChatPrivate {
 		// delete message
 		bot.tryDeleteMessage(m)
 		return ctx, errors.Create(errors.NoPrivateChatError)
 	}
+
 	// if no amount is in the command, ask for it
 	amount, err := decodeAmountFromCommand(m.Text)
 	if (err != nil || amount < 1) && m.Chat.Type == tb.ChatPrivate {
