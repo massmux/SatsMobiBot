@@ -67,7 +67,7 @@ payButtonEmoji = """💸"""
 
 helpMessage = """⚡️ *SatsMobi*
 _Esta es una Cartera Bitcoin Lightning que puede enviar y recibir propinas en Telegram y gestionar Tarjetas NFC. Nostr habilitado.
-La cantidad máxima permitida es de 500K de Sats. Pulsa /basics para más información y Términos de Servicio._
+La cantidad máxima permitida es de 300K de Sats. Pulsa /basics para más información y Términos de Servicio._
 
 %s
 
@@ -87,7 +87,7 @@ infoYourLightningAddress = """Su dirección de Lightning es: `%s`"""
 
 basicsMessage = """
 *Economía*
-_Esta Cartera ha sido creada como tránsito hacia su propio nodo. En cualquier caso no se permiten más de 500K de Sats en esta instalación. Este es un límite estricto y duro. _
+_Esta Cartera ha sido creada como tránsito hacia su propio nodo. En cualquier caso no se permiten más de 300K de Sats en esta instalación. Este es un límite estricto y duro. _
 
 *La red de Lightning*
 _Puedes conectar esta Cartera a Zeus fácilmente usando el comando /link._

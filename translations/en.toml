@@ -65,7 +65,7 @@ payButtonEmoji = """💸"""
 
 helpMessage = """⚡️ *SatsMobi*
 _This is a Bitcoin Lightning Wallet that can send and receive tips on Telegram and manage NFC Cards. Nostr enabled.
-Maximum amount allowed is 500K Sats. Hit /basics for more info and Terms Of Service._
+Maximum amount allowed is 300K Sats. Hit /basics for more info and Terms Of Service._
 
 %s
 
@@ -85,7 +85,7 @@ infoYourLightningAddress = """Your Lightning Address is: `%s`"""
 
 basicsMessage = """
 *Economics*
-_This Wallet has been created as a transit towards your own node. In any case no more than 500K Sats are allowed in this facility. This is a strict and hard limit. _
+_This Wallet has been created as a transit towards your own node. In any case no more than 300K Sats are allowed in this facility. This is a strict and hard limit. _
 
 *The Lightning Network*
 _You can connect this Wallet to Zeus easily using /link command._

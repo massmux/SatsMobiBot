@@ -61,7 +61,7 @@ infoButtonMessage = """Info"""
 
 helpMessage = """⚡️ *SatsMobi*
 _Ce bot est un Bitcoin Lightning Wallet qui permet d'envoyer des Tips sur Telegram et gérer les cartes NFC.
-Il fonctionne avec Nostr. Le montant maximum autorisé est de 500K Sats. Tapez /basics pour plus d'info et les conditions d'utilisation._
+Il fonctionne avec Nostr. Le montant maximum autorisé est de 300K Sats. Tapez /basics pour plus d'info et les conditions d'utilisation._
 
 %s
 
@@ -81,7 +81,7 @@ infoYourLightningAddress = """Votre adresse Lightning est `%s`"""
 
 basicsMessage = """
 *Économie*
-_Vous devez utiliser ce portefeuille comme moyen de transit vers votre propre nœud. Dans tous les cas, pas plus de 500K Sats sont autorisés dans cette installation. Il s'agit d'une limite stricte._
+_Vous devez utiliser ce portefeuille comme moyen de transit vers votre propre nœud. Dans tous les cas, pas plus de 300K Sats sont autorisés dans cette installation. Il s'agit d'une limite stricte._
 
 *Le Lightning Network*
 _Vous pouvez connecter ce Wallet à Zeus facilement en utilisant la commande /link._
@@ -96,7 +96,7 @@ _Ce bot est gratuit et opensource_. Vous pouvez éxecuter le bot sur votre ordin
 _Ajoutez ce Bot à un groupe Telegram pour envoyer des pourboires en répondant à des messages. Si vous faites de ce bot un adminstrateur d'un groupe, il va réorganiser les commandes pour plus de lisibilité._
 
 *Conditions d'utilisation*
-_Nous ne sommes pas dépositaires de vos fonds. Nous agissons au mieux de vos intérêts. Sachez que ce robot est en phase de développement bêta. Utilisez-le à vos risques et périls. Pas plus de 500K Sats sont autorisés dans cette installation. Nous n'assumons aucune responsabilité. Le serveur peut demander une petite contribution (0.1%, max 1000 sats) pour assurer le fonctionnement du service.
+_Nous ne sommes pas dépositaires de vos fonds. Nous agissons au mieux de vos intérêts. Sachez que ce robot est en phase de développement bêta. Utilisez-le à vos risques et périls. Pas plus de 300K Sats sont autorisés dans cette installation. Nous n'assumons aucune responsabilité. Le serveur peut demander une petite contribution (0.1%, max 1000 sats) pour assurer le fonctionnement du service.
 Les citoyens et les résidents des États-Unis et de tout pays sanctionné ne sont pas autorisés à utiliser ce service._
 
 """
