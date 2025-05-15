@@ -124,7 +124,7 @@ func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, err
 		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 	userStr := GetUserStr(user.Telegram)
-	// we prevent the user from creating an invoice if the balance is over
+	// we prevent the user from creating an invoice if the balance is over the imposed limit
 	balance, err := bot.GetUserBalance(user)
 	if balance >= internal.Configuration.Pos.Max_balance {
 		balanceWarningMessage := fmt.Sprintf(Translate(ctx, "balanceOverMax"), strconv.FormatInt(internal.Configuration.Pos.Max_balance, 10))

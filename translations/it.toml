@@ -97,7 +97,8 @@ _Aggiungi questo Bot a una chat di gruppo Telegram per inviare una /tip. Se conc
 
 *Termini e condizioni*
 _Non siamo depositari dei vostri fondi. Agiremo nel vostro interesse. Tenete presente che questo bot è in fase di sviluppo beta. Utilizzatelo a vostro rischio e pericolo. Non puoi inviare più di 300K Sats in questo sistema. Non ci assumiamo alcuna responsabilità. Il server può addebitare una piccola fee (0.1%, max 1000 sats) per mantenere il servizio attivo.
-I cittadini e i residenti degli Stati Uniti e di tutti i paesi sanzionati non possono usare questo servizio._
+
+I cittadini e i residenti degli Stati Uniti e di tutti i paesi sanzionati (secondo lista SECO) non possono usare questo servizio. Se continuate ad ultilizzarlo confermate e dichiarate di non essere cittadino o residente degli Stati Uniti o di uno dei paesi sanzionati._
 """
 
 helpNoUsernameMessage = """👋 Per favore imposta un nome utente Telegram."""
