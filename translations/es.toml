@@ -77,6 +77,7 @@ La cantidad máxima permitida es de 300K de Sats. Pulsa /basics para más inform
 */send*: Enviar fondos a un usuario: `/send <amount> @user or user@sats.mobi [<memo>]`
 */invoice*: Recibir con Lightning: `/invoice <amount> [<memo>]`
 */pay*: Pague con Lightning: `/pay <invoice>`
+*/rate*: Consulte los tipos de cambio: `/rate [cantidad] [moneda]` - Ejemplo: `/rate 10000 USD`
 */cashback*: QRCODE para recibir cashback.
 */activatecard*: Solicitar la activación de una tarjeta NFC SatsMobi  `/activatecard <CardID>`
 */advanced*: Funciones avanzadas.
@@ -131,6 +132,8 @@ advancedMessage = """%s
 */group*: Funciones de chat en grupo: `/group`
 */shop*: Buscar tiendas: `/shop` o `/shop <user/shop_id>`
 */buy*: Comprar Sats con Fiat `/buy <sending-iban-code>`
+*/backup*: Respaldar la frase semilla de tu billetera Breez: `/backup`
+*/buybtc*: Comprar Bitcoin con Moonpay: `/buybtc`
 """
 
 # GENERIC
@@ -205,6 +208,8 @@ invoiceHelpText           = """📖 Oops, eso no funcionó. %s
 *Usage:* `/invoice <amount> [<memo>]`
 *Example:* `/invoice 1000 Gracias!`"""
 invoicePaidText           = """✅ Factura pagada.""" 
+invoiceWaitingMessage     = """⏳ Esperando que se pague la factura..."""
+invoicePaidConfirmedMessage = """✅ Factura Pagada"""
 
 # PAY
 
@@ -561,3 +566,66 @@ Para usuarios (en privadot): `/join <migrupo>`\nEjemplo: `/join TheBestBitcoinGr
 generateDalleHelpMessage        = """Genera imágenes usando OpenAI DALLE 2.\nUsage: `/generate <prompt>`\nPrecio: 1000 sat"""
 generateDallePayInvoiceMessage  = """Paga esta factura para generar 4 imágenes 👇"""
 generateDalleGeneratingMessage  = """Se están generando tus imágenes. Por favor aguarda..."""
+
+# BACKUP
+backupPrivateOnlyMessage = "⚠️ El comando /backup solo puede usarse en chat privado por razones de seguridad."
+backupBreezNotAvailableMessage = "⚠️ No tienes una billetera Breez auto-custodial inicializada. Usa /start para configurarla."
+backupNoMnemonicMessage = "⚠️ No hay frase de respaldo disponible."
+
+# REFUNDS
+refundAvailableMessage = """💰 *Reembolso Disponible*
+
+Tienes %d sats disponibles para reembolso de un intercambio fallido.
+
+Haz clic en el botón a continuación para reembolsar a tu dirección de Bitcoin."""
+
+refundButtonMessage = """🔄 Reclamar Reembolso"""
+refundEnterAddressMessage = """Por favor, ingresa tu dirección de Bitcoin donde deseas recibir el reembolso:"""
+refundProcessingMessage = """⏳ Procesando reembolso..."""
+refundSuccessMessage = """✅ *Reembolso Exitoso*
+
+ID de Transacción: `%s`
+
+Tu reembolso ha sido enviado a tu dirección de Bitcoin. Puede tomar algún tiempo confirmarse en la blockchain."""
+refundErrorMessage = """❌ Reembolso fallido: %s
+
+Por favor, inténtalo de nuevo más tarde o contacta al soporte si el problema persiste."""
+refundInvalidAddressMessage = """❌ Dirección de Bitcoin inválida. Por favor, inténtalo de nuevo con una dirección válida."""
+refundCancelledMessage = """Reembolso cancelado."""
+backupWarningMessage = """⚠️ *ADVERTENCIA DE SEGURIDAD IMPORTANTE*
+
+Tu frase de respaldo se mostrará en el próximo mensaje.
+
+🔒 *Mantenla segura y privada*
+📝 Escríbela en papel
+🚫 Nunca la compartas con nadie
+💾 Guárdala en un lugar seguro
+
+Este mensaje se eliminará automáticamente en 60 segundos."""
+
+backupSeedMessage = """🔑 *Tu Frase de Respaldo*
+
+`%s`
+
+⚠️ *Este mensaje será eliminado en 60 segundos*
+
+Escribe estas palabras en orden y guárdalas de forma segura. Esta es la ÚNICA manera de recuperar tu billetera auto-custodial."""
+
+backupDeletedMessage = "✅ El mensaje con la frase de respaldo ha sido eliminado por seguridad."
+
+# BUY BTC
+buyBtcBreezNotAvailableMessage = "⚠️ Necesitas una billetera Breez auto-custodial para comprar Bitcoin. Usa /start para configurarla."
+buyBtcCheckingLimitsMessage = "🔍 Verificando límites de compra..."
+buyBtcLimitsMessage = """💰 *Límites de Compra de Bitcoin*
+
+Mínimo: %d sats
+Máximo: %d sats
+
+Preparando tu compra..."""
+buyBtcFeesMessage = "⚡ Comisiones estimadas: %d sats"
+buyBtcPurchaseButton = "🛒 Comprar Bitcoin con Moonpay"
+buyBtcReadyMessage = """✅ *Listo para Comprar*
+
+Toca el botón de abajo para completar tu compra de Bitcoin a través de Moonpay (se abre en el navegador).
+
+💰 El Bitcoin se enviará directamente a tu billetera Breez auto-custodial."""

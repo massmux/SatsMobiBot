@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/massmux/SatsMobiBot/internal/satdress"
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
+	"github.com/massmux/SatsMobiBot/internal/satdress"
 
 	"github.com/imroc/req"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
@@ -22,20 +22,22 @@ type Client struct {
 }
 
 type User struct {
-	ID           string       `json:"id"`
-	Name         string       `json:"name" gorm:"primaryKey"`
-	Initialized  bool         `json:"initialized"`
-	Telegram     *tb.User     `gorm:"embedded;embeddedPrefix:telegram_"`
-	Wallet       *Wallet      `gorm:"embedded;embeddedPrefix:wallet_"`
-	StateKey     UserStateKey `json:"stateKey"`
-	StateData    string       `json:"stateData"`
-	CreatedAt    time.Time    `json:"created"`
-	UpdatedAt    time.Time    `json:"updated"`
-	AnonID       string       `json:"anon_id"`
-	AnonIDSha256 string       `json:"anon_id_sha256"`
-	UUID         string       `json:"uuid"`
-	Banned       bool         `json:"banned"`
-	Settings     *Settings    `json:"settings" gorm:"foreignKey:id"`
+	ID               string       `json:"id"`
+	Name             string       `json:"name" gorm:"primaryKey"`
+	Initialized      bool         `json:"initialized"`
+	Telegram         *tb.User     `gorm:"embedded;embeddedPrefix:telegram_"`
+	Wallet           *Wallet      `gorm:"embedded;embeddedPrefix:wallet_"`
+	StateKey         UserStateKey `json:"stateKey"`
+	StateData        string       `json:"stateData"`
+	CreatedAt        time.Time    `json:"created"`
+	UpdatedAt        time.Time    `json:"updated"`
+	AnonID           string       `json:"anon_id"`
+	AnonIDSha256     string       `json:"anon_id_sha256"`
+	UUID             string       `json:"uuid"`
+	Banned           bool         `json:"banned"`
+	Settings         *Settings    `json:"settings" gorm:"foreignKey:id"`
+	BreezMnemonic    string       `json:"breez_mnemonic"`    // User's Breez wallet mnemonic
+	BreezInitialized bool         `json:"breez_initialized"` // Whether user's Breez wallet is initialized
 }
 
 type Settings struct {
@@ -74,6 +76,7 @@ const (
 	UserStateShopItemSendItemFile
 	UserEnterShopsDescription
 	UserEnterDallePrompt
+	UserStateRefundAwaitingAddress
 )
 
 type UserStateKey int

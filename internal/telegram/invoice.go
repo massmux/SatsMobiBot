@@ -85,6 +85,7 @@ type InvoiceEvent struct {
 	User           *lnbits.User `json:"user"`                      // the user that is being paid
 	Message        *tb.Message  `json:"message,omitempty"`         // the message that the invoice replies to
 	InvoiceMessage *tb.Message  `json:"invoice_message,omitempty"` // the message that displays the invoice
+	WaitingMessage *tb.Message  `json:"waiting_message,omitempty"` // the "waiting for payment" message
 	LanguageCode   string       `json:"languagecode"`              // language code of the user
 	Callback       int          `json:"func"`                      // which function to call if the invoice is paid
 	CallbackData   string       `json:"callbackdata"`              // add some data for the callback
@@ -107,7 +108,7 @@ func (invoiceEvent InvoiceEvent) Key() string {
 
 func helpInvoiceUsage(ctx context.Context, errormsg string) string {
 	if len(errormsg) > 0 {
-		return fmt.Sprintf(Translate(ctx, "invoiceHelpText"), fmt.Sprintf("%s", errormsg))
+		return fmt.Sprintf(Translate(ctx, "invoiceHelpText"), errormsg)
 	} else {
 		return fmt.Sprintf(Translate(ctx, "invoiceHelpText"), "")
 	}
@@ -145,6 +146,35 @@ func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, err
 		// // no amount was entered, set user state and ask fo""r amount
 		_, err = bot.askForAmount(ctx, "", "CreateInvoiceState", 0, 0, m.Text)
 		return ctx, err
+	}
+
+	// Check Breez minimum amount (1000 sats) if Breez is enabled and will be used
+	userBreezClient := bot.GetUserBreezClient(user)
+	if internal.Configuration.Breez.Enabled && userBreezClient != nil && userBreezClient.IsInitialized() {
+		const BreezMinAmount = 1000
+		const BreezMaxAmount = 25000000
+
+		if amount < BreezMinAmount {
+			errorMsg := fmt.Sprintf(
+				"⚠️ Minimum invoice amount: **%d sats**\n\n"+
+					"Breez Lightning Network requires a minimum of %d sats for invoice creation.\n\n"+
+					"Please use `/invoice %d` or higher.",
+				BreezMinAmount, BreezMinAmount, BreezMinAmount,
+			)
+			bot.trySendMessage(m.Sender, errorMsg)
+			return ctx, fmt.Errorf("amount below Breez minimum: %d < %d", amount, BreezMinAmount)
+		}
+
+		if amount > BreezMaxAmount {
+			errorMsg := fmt.Sprintf(
+				"⚠️ Maximum invoice amount: **%d sats** (%.2f BTC)\n\n"+
+					"Breez Lightning Network allows a maximum of %d sats per invoice.\n\n"+
+					"Please use `/invoice %d` or lower.",
+				BreezMaxAmount, float64(BreezMaxAmount)/100000000, BreezMaxAmount, BreezMaxAmount,
+			)
+			bot.trySendMessage(m.Sender, errorMsg)
+			return ctx, fmt.Errorf("amount above Breez maximum: %d > %d", amount, BreezMaxAmount)
+		}
 	}
 
 	// check for memo in command
@@ -189,26 +219,132 @@ func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, err
 
 	// send the invoice data to user
 	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
+
+	// Send waiting message
+	waitingMsg := bot.trySendMessage(m.Sender, Translate(ctx, "invoiceWaitingMessage"))
+
+	// Store waiting message in invoice event
+	invoice.WaitingMessage = waitingMsg
+	runtime.IgnoreError(bot.Bunt.Set(invoice))
+
 	log.Printf("[/invoice] Invoice created. User: %s, amount: %d sat.", userStr, amount)
 	return ctx, nil
 }
 
 func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User, amount int64, memo string, currency string, callback int, callbackData string) (InvoiceEvent, error) {
-	invoice, err := user.Wallet.Invoice(
-		lnbits.InvoiceParams{
-			Out:     false,
-			Amount:  int64(amount),
-			Memo:    memo,
-			Webhook: internal.Configuration.Lnbits.WebhookCall},
-		bot.Client)
-	if err != nil {
-		errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", err.Error())
-		log.Errorln(errmsg)
-		return InvoiceEvent{}, err
+	var paymentHash string
+	var paymentRequest string
+
+	// Decide whether to use Breez or LNbits based on routing logic
+	useBreez := bot.shouldUseBreezForInvoice(user, amount)
+
+	if useBreez {
+		// Get user's Breez client
+		userBreez := bot.GetUserBreezClient(user)
+		if userBreez != nil && userBreez.IsInitialized() {
+			// Create invoice using Breez SDK
+			log.Infof("[/invoice] Creating Breez invoice for %s of %d sat", GetUserStr(user.Telegram), amount)
+			breezInvoice, breezErr := userBreez.CreateInvoice(amount, memo)
+			if breezErr != nil {
+				errmsg := fmt.Sprintf("[/invoice] Breez invoice creation failed: %s, falling back to LNbits", breezErr.Error())
+				log.Warnln(errmsg)
+				// Fall back to LNbits
+				useBreez = false
+			} else {
+				paymentRequest = breezInvoice.Bolt11
+				paymentHash = breezInvoice.PaymentHash
+				log.Infof("[/invoice] Breez invoice created successfully")
+
+				// Translate message before callback to avoid context issues in goroutine
+				paidMessage := Translate(ctx, "invoicePaidConfirmedMessage")
+
+				// Start listening for payment events (120 second timeout)
+				listenerID, listenerErr := userBreez.ListenForInvoicePayment(
+					paymentHash,
+					120*time.Second,
+					func() {
+						// Payment received callback (panic recovery handled in event listener)
+						log.Infof("[Breez] Invoice paid callback triggered: %s", paymentHash)
+
+						// Retrieve invoice event to get waiting message and user info
+						invoiceEvent := InvoiceEvent{Invoice: &Invoice{PaymentHash: paymentHash}}
+						if err := bot.Bunt.Get(&invoiceEvent); err == nil {
+							// Sync Breez balance to get immediate update
+							if invoiceEvent.User != nil {
+								userBreez := bot.GetUserBreezClient(invoiceEvent.User)
+								if userBreez != nil && userBreez.IsInitialized() {
+									if syncErr := userBreez.RefreshBalance(); syncErr != nil {
+										log.Warnf("[Breez] Failed to sync balance after payment: %s", syncErr)
+									} else {
+										log.Infof("[Breez] Balance synced after payment for user %s", invoiceEvent.User.Name)
+									}
+								}
+
+								// Clear the user's balance cache so next balance check gets fresh data
+								cacheKey := fmt.Sprintf("%s_balance", invoiceEvent.User.Name)
+								bot.Cache.Delete(cacheKey)
+								log.Debugf("[Breez] Cleared balance cache for user %s", invoiceEvent.User.Name)
+							}
+
+							// Edit waiting message to show "Invoice Paid"
+							if invoiceEvent.WaitingMessage != nil {
+								bot.tryEditMessage(invoiceEvent.WaitingMessage, paidMessage)
+
+								// Delete the message after 2 seconds
+								time.AfterFunc(2*time.Second, func() {
+									bot.tryDeleteMessage(invoiceEvent.WaitingMessage)
+								})
+							}
+						}
+					},
+				)
+				if listenerErr != nil {
+					log.Warnf("[/invoice] Failed to start payment listener: %s", listenerErr)
+				} else {
+					// Set up timeout to delete waiting message and remove listener if not paid
+					go func(hash, listenerID string) {
+						time.Sleep(120 * time.Second)
+
+						// Retrieve invoice event
+						invoiceEvent := InvoiceEvent{Invoice: &Invoice{PaymentHash: hash}}
+						if err := bot.Bunt.Get(&invoiceEvent); err == nil {
+							// Delete waiting message if timeout reached
+							if invoiceEvent.WaitingMessage != nil {
+								bot.tryDeleteMessage(invoiceEvent.WaitingMessage)
+							}
+						}
+
+						log.Debugf("[Breez] Payment listener timeout for hash: %s", hash)
+					}(paymentHash, listenerID)
+				}
+			}
+		} else {
+			useBreez = false
+		}
 	}
+
+	// Use LNbits if Breez is not available or failed
+	if !useBreez || paymentRequest == "" {
+		log.Debugf("[/invoice] Creating LNbits invoice for %s of %d sat", GetUserStr(user.Telegram), amount)
+		invoice, lnbitsErr := user.Wallet.Invoice(
+			lnbits.InvoiceParams{
+				Out:     false,
+				Amount:  int64(amount),
+				Memo:    memo,
+				Webhook: internal.Configuration.Lnbits.WebhookCall},
+			bot.Client)
+		if lnbitsErr != nil {
+			errmsg := fmt.Sprintf("[/invoice] Could not create an invoice: %s", lnbitsErr.Error())
+			log.Errorln(errmsg)
+			return InvoiceEvent{}, lnbitsErr
+		}
+		paymentHash = invoice.PaymentHash
+		paymentRequest = invoice.PaymentRequest
+	}
+
 	invoiceEvent := InvoiceEvent{
-		Invoice: &Invoice{PaymentHash: invoice.PaymentHash,
-			PaymentRequest: invoice.PaymentRequest,
+		Invoice: &Invoice{PaymentHash: paymentHash,
+			PaymentRequest: paymentRequest,
 			Amount:         amount,
 			Memo:           memo},
 		User:         user,
@@ -222,9 +358,31 @@ func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User
 	return invoiceEvent, nil
 }
 
+// shouldUseBreezForInvoice determines if Breez should be used for invoice creation
+func (bot *TipBot) shouldUseBreezForInvoice(user *lnbits.User, amount int64) bool {
+	// Always try Breez FIRST if it's enabled and user has a Breez client
+	// This prioritizes self-custodial receiving over custodial
+	userBreez := bot.GetUserBreezClient(user)
+	if userBreez != nil && userBreez.IsInitialized() {
+		log.Debugf("[shouldUseBreezForInvoice] User's Breez is available, will use it for invoice creation")
+		return true
+	}
+
+	log.Debugf("[shouldUseBreezForInvoice] User's Breez not available, will use LNbits")
+	return false
+}
+
 func (bot *TipBot) notifyInvoiceReceivedEvent(event Event) {
 	invoiceEvent := event.(*InvoiceEvent)
-	// do balance check for keyboard update
+
+	// Clear balance cache first to ensure we get fresh balance
+	if invoiceEvent.User != nil {
+		cacheKey := fmt.Sprintf("%s_balance", invoiceEvent.User.Name)
+		bot.Cache.Delete(cacheKey)
+		log.Debugf("[notifyInvoiceReceivedEvent] Cleared balance cache for user %s", invoiceEvent.User.Name)
+	}
+
+	// do balance check for keyboard update (will fetch fresh balance now)
 	_, err := bot.GetUserBalance(invoiceEvent.User)
 	if err != nil {
 		errmsg := fmt.Sprintf("could not get balance of user %s", GetUserStr(invoiceEvent.User.Telegram))

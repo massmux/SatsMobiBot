@@ -3,12 +3,13 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/massmux/SatsMobiBot/internal"
 	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
-	"strings"
-	"time"
 )
 
 // we can't use space in the label of buttons, because string splitting will mess everything up.
@@ -47,7 +48,7 @@ func init() {
 	mainMenu.Reply(
 		mainMenu.Row(btnBalanceMainMenu),
 		// mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnSendMainMenu, btnHelpMainMenu), // TODO: fix btnSendMainMenu
-		mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnPosAppMainMenu),
+		mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu),
 		//mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnHelpMainMenu),
 	)
 }
@@ -117,11 +118,11 @@ func (bot *TipBot) mainMenuBalanceButtonUpdate(to int64) {
 		}
 
 		bot.appendWebAppLinkToButton(&btnWebAppMainMenu, user)
-		bot.appendPosAppLinkToButton(&btnPosAppMainMenu, user)
+		// bot.appendPosAppLinkToButton(&btnPosAppMainMenu, user) // POS button removed
 		mainMenu.Reply(
 			mainMenu.Row(btnBalanceMainMenu),
 			// mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnSendMainMenu, btnHelpMainMenu), // TODO: fix btnSendMainMenu
-			mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnPosAppMainMenu),
+			mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu),
 			//mainMenu.Row(btnInvoiceMainMenu, btnWebAppMainMenu, btnHelpMainMenu),
 		)
 	}

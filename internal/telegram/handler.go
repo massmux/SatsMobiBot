@@ -423,6 +423,18 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			},
 		},
 		{
+			Endpoints: []interface{}{"/rate"},
+			Handler:   bot.exchangeRateHandler,
+			Interceptor: &Interceptor{
+				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+				},
+			},
+		},
+		{
 			Endpoints: []interface{}{"/send", &btnSendMenuEnter},
 			Handler:   bot.sendHandler,
 			Interceptor: &Interceptor{
@@ -485,6 +497,38 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 					bot.logMessageInterceptor,
 					bot.requireUserInterceptor,
 				}},
+		},
+		{
+			Endpoints: []interface{}{"/backup"},
+			Handler:   bot.backupHandler,
+			Interceptor: &Interceptor{
+				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{"/buybtc"},
+			Handler:   bot.buyBtcHandler,
+			Interceptor: &Interceptor{
+				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
 		},
 		{
 			Endpoints: []interface{}{&btnLeftTransactionsButton},

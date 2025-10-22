@@ -44,4 +44,11 @@ voucherbot:
  purchase_type: "LA-B"
  default_amount: "100"
  currency: "EUR"
+breez:
+ enabled: false
+ api_key: "YOUR_BREEZ_API_KEY"
+ working_dir: "data/breez"
+ network: "testnet"
+ mnemonic_encrypted: ""  # Deprecated - mnemonics now stored encrypted in DB
+ encryption_key: ""  # REQUIRED if breez enabled: 64-char hex string (32 bytes) for AES-256-GCM encryption
 

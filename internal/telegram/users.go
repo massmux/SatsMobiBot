@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/eko/gocache/store"
 	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	"github.com/massmux/SatsMobiBot/internal/str"
-	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 	"gorm.io/gorm"
@@ -70,14 +70,15 @@ func (bot *TipBot) GetUserBalanceCached(user *lnbits.User) (amount int64, err er
 	return cachedBalance, nil
 }
 
-func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int64, err error) {
+// GetLNbitsBalance returns ONLY the LNbits custodial balance (not including Breez)
+func (bot *TipBot) GetLNbitsBalance(user *lnbits.User) (amount int64, err error) {
 	if user.Wallet == nil {
 		return 0, errors.New("User has no wallet")
 	}
 
 	wallet, err := bot.Client.Info(*user.Wallet)
 	if err != nil {
-		errmsg := fmt.Sprintf("[GetUserBalance] Error: Couldn't fetch user %s's info from LNbits: %s", GetUserStr(user.Telegram), err.Error())
+		errmsg := fmt.Sprintf("[GetLNbitsBalance] Error: Couldn't fetch user %s's info from LNbits: %s", GetUserStr(user.Telegram), err.Error())
 		log.Errorln(errmsg)
 		return
 	}
@@ -88,7 +89,35 @@ func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int64, err error) {
 	}
 	// msat to sat
 	amount = int64(wallet.Balance) / 1000
-	log.Debugf("[GetUserBalance] %s's balance: %d sat\n", GetUserStr(user.Telegram), amount)
+	log.Debugf("[GetLNbitsBalance] %s's LNbits balance: %d sat", GetUserStr(user.Telegram), amount)
+	return
+}
+
+// GetUserBalance returns the TOTAL balance (LNbits + Breez)
+func (bot *TipBot) GetUserBalance(user *lnbits.User) (amount int64, err error) {
+	// Get LNbits balance
+	lnbitsBalance, err := bot.GetLNbitsBalance(user)
+	if err != nil {
+		log.Errorf("[GetUserBalance] Error: Couldn't fetch LNbits balance: %s", err.Error())
+		return 0, err
+	}
+
+	// Include Breez balance if user has it initialized
+	breezBalance := int64(0)
+	userBreez := bot.GetUserBreezClient(user)
+	if userBreez != nil && userBreez.IsInitialized() {
+		breezBalance, err = bot.GetBreezBalance(user)
+		if err != nil {
+			log.Warnf("[GetUserBalance] Could not get Breez balance for %s: %s", GetUserStr(user.Telegram), err)
+			// Continue with 0 Breez balance
+			breezBalance = 0
+			err = nil // Don't propagate Breez error
+		}
+	}
+
+	// Total balance = LNbits + Breez
+	amount = lnbitsBalance + breezBalance
+	log.Debugf("[GetUserBalance] %s's TOTAL balance: %d sat (LNbits: %d, Breez: %d)", GetUserStr(user.Telegram), amount, lnbitsBalance, breezBalance)
 
 	// update user balance in cache
 	bot.Cache.Set(

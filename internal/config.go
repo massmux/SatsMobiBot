@@ -18,6 +18,7 @@ var Configuration = struct {
 	Nostr      NostrConfiguration      `yaml:"nostr"`
 	Pos        PosConfiguration        `yaml:"pos"`
 	Voucherbot VoucherbotConfiguration `yaml:"voucherbot"`
+	Breez      BreezConfiguration      `yaml:"breez"`
 }{}
 
 type PosConfiguration struct {
@@ -87,6 +88,15 @@ type LnbitsConfiguration struct {
 	WebhookServerUrl *url.URL `yaml:"-"`
 }
 
+type BreezConfiguration struct {
+	Enabled           bool   `yaml:"enabled"`
+	APIKey            string `yaml:"api_key"`
+	WorkingDir        string `yaml:"working_dir"`
+	Network           string `yaml:"network"`
+	MnemonicEncrypted string `yaml:"mnemonic_encrypted"` // Deprecated
+	EncryptionKey     string `yaml:"encryption_key"`     // 32-byte hex key for AES-256-GCM
+}
+
 func init() {
 	err := configor.Load(&Configuration, "config.yaml")
 	if err != nil {
@@ -109,6 +119,29 @@ func init() {
 	}
 	Configuration.Bot.LNURLHostUrl = hostname
 	checkLnbitsConfiguration()
+	checkBreezConfiguration()
+}
+
+func checkBreezConfiguration() {
+	if Configuration.Breez.Enabled {
+		if Configuration.Breez.WorkingDir == "" {
+			Configuration.Breez.WorkingDir = "data/breez"
+		}
+		if Configuration.Breez.Network == "" {
+			Configuration.Breez.Network = "testnet"
+		}
+		if Configuration.Breez.EncryptionKey == "" {
+			panic(fmt.Errorf("breez.encryption_key is required when Breez is enabled (must be 64-char hex string)"))
+		}
+		// Validate encryption key is 64 hex characters (32 bytes)
+		if len(Configuration.Breez.EncryptionKey) != 64 {
+			panic(fmt.Errorf("breez.encryption_key must be exactly 64 hex characters (32 bytes), got %d characters", len(Configuration.Breez.EncryptionKey)))
+		}
+		log.Infof("[Config] Breez enabled: network=%s, workingDir=%s",
+			Configuration.Breez.Network, Configuration.Breez.WorkingDir)
+	} else {
+		log.Debugf("[Config] Breez integration disabled")
+	}
 }
 
 func checkLnbitsConfiguration() {

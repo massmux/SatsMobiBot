@@ -2,10 +2,11 @@ package telegram
 
 import (
 	"fmt"
-	"github.com/massmux/SatsMobiBot/internal"
 	"strconv"
 
+	"github.com/massmux/SatsMobiBot/internal"
 	"github.com/massmux/SatsMobiBot/internal/errors"
+	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 
 	log "github.com/sirupsen/logrus"
@@ -26,8 +27,9 @@ func (bot *TipBot) balanceHandler(ctx intercept.Context) (intercept.Context, err
 		bot.tryDeleteMessage(m)
 	}
 	// first check whether the user is initialized
-	user := LoadUser(ctx)
-	if user.Wallet == nil {
+	// Always reload user from database to get latest state
+	user, err := GetUser(ctx.Sender(), *bot)
+	if err != nil || user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
@@ -36,22 +38,81 @@ func (bot *TipBot) balanceHandler(ctx intercept.Context) (intercept.Context, err
 	}
 
 	usrStr := GetUserStr(ctx.Sender())
-	balance, err := bot.GetUserBalance(user)
+
+	// Get LNbits custodial balance (ONLY LNbits, not total)
+	lnbitsBalance, err := bot.GetLNbitsBalance(user)
 	if err != nil {
-		log.Errorf("[/balance] Error fetching %s's balance: %s", usrStr, err)
-		bot.trySendMessage(ctx.Sender(), Translate(ctx, "balanceErrorMessage"))
-		return ctx, err
+		log.Errorf("[/balance] Error fetching %s's LNbits balance: %s", usrStr, err)
+		lnbitsBalance = 0 // Continue to show Breez balance even if LNbits fails
 	}
 
-	log.Infof("[/balance] %s's balance: %d sat\n", usrStr, balance)
-	bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "balanceMessage"), balance))
+	// Get Breez self-custodial balance (if enabled and user has Breez)
+	var breezBalance int64 = 0
+	userBreez := bot.GetUserBreezClient(user)
+	log.Debugf("[/balance] User %s - BreezInitialized: %v, BreezClient exists: %v", usrStr, user.BreezInitialized, userBreez != nil)
+	if userBreez != nil && userBreez.IsInitialized() {
+		log.Debugf("[/balance] Fetching Breez balance for %s", usrStr)
+		breezBalance, err = bot.GetBreezBalance(user)
+		if err != nil {
+			log.Errorf("[/balance] Error fetching %s's Breez balance: %s", usrStr, err)
+			// Continue with 0 Breez balance
+		}
+	} else {
+		log.Debugf("[/balance] Breez not available for %s - userBreez=%v, initialized=%v", usrStr, userBreez != nil, user.BreezInitialized)
+	}
 
-	// check user balance. if more than Maximum allowed (in config) then send a warning message
-	if balance >= internal.Configuration.Pos.Max_balance {
+	// Format message with dual balance
+	totalBalance := lnbitsBalance + breezBalance
+	var message string
+
+	userBreezClient := bot.GetUserBreezClient(user)
+	if userBreezClient != nil && userBreezClient.IsInitialized() {
+		// Show dual balance when user has Breez
+		message = formatDualBalanceMessage(lnbitsBalance, breezBalance, totalBalance)
+		log.Infof("[/balance] %s's balance - LNbits: %d sat, Breez: %d sat, Total: %d sat", usrStr, lnbitsBalance, breezBalance, totalBalance)
+	} else {
+		// Show only LNbits balance when Breez is disabled
+		message = fmt.Sprintf(Translate(ctx, "balanceMessage"), lnbitsBalance)
+		log.Infof("[/balance] %s's balance: %d sat", usrStr, lnbitsBalance)
+	}
+
+	// Check 100k limit warning for custodial wallet
+	if lnbitsBalance >= internal.Configuration.Pos.Max_balance {
 		balanceWarningMessage := fmt.Sprintf(Translate(ctx, "balanceOverMax"), strconv.FormatInt(internal.Configuration.Pos.Max_balance, 10))
-		bot.trySendMessage(ctx.Sender(), balanceWarningMessage)
-		log.Infof("[/balance] User %s over max balance: %d Sats\n", usrStr, balance)
+		message += "\n\n⚠️ " + balanceWarningMessage
+		log.Infof("[/balance] User %s over max custodial balance: %d Sats", usrStr, lnbitsBalance)
 	}
 
+	bot.trySendMessage(ctx.Sender(), message)
 	return ctx, nil
+}
+
+// GetBreezBalance returns the Breez balance for a user
+func (bot *TipBot) GetBreezBalance(user *lnbits.User) (int64, error) {
+	userBreez := bot.GetUserBreezClient(user)
+	if userBreez == nil || !userBreez.IsInitialized() {
+		return 0, fmt.Errorf("user's Breez not initialized")
+	}
+
+	// Sync with network first to get latest balance (especially after payments)
+	syncErr := userBreez.RefreshBalance()
+	if syncErr != nil {
+		log.Warnf("[GetBreezBalance] Failed to sync balance for %s: %s", GetUserStr(user.Telegram), syncErr)
+		// Continue anyway and return cached balance
+	}
+
+	// Get user's personal Breez balance
+	return userBreez.GetBalance()
+}
+
+// formatDualBalanceMessage formats a message showing both custodial and self-custodial balances
+func formatDualBalanceMessage(custodial, selfCustodial, total int64) string {
+	return fmt.Sprintf(
+		"💰 *Your Balance*\n\n"+
+			"Custodial (LNbits): `%d` sats\n"+
+			"Self-Custodial (Breez): `%d` sats\n"+
+			"━━━━━━━━━━━━━━━━\n"+
+			"Total: `%d` sats",
+		custodial, selfCustodial, total,
+	)
 }

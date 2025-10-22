@@ -15,6 +15,7 @@ import (
 	"github.com/eko/gocache/store"
 
 	"github.com/massmux/SatsMobiBot/internal"
+	"github.com/massmux/SatsMobiBot/internal/breez"
 	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	"github.com/massmux/SatsMobiBot/internal/storage"
 	gocache "github.com/patrickmn/go-cache"
@@ -23,12 +24,14 @@ import (
 )
 
 type TipBot struct {
-	DB       *Databases
-	Bunt     *storage.DB
-	ShopBunt *storage.DB
-	Telegram *tb.Bot
-	Client   *lnbits.Client
-	limiter  map[string]limiter.Limiter
+	DB           *Databases
+	Bunt         *storage.DB
+	ShopBunt     *storage.DB
+	Telegram     *tb.Bot
+	Client       *lnbits.Client          // Custodial (LNbits)
+	BreezClients map[int64]*breez.Client // Per-user Breez clients (userID -> client)
+	breezMutex   sync.RWMutex            // Mutex for BreezClients map
+	limiter      map[string]limiter.Limiter
 	Cache
 }
 type Cache struct {
@@ -47,14 +50,118 @@ func NewBot() TipBot {
 	// create sqlite databases
 	dbs := AutoMigration()
 	limiter.Start()
-	return TipBot{
-		DB:       dbs,
-		Client:   lnbits.NewClient(internal.Configuration.Lnbits.AdminKey, internal.Configuration.Lnbits.Url),
-		Bunt:     createBunt(internal.Configuration.Database.BuntDbPath),
-		ShopBunt: createBunt(internal.Configuration.Database.ShopBuntDbPath),
-		Telegram: newTelegramBot(),
-		Cache:    Cache{GoCacheStore: gocacheStore},
+
+	bot := TipBot{
+		DB:           dbs,
+		Client:       lnbits.NewClient(internal.Configuration.Lnbits.AdminKey, internal.Configuration.Lnbits.Url),
+		Bunt:         createBunt(internal.Configuration.Database.BuntDbPath),
+		ShopBunt:     createBunt(internal.Configuration.Database.ShopBuntDbPath),
+		Telegram:     newTelegramBot(),
+		Cache:        Cache{GoCacheStore: gocacheStore},
+		BreezClients: make(map[int64]*breez.Client), // Initialize per-user Breez clients map
 	}
+
+	// Note: Breez is now initialized per-user when they run /start
+	// No global Breez initialization needed
+
+	return bot
+}
+
+// initializeUserBreezClient initializes a Breez SDK client for a specific user
+func (bot *TipBot) initializeUserBreezClient(userID int64, mnemonic string) (*breez.Client, error) {
+	if !internal.Configuration.Breez.Enabled {
+		return nil, fmt.Errorf("Breez is not enabled in configuration")
+	}
+
+	// Create user-specific working directory
+	userWorkingDir := fmt.Sprintf("%s/user_%d", internal.Configuration.Breez.WorkingDir, userID)
+
+	config := &breez.Config{
+		APIKey:     internal.Configuration.Breez.APIKey,
+		WorkingDir: userWorkingDir,
+		Network:    breez.Network(internal.Configuration.Breez.Network),
+		Mnemonic:   mnemonic,
+	}
+
+	// Create client
+	client, err := breez.NewClient(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Breez client: %w", err)
+	}
+
+	// Initialize the client
+	if err := client.Initialize(); err != nil {
+		return nil, fmt.Errorf("failed to initialize Breez client: %w", err)
+	}
+
+	// Store in map
+	bot.breezMutex.Lock()
+	bot.BreezClients[userID] = client
+	bot.breezMutex.Unlock()
+
+	log.Infof("[Breez] User %d client initialized successfully", userID)
+	return client, nil
+}
+
+// GetUserBreezClient returns the Breez client for a specific user
+func (bot *TipBot) GetUserBreezClient(user *lnbits.User) *breez.Client {
+	if user == nil || user.Telegram == nil {
+		log.Debugf("[GetUserBreezClient] User or Telegram is nil")
+		return nil
+	}
+
+	bot.breezMutex.RLock()
+	client, exists := bot.BreezClients[user.Telegram.ID]
+	bot.breezMutex.RUnlock()
+
+	log.Debugf("[GetUserBreezClient] User ID %d - exists in map: %v, total clients: %d", user.Telegram.ID, exists, len(bot.BreezClients))
+
+	if !exists {
+		// Try to initialize if user has Breez enabled but client not in map
+		if internal.Configuration.Breez.Enabled && user.BreezInitialized && user.BreezMnemonic != "" {
+			log.Infof("[GetUserBreezClient] Reinitializing Breez client for user %d", user.Telegram.ID)
+
+			// Try to decrypt mnemonic - if it fails, it might be plaintext (migration needed)
+			mnemonic, err := breez.DecryptMnemonic(user.BreezMnemonic, internal.Configuration.Breez.EncryptionKey)
+			if err != nil {
+				// Migration: Check if mnemonic is plaintext (old format)
+				log.Warnf("[GetUserBreezClient] Decryption failed, checking if plaintext mnemonic: %s", err)
+
+				// Validate if it's a valid plaintext mnemonic
+				if breez.ValidateMnemonic(user.BreezMnemonic) == nil {
+					log.Infof("[GetUserBreezClient] Migrating plaintext mnemonic to encrypted for user %d", user.Telegram.ID)
+					mnemonic = user.BreezMnemonic
+
+					// Encrypt the plaintext mnemonic
+					encryptedMnemonic, encErr := breez.EncryptMnemonic(mnemonic, internal.Configuration.Breez.EncryptionKey)
+					if encErr != nil {
+						log.Errorf("[GetUserBreezClient] Failed to encrypt plaintext mnemonic: %s", encErr)
+					} else {
+						// Update DB with encrypted version
+						user.BreezMnemonic = encryptedMnemonic
+						if updateErr := UpdateUserRecord(user, *bot); updateErr != nil {
+							log.Errorf("[GetUserBreezClient] Failed to save encrypted mnemonic: %s", updateErr)
+						} else {
+							log.Infof("[GetUserBreezClient] Successfully migrated and encrypted mnemonic for user %d", user.Telegram.ID)
+						}
+					}
+				} else {
+					log.Errorf("[GetUserBreezClient] Mnemonic is neither valid encrypted nor valid plaintext")
+					return nil
+				}
+			}
+
+			client, err := bot.initializeUserBreezClient(user.Telegram.ID, mnemonic)
+			if err != nil {
+				log.Errorf("[GetUserBreezClient] Failed to reinitialize: %s", err)
+				return nil
+			}
+			return client
+		}
+		return nil
+	}
+
+	return client
 }
 
 // newTelegramBot will create a new Telegram bot.
@@ -87,6 +194,19 @@ func (bot TipBot) initBotWallet() error {
 // GracefulShutdown will gracefully shutdown the bot
 // It will wait for all mutex locks to unlock before shutdown.
 func (bot *TipBot) GracefulShutdown() {
+	// Shutdown all user Breez clients
+	bot.breezMutex.Lock()
+	for userID, client := range bot.BreezClients {
+		if client != nil && client.IsInitialized() {
+			log.Infof("[Breez] Shutting down client for user %d...", userID)
+			if err := client.Shutdown(); err != nil {
+				log.Errorf("[Breez] Shutdown error for user %d: %s", userID, err)
+			}
+		}
+	}
+	bot.BreezClients = make(map[int64]*breez.Client)
+	bot.breezMutex.Unlock()
+
 	t := time.NewTicker(time.Second * 10)
 	log.Infof("[shutdown] Graceful shutdown (timeout=10s).")
 	for {

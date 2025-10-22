@@ -75,6 +75,7 @@ Maximum amount allowed is 300K Sats. Hit /basics for more info and Terms Of Serv
 */send*: Send funds to a user: `/send <amount> @user or user@sats.mobi [<memo>]`
 */invoice*: Receive with Lightning: `/invoice <amount> [<memo>]`
 */pay*: Pay with Lightning: `/pay <invoice>`
+*/rate*: Check exchange rates: `/rate [amount] [currency]` - Example: `/rate 10000 USD`
 */cashback*: QRCODE for receiving cashback.
 */activatecard*: Request activation of a SatsMobi NFC Card `/activatecard <CardID>`
 */advanced*: Advanced features.
@@ -130,6 +131,8 @@ advancedMessage = """%s
 */group*: Group chat features: `/group`
 */shop*: Browse shops: `/shop` or `/shop <user/shop_id>`
 */buy*: Buy Sats with Fiat `/buy <sending-iban-code>`
+*/backup*: Backup your Breez wallet seed phrase: `/backup`
+*/buybtc*: Buy Bitcoin with Moonpay: `/buybtc`
 """
 
 # GENERIC
@@ -204,6 +207,8 @@ invoiceHelpText           = """📖 Oops, that didn't work. %s
 *Usage:* `/invoice <amount> [<memo>]`
 *Example:* `/invoice 1000 Thank you!`"""
 invoicePaidText           = """✅ Invoice paid.""" 
+invoiceWaitingMessage     = """⏳ Waiting for the invoice to be paid..."""
+invoicePaidConfirmedMessage = """✅ Invoice Paid"""
 
 # PAY
 
@@ -561,3 +566,66 @@ For users (in private chat): `/join <group_name>`\nExample: `/join TheBestBitcoi
 generateDalleHelpMessage        = """Generate images using OpenAI DALLE 2.\nUsage: `/generate <prompt>`\nPrice: 1000 sat"""
 generateDallePayInvoiceMessage  = """Pay this invoice to generate four images 👇"""
 generateDalleGeneratingMessage  = """Your images are being generated. Please wait..."""
+
+# BACKUP
+backupPrivateOnlyMessage = "⚠️ The /backup command can only be used in private chat for security reasons."
+backupBreezNotAvailableMessage = "⚠️ You don't have a Breez self-custodial wallet initialized. Use /start to set it up."
+backupNoMnemonicMessage = "⚠️ No backup seed phrase available."
+
+# REFUNDS
+refundAvailableMessage = """💰 *Refund Available*
+
+You have %d sats available to refund from a failed swap.
+
+Click the button below to refund to your Bitcoin address."""
+
+refundButtonMessage = """🔄 Claim Refund"""
+refundEnterAddressMessage = """Please enter your Bitcoin address where you want to receive the refund:"""
+refundProcessingMessage = """⏳ Processing refund..."""
+refundSuccessMessage = """✅ *Refund Successful*
+
+Transaction ID: `%s`
+
+Your refund has been sent to your Bitcoin address. It may take some time to confirm on the blockchain."""
+refundErrorMessage = """❌ Refund failed: %s
+
+Please try again later or contact support if the problem persists."""
+refundInvalidAddressMessage = """❌ Invalid Bitcoin address. Please try again with a valid address."""
+refundCancelledMessage = """Refund cancelled."""
+backupWarningMessage = """⚠️ *IMPORTANT SECURITY WARNING*
+
+Your backup seed phrase will be shown in the next message.
+
+🔒 *Keep it safe and private*
+📝 Write it down on paper
+🚫 Never share it with anyone
+💾 Store it in a secure location
+
+This message will auto-delete in 60 seconds."""
+
+backupSeedMessage = """🔑 *Your Backup Seed Phrase*
+
+`%s`
+
+⚠️ *This message will be deleted in 60 seconds*
+
+Write down these words in order and store them safely. This is the ONLY way to recover your self-custodial wallet."""
+
+backupDeletedMessage = "✅ Backup seed phrase message has been deleted for security."
+
+# BUY BTC
+buyBtcBreezNotAvailableMessage = "⚠️ You need a Breez self-custodial wallet to buy Bitcoin. Use /start to set it up."
+buyBtcCheckingLimitsMessage = "🔍 Checking purchase limits..."
+buyBtcLimitsMessage = """💰 *Bitcoin Purchase Limits*
+
+Minimum: %d sats
+Maximum: %d sats
+
+Preparing your purchase..."""
+buyBtcFeesMessage = "⚡ Estimated fees: %d sats"
+buyBtcPurchaseButton = "🛒 Buy Bitcoin with Moonpay"
+buyBtcReadyMessage = """✅ *Ready to Purchase*
+
+Tap the button below to complete your Bitcoin purchase through Moonpay (opens in browser).
+
+💰 The Bitcoin will be sent directly to your self-custodial Breez wallet."""

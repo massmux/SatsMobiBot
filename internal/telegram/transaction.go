@@ -91,24 +91,23 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits
 	t.FromWallet = from.Wallet.ID
 	t.FromLNbitsID = from.ID
 
-	// check if fromUser has balance
+	// Check sender's total balance (LNbits + Breez)
 	balance, err := bot.GetUserBalance(from)
 	if err != nil {
 		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
 		log.Errorln(errmsg)
 		return false, err
 	}
-	// check if fromUser has balance
+
 	if balance < amount {
-		errmsg := fmt.Sprintf("balance too low.")
 		log.Warnf("Balance of user %s too low", fromUserStr)
-		return false, fmt.Errorf(errmsg)
+		return false, fmt.Errorf("balance too low")
 	}
 
 	t.ToWallet = to.ID
 	t.ToLNbitsID = to.ID
 
-	// generate invoice
+	// Create invoice from receiver (using their available wallet)
 	invoice, err := to.Wallet.Invoice(
 		lnbits.InvoiceParams{
 			Amount: int64(amount),
@@ -121,15 +120,42 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits
 		return false, err
 	}
 	t.Invoice = invoice
-	// pay invoice
-	_, err = from.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoice.PaymentRequest}, bot.Client)
-	if err != nil {
-		errmsg := fmt.Sprintf("[Send] Payment failed (%s to %s of %d sat): %s", fromUserStr, toUserStr, amount, err.Error())
-		log.Warnf(errmsg)
-		return false, err
+
+	// Determine payment source: Try Breez first, fallback to LNbits
+	paidWithBreez := false
+
+	userBreez := bot.GetUserBreezClient(from)
+	if userBreez != nil && userBreez.IsInitialized() {
+		// Check Breez balance
+		breezBalance, breezBalErr := userBreez.GetBalance()
+		if breezBalErr == nil {
+			// Add 1% fee buffer
+			requiredBalance := int64(float64(amount) * 1.01)
+			if breezBalance >= requiredBalance {
+				// Try to pay with Breez
+				log.Infof("[SendTransaction] Paying with Breez: %d sats (from %s to %s)", amount, fromUserStr, toUserStr)
+				_, breezPayErr := userBreez.PayInvoice(invoice.PaymentRequest)
+				if breezPayErr == nil {
+					paidWithBreez = true
+					log.Infof("[SendTransaction] Payment successful via Breez")
+				} else {
+					log.Warnf("[SendTransaction] Breez payment failed: %s, falling back to LNbits", breezPayErr)
+				}
+			}
+		}
 	}
 
-	// check if fromUser has balance
+	// Fallback to LNbits if Breez failed or wasn't available
+	if !paidWithBreez {
+		log.Debugf("[SendTransaction] Paying with LNbits: %d sats (from %s to %s)", amount, fromUserStr, toUserStr)
+		_, lnbitsPayErr := from.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoice.PaymentRequest}, bot.Client)
+		if lnbitsPayErr != nil {
+			log.Warnf("[Send] Payment failed (%s to %s of %d sat): %s", fromUserStr, toUserStr, amount, lnbitsPayErr.Error())
+			return false, lnbitsPayErr
+		}
+	}
+
+	// Update balances for both users
 	_, err = bot.GetUserBalance(from)
 	if err != nil {
 		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
@@ -138,10 +164,10 @@ func (t *Transaction) SendTransaction(bot *TipBot, from *lnbits.User, to *lnbits
 	}
 	_, err = bot.GetUserBalance(to)
 	if err != nil {
-		errmsg := fmt.Sprintf("could not get balance of user %s", fromUserStr)
+		errmsg := fmt.Sprintf("could not get balance of user %s", toUserStr)
 		log.Errorln(errmsg)
 		return false, err
 	}
 
-	return true, err
+	return true, nil
 }

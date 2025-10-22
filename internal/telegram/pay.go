@@ -16,9 +16,9 @@ import (
 	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	"github.com/massmux/SatsMobiBot/internal/runtime"
 
-	"github.com/massmux/SatsMobiBot/internal/str"
 	lnurl "github.com/fiatjaf/go-lnurl"
 	decodepay "github.com/fiatjaf/ln-decodepay"
+	"github.com/massmux/SatsMobiBot/internal/str"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
@@ -31,7 +31,7 @@ var (
 
 func helpPayInvoiceUsage(ctx context.Context, errormsg string) string {
 	if len(errormsg) > 0 {
-		return fmt.Sprintf(Translate(ctx, "payHelpText"), fmt.Sprintf("%s", errormsg))
+		return fmt.Sprintf(Translate(ctx, "payHelpText"), errormsg)
 	} else {
 		return fmt.Sprintf(Translate(ctx, "payHelpText"), "")
 	}
@@ -209,21 +209,48 @@ func (bot *TipBot) confirmPayHandler(ctx intercept.Context) (intercept.Context, 
 	)
 
 	log.Infof("[/pay] Attempting %s's invoice %s (%d sat)", userStr, payData.ID, payData.Amount)
-	// pay invoice
-	invoice, err := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: payData.Invoice}, bot.Client)
-	if err != nil {
-		errmsg := fmt.Sprintf("[/pay] Could not pay invoice of %s: %s", userStr, err)
+
+	// Pay invoice using appropriate wallet (Breez or LNbits)
+	var paymentHash string
+	var paymentErr error
+
+	userBreez := bot.GetUserBreezClient(user)
+	if bot.shouldUseBreezForPayment(user, payData.Amount) && userBreez != nil && userBreez.IsInitialized() {
+		// Pay using Breez SDK
+		log.Infof("[/pay] Paying with Breez: %d sats", payData.Amount)
+		breezPayment, breezErr := userBreez.PayInvoice(payData.Invoice)
+		if breezErr != nil {
+			log.Warnf("[/pay] Breez payment failed: %s, falling back to LNbits", breezErr)
+			// Fall back to LNbits
+			invoice, lnbitsErr := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: payData.Invoice}, bot.Client)
+			if lnbitsErr != nil {
+				paymentErr = lnbitsErr
+			} else {
+				paymentHash = invoice.PaymentHash
+			}
+		} else {
+			paymentHash = breezPayment.PaymentHash
+			log.Infof("[/pay] Breez payment successful: %s", paymentHash)
+		}
+	} else {
+		// Pay using LNbits
+		log.Debugf("[/pay] Paying with LNbits: %d sats", payData.Amount)
+		invoice, lnbitsErr := user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: payData.Invoice}, bot.Client)
+		if lnbitsErr != nil {
+			paymentErr = lnbitsErr
+		} else {
+			paymentHash = invoice.PaymentHash
+		}
+	}
+
+	if paymentErr != nil {
+		errmsg := fmt.Sprintf("[/pay] Could not pay invoice of %s: %s", userStr, paymentErr)
 		err = fmt.Errorf(i18n.Translate(payData.LanguageCode, "invoiceUndefinedErrorMessage"))
 		bot.tryEditMessage(ctx.Message(), fmt.Sprintf(i18n.Translate(payData.LanguageCode, "invoicePaymentFailedMessage"), err.Error()), &tb.ReplyMarkup{})
-		// verbose error message, turned off for now
-		// if len(err.Error()) == 0 {
-		// 	err = fmt.Errorf(i18n.Translate(payData.LanguageCode, "invoiceUndefinedErrorMessage"))
-		// }
-		// bot.tryEditMessage(c.Message, fmt.Sprintf(i18n.Translate(payData.LanguageCode, "invoicePaymentFailedMessage"), str.MarkdownEscape(err.Error())), &tb.ReplyMarkup{})
 		log.Errorln(errmsg)
-		return ctx, err
+		return ctx, paymentErr
 	}
-	payData.Hash = invoice.PaymentHash
+	payData.Hash = paymentHash
 
 	// do balance check for keyboard update
 	_, err = bot.GetUserBalance(user)
@@ -257,6 +284,27 @@ func (bot *TipBot) confirmPayHandler(ctx intercept.Context) (intercept.Context, 
 
 	log.Infof("[⚡️ pay] User %s paid invoice %s (%d sat)", userStr, payData.ID, payData.Amount)
 	return ctx, nil
+}
+
+// shouldUseBreezForPayment determines if Breez should be used for sending payments
+func (bot *TipBot) shouldUseBreezForPayment(user *lnbits.User, amount int64) bool {
+	// Get user's Breez client
+	userBreez := bot.GetUserBreezClient(user)
+	if userBreez == nil || !userBreez.IsInitialized() {
+		return false
+	}
+
+	// Get user's Breez balance
+	breezBalance, err := userBreez.GetBalance()
+	if err != nil {
+		log.Warnf("[shouldUseBreezForPayment] Could not get user's Breez balance: %s", err)
+		return false
+	}
+
+	// Use Breez if it has sufficient balance
+	// Add 1% buffer for fees
+	requiredBalance := int64(float64(amount) * 1.01)
+	return breezBalance >= requiredBalance
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation
