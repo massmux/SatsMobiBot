@@ -244,6 +244,38 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 				},
 			},
 		},
+		{
+			Endpoints: []interface{}{"/swap"},
+			Handler:   bot.swapHandler,
+			Interceptor: &Interceptor{
+				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{"/swap-all"},
+			Handler:   bot.swapAllHandler,
+			Interceptor: &Interceptor{
+				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
 
 		{
 			Endpoints: []interface{}{"/cancel"},
@@ -280,6 +312,23 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 		{
 			Endpoints: []interface{}{"/invoice", &btnInvoiceMainMenu},
 			Handler:   bot.invoiceHandler,
+			Interceptor: &Interceptor{
+
+				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{"/invoiceln"},
+			Handler:   bot.invoicelnHandler,
 			Interceptor: &Interceptor{
 
 				Before: []intercept.Func{
@@ -1043,6 +1092,38 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 		{
 			Endpoints: []interface{}{&btnCancelWithdraw},
 			Handler:   bot.cancelWithdrawHandler,
+			Interceptor: &Interceptor{
+
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+					bot.answerCallbackInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{&btnConfirmSwap},
+			Handler:   bot.confirmSwapHandler,
+			Interceptor: &Interceptor{
+
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+					bot.answerCallbackInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{&btnCancelSwap},
+			Handler:   bot.cancelSwapHandler,
 			Interceptor: &Interceptor{
 
 				Before: []intercept.Func{

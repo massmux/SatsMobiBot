@@ -110,8 +110,6 @@ advancedMessage = """%s
 👉 *Inline commands*
 *send*: Envoyer des sats : `%s send <montant> [<utilisateur>] [<memo>]`
 *receive*: Demander un paiement : `... receive <montant> [<utilisateur>] [<memo>]`
-*faucet*: Créer un faucet: `... faucet <capacité> <par_utilisateur> [<memo>]`
-*tipjar*: Créer un tipjar: `... tipjar <capacité> <par_utilisateur> [<memo>]`
 
 📖 Vous pouvez utiliser ces commandes dans tous les chats et même dans les conversations privées. Attendez une seconde après avoir tapé une commandé puis *click* sur le résultat, n'appuyez pas sur entrée.
 
@@ -120,15 +118,12 @@ advancedMessage = """%s
 */link*: Lier votre wallet à [BlueWallet](https://bluewallet.io/) ou [Zeus](https://zeusln.app/)
 */lnurl*: Lnurl recevoir ou payer: `/lnurl` ou `/lnurl <lnurl> [memo]`
 */nostr*: Connect to Nostr: `/nostr` première fois: `/nostr help`
-*/faucet*: Créer un faucet: `/faucet <capacité> <par_utilisateur>`
-*/tipjar*: Créer un tipjar: `/tipjar <capacité> <par_utilisateur>`
 */pos*: Obtenir un POS: `/pos`
-*/scrub*: Activer/désactiver Scrub: `/scrub <Destination-LN-Address|off>`
 */group*: Créer tickets pour groupe: `/group add <mygroup> [<ticket_price>]`
 */shop*: Voir les shops: `/shop` or `/shop <user/shop_id>`
-*/buy*: Acheter Sats en paiant avec Fiat `/buy <sending-iban-code>`
 */backup*: Sauvegarder votre phrase de récupération Breez: `/backup`
 */buybtc*: Acheter Bitcoin avec Moonpay: `/buybtc`
+*/swap*: Échanger des fonds de LNbits à Breez: `/swap <montant>` ou `/swap-all`
 """
 
 # GENERIC
@@ -561,3 +556,62 @@ buyBtcReadyMessage = """✅ *Prêt à Acheter*
 Appuyez sur le bouton ci-dessous pour compléter votre achat de Bitcoin via Moonpay (s'ouvre dans le navigateur).
 
 💰 Le Bitcoin sera envoyé directement à votre portefeuille Breez auto-custodial."""
+
+# SWAP
+swapHelpText = """💱 *Échanger de LNbits à Breez*
+
+Utilisez `/swap <montant>` pour échanger un montant spécifique ou `/swap-all` pour échanger tout votre solde LNbits vers votre portefeuille Breez."""
+
+swapAmountPrompt = """💱 *Entrer le Montant d'Échange*
+
+Veuillez entrer le montant que vous souhaitez échanger de LNbits à Breez.
+
+Minimum: %d sats
+Votre solde LNbits: %d sats"""
+
+swapAllConfirmation = """💱 *Confirmer l'Échange*
+
+Échanger *%d sats* de LNbits à Breez?
+
+Solde LNbits: %d sats
+Frais estimés: ~%d sats
+
+Après cet échange, votre solde LNbits sera d'environ 0 sats."""
+
+swapConfirmation = """💱 *Confirmer l'Échange*
+
+Échanger *%d sats* de LNbits à Breez?
+
+Cela créera une facture sur votre portefeuille Breez et la paiera depuis votre solde LNbits."""
+
+swapSuccess = """✅ *Échange Réussi!*
+
+%d sats ont été transférés de LNbits à votre portefeuille Breez.
+
+Utilisez /balance pour vérifier vos soldes mis à jour."""
+
+swapBreezNotInitialized = """⚠️ *Portefeuille Breez Non Initialisé*
+
+Vous devez d'abord configurer votre portefeuille Breez auto-custodial. Utilisez /start pour commencer."""
+
+swapInsufficientFunds = """❌ *Fonds Insuffisants*
+
+Votre solde LNbits: %d sats
+Montant demandé: %d sats
+
+Veuillez entrer un montant inférieur."""
+
+swapMinimumAmount = """⚠️ *Montant Minimum d'Échange*
+
+Le montant minimum pour l'échange est de %d sats pour s'assurer que la transaction peut couvrir les frais de réseau."""
+
+swapFailed = """❌ *Échange Échoué*
+
+Erreur: %s
+
+Veuillez réessayer plus tard ou contacter le support si le problème persiste."""
+
+swapButtonConfirm = """✅ Confirmer l'Échange"""
+swapButtonCancel = """🚫 Annuler"""
+swapCancelled = """Échange annulé."""
+processingMessage = """⏳ Traitement en cours..."""

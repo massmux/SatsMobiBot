@@ -77,6 +77,7 @@ const (
 	UserEnterShopsDescription
 	UserEnterDallePrompt
 	UserStateRefundAwaitingAddress
+	UserStateSwapEnterAmount
 )
 
 type UserStateKey int

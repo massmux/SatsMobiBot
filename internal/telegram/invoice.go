@@ -286,14 +286,15 @@ func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User
 								log.Debugf("[Breez] Cleared balance cache for user %s", invoiceEvent.User.Name)
 							}
 
-							// Edit waiting message to show "Invoice Paid"
-							if invoiceEvent.WaitingMessage != nil {
-								bot.tryEditMessage(invoiceEvent.WaitingMessage, paidMessage)
+							// Send a new message to notify the user that the invoice was paid
+							if invoiceEvent.User != nil {
+								bot.trySendMessage(invoiceEvent.User.Telegram, paidMessage)
+								log.Infof("[Breez] Sent invoice paid notification to user %s", invoiceEvent.User.Name)
+							}
 
-								// Delete the message after 2 seconds
-								time.AfterFunc(2*time.Second, func() {
-									bot.tryDeleteMessage(invoiceEvent.WaitingMessage)
-								})
+							// Delete the waiting message if it exists
+							if invoiceEvent.WaitingMessage != nil {
+								bot.tryDeleteMessage(invoiceEvent.WaitingMessage)
 							}
 						}
 					},
@@ -370,6 +371,126 @@ func (bot *TipBot) shouldUseBreezForInvoice(user *lnbits.User, amount int64) boo
 
 	log.Debugf("[shouldUseBreezForInvoice] User's Breez not available, will use LNbits")
 	return false
+}
+
+// invoicelnHandler creates invoices ONLY using LNbits (bypasses Breez)
+func (bot *TipBot) invoicelnHandler(ctx intercept.Context) (intercept.Context, error) {
+	m := ctx.Message()
+	// check and print all commands
+	bot.anyTextHandler(ctx)
+	user := LoadUser(ctx)
+	// load user settings
+	user, err := GetLnbitsUserWithSettings(user.Telegram, *bot)
+	if user.Wallet == nil {
+		return ctx, errors.Create(errors.UserNoWalletError)
+	}
+	userStr := GetUserStr(user.Telegram)
+	// we prevent the user from creating an invoice if the balance is over the imposed limit
+	balance, err := bot.GetUserBalance(user)
+	if balance >= internal.Configuration.Pos.Max_balance {
+		balanceWarningMessage := fmt.Sprintf(Translate(ctx, "balanceOverMax"), strconv.FormatInt(internal.Configuration.Pos.Max_balance, 10))
+		bot.trySendMessage(m.Sender, balanceWarningMessage)
+		errmsg := fmt.Sprintf("[/invoiceln] User %s over max balance: %d Sats", userStr, balance)
+		log.Errorln(errmsg)
+		return ctx, err
+	}
+	if m.Chat.Type != tb.ChatPrivate {
+		// delete message
+		bot.tryDeleteMessage(m)
+		return ctx, errors.Create(errors.NoPrivateChatError)
+	}
+
+	// if no amount is in the command, ask for it
+	amount, err := decodeAmountFromCommand(m.Text)
+	if (err != nil || amount < 1) && m.Chat.Type == tb.ChatPrivate {
+		// no amount was entered, set user state and ask for amount
+		_, err = bot.askForAmount(ctx, "", "CreateInvoiceLNState", 0, 0, m.Text)
+		return ctx, err
+	}
+
+	// check for memo in command
+	memo := fmt.Sprintf("Powered by %s %s (LNbits)", internal.Configuration.Bot.Name, internal.Configuration.Bot.Username)
+	if len(strings.Split(m.Text, " ")) > 2 {
+		memo = GetMemoFromCommand(m.Text, 2)
+		tag := fmt.Sprintf("(%s)", internal.Configuration.Bot.Username)
+		memoMaxLen := 159 - len(tag)
+		if len(memo) > memoMaxLen {
+			memo = memo[:memoMaxLen-len(tag)]
+		}
+		memo = memo + tag
+	}
+
+	creatingMsg := bot.trySendMessageEditable(m.Sender, Translate(ctx, "lnurlGettingUserMessage"))
+	log.Debugf("[/invoiceln] Creating LNbits invoice for %s of %d sat.", userStr, amount)
+
+	currency := user.Settings.Display.DisplayCurrency
+	if currency == "" {
+		currency = "BTC"
+	}
+
+	// Create invoice directly with LNbits (bypass Breez)
+	invoice, err := bot.createLNbitsInvoiceWithEvent(ctx, user, amount, memo, currency, InvoiceCallbackGeneric, "")
+	if err != nil {
+		errmsg := fmt.Sprintf("[/invoiceln] Could not create LNbits invoice: %s", err.Error())
+		bot.tryEditMessage(creatingMsg, Translate(ctx, "errorTryLaterMessage"))
+		log.Errorln(errmsg)
+		return ctx, err
+	}
+
+	// create qr code
+	qr, err := qrcode.Encode(invoice.PaymentRequest, qrcode.Medium, 256)
+	if err != nil {
+		errmsg := fmt.Sprintf("[/invoiceln] Failed to create QR code for invoice: %s", err.Error())
+		bot.tryEditMessage(creatingMsg, Translate(ctx, "errorTryLaterMessage"))
+		log.Errorln(errmsg)
+		return ctx, err
+	}
+
+	// send the invoice data to user
+	bot.trySendMessage(m.Sender, &tb.Photo{File: tb.File{FileReader: bytes.NewReader(qr)}, Caption: fmt.Sprintf("`%s`", invoice.PaymentRequest)})
+
+	// Send waiting message
+	waitingMsg := bot.trySendMessage(m.Sender, Translate(ctx, "invoiceWaitingMessage"))
+
+	// Store waiting message in invoice event
+	invoice.WaitingMessage = waitingMsg
+	runtime.IgnoreError(bot.Bunt.Set(invoice))
+
+	log.Printf("[/invoiceln] LNbits invoice created. User: %s, amount: %d sat.", userStr, amount)
+	return ctx, nil
+}
+
+// createLNbitsInvoiceWithEvent creates an invoice using ONLY LNbits (no Breez fallback)
+func (bot *TipBot) createLNbitsInvoiceWithEvent(ctx context.Context, user *lnbits.User, amount int64, memo string, currency string, callback int, callbackData string) (InvoiceEvent, error) {
+	log.Debugf("[createLNbitsInvoice] Creating LNbits invoice for %s of %d sat", GetUserStr(user.Telegram), amount)
+	
+	invoice, err := user.Wallet.Invoice(
+		lnbits.InvoiceParams{
+			Out:     false,
+			Amount:  int64(amount),
+			Memo:    memo,
+			Webhook: internal.Configuration.Lnbits.WebhookCall},
+		bot.Client)
+	if err != nil {
+		errmsg := fmt.Sprintf("[createLNbitsInvoice] Could not create an invoice: %s", err.Error())
+		log.Errorln(errmsg)
+		return InvoiceEvent{}, err
+	}
+
+	invoiceEvent := InvoiceEvent{
+		Invoice: &Invoice{PaymentHash: invoice.PaymentHash,
+			PaymentRequest: invoice.PaymentRequest,
+			Amount:         amount,
+			Memo:           memo},
+		User:         user,
+		Callback:     callback,
+		CallbackData: callbackData,
+		LanguageCode: ctx.Value("publicLanguageCode").(string),
+		UserCurrency: currency,
+	}
+	// save invoice struct for later use
+	runtime.IgnoreError(bot.Bunt.Set(invoiceEvent))
+	return invoiceEvent, nil
 }
 
 func (bot *TipBot) notifyInvoiceReceivedEvent(event Event) {
