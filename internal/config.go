@@ -19,6 +19,7 @@ var Configuration = struct {
 	Pos        PosConfiguration        `yaml:"pos"`
 	Voucherbot VoucherbotConfiguration `yaml:"voucherbot"`
 	Breez      BreezConfiguration      `yaml:"breez"`
+	Limits     LimitsConfiguration     `yaml:"limits"`
 }{}
 
 type PosConfiguration struct {
@@ -97,6 +98,11 @@ type BreezConfiguration struct {
 	EncryptionKey     string `yaml:"encryption_key"`     // 32-byte hex key for AES-256-GCM
 }
 
+type LimitsConfiguration struct {
+	LNbitsMaxBalance  int64 `yaml:"lnbits_max_balance"`  // S - Maximum balance to keep in LNbits
+	AutoSwapThreshold int64 `yaml:"auto_swap_threshold"` // S2 - Trigger auto-swap when LNbits balance exceeds this
+}
+
 func init() {
 	err := configor.Load(&Configuration, "config.yaml")
 	if err != nil {
@@ -120,6 +126,7 @@ func init() {
 	Configuration.Bot.LNURLHostUrl = hostname
 	checkLnbitsConfiguration()
 	checkBreezConfiguration()
+	checkLimitsConfiguration()
 }
 
 func checkBreezConfiguration() {
@@ -155,4 +162,25 @@ func checkLnbitsConfiguration() {
 			Configuration.Lnbits.LnbitsPublicUrl = Configuration.Lnbits.LnbitsPublicUrl + "/"
 		}
 	}
+}
+
+func checkLimitsConfiguration() {
+	// Set defaults if not configured
+	if Configuration.Limits.LNbitsMaxBalance == 0 {
+		Configuration.Limits.LNbitsMaxBalance = 50000 // 50k sats default
+	}
+	if Configuration.Limits.AutoSwapThreshold == 0 {
+		Configuration.Limits.AutoSwapThreshold = 60000 // 60k sats default
+	}
+
+	// Validate that auto-swap threshold is greater than max balance
+	if Configuration.Limits.AutoSwapThreshold <= Configuration.Limits.LNbitsMaxBalance {
+		log.Warnf("[Config] auto_swap_threshold (%d) should be greater than lnbits_max_balance (%d), using default values",
+			Configuration.Limits.AutoSwapThreshold, Configuration.Limits.LNbitsMaxBalance)
+		Configuration.Limits.LNbitsMaxBalance = 50000
+		Configuration.Limits.AutoSwapThreshold = 60000
+	}
+
+	log.Infof("[Config] Limits: LNbits max balance=%d sats, Auto-swap threshold=%d sats",
+		Configuration.Limits.LNbitsMaxBalance, Configuration.Limits.AutoSwapThreshold)
 }

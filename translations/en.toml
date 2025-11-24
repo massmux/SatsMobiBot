@@ -683,3 +683,65 @@ swapButtonConfirm = """✅ Confirm Swap"""
 swapButtonCancel = """🚫 Cancel"""
 swapCancelled = """Swap cancelled."""
 processingMessage = """⏳ Processing..."""
+
+# SWAP TO BREEZ (new smart routing)
+swapToBreezMinimum = """⚠️ *Insufficient Balance*
+
+Your LNbits balance: %d sats
+Minimum amount for swap: %d sats
+
+Please receive more funds before swapping."""
+
+swapToBreezConfirmation = """💱 *Confirm Swap to Breez*
+
+Swap *ALL* of your LNbits balance to Breez?
+
+LNbits balance: %d sats
+Estimated fees: ~%d sats
+
+After this swap, your LNbits balance will be 0 sats and the funds will be in your self-custodial Breez wallet."""
+
+swapToBreezSuccess = """✅ *Swap to Breez Complete!*
+
+%d sats have been transferred to your Breez wallet.
+
+Use /balance to check your updated balances."""
+
+# SWAP TO LNBITS (Breez -> LNbits)
+swapToLNbitsMinimum = """⚠️ *Insufficient Balance*
+
+Your Breez balance: %d sats
+Minimum amount for swap: %d sats
+
+Please receive more funds before swapping."""
+
+swapToLNbitsFull = """⚠️ *LNbits Wallet Full*
+
+Your LNbits balance: %d sats
+Maximum capacity: %d sats
+
+Your custodial wallet is already at its maximum capacity. Consider keeping funds in your self-custodial Breez wallet."""
+
+swapToLNbitsInsufficientAfterFees = """⚠️ *Insufficient Balance After Fees*
+
+Your Breez balance: %d sats
+Estimated fees: ~%d sats
+
+The remaining amount after fees would be too small to swap. Please receive more funds first."""
+
+swapToLNbitsConfirmation = """💱 *Confirm Swap to LNbits*
+
+Swap *%d sats* from Breez to LNbits?
+
+Current Breez balance: %d sats
+Current LNbits balance: %d sats
+After swap LNbits balance: %d sats
+Estimated fees: ~%d sats
+
+This will fill your custodial wallet up to its limit."""
+
+swapToLNbitsSuccess = """✅ *Swap to LNbits Complete!*
+
+%d sats have been transferred from Breez to your LNbits wallet.
+
+Use /balance to check your updated balances."""

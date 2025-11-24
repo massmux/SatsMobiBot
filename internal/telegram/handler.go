@@ -276,6 +276,38 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 				},
 			},
 		},
+		{
+			Endpoints: []interface{}{"/swaptobreez"},
+			Handler:   bot.swapToBreezHandler,
+			Interceptor: &Interceptor{
+				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{"/swaptolnbits"},
+			Handler:   bot.swapToLNbitsHandler,
+			Interceptor: &Interceptor{
+				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
 
 		{
 			Endpoints: []interface{}{"/cancel"},
@@ -1108,6 +1140,38 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 		{
 			Endpoints: []interface{}{&btnConfirmSwap},
 			Handler:   bot.confirmSwapHandler,
+			Interceptor: &Interceptor{
+
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+					bot.answerCallbackInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{&btnConfirmSwapToBreez},
+			Handler:   bot.confirmSwapToBreezHandler,
+			Interceptor: &Interceptor{
+
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+					bot.answerCallbackInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{&btnConfirmSwapToLNbits},
+			Handler:   bot.confirmSwapToLNbitsHandler,
 			Interceptor: &Interceptor{
 
 				Before: []intercept.Func{

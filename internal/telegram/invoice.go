@@ -15,13 +15,12 @@ import (
 	"github.com/massmux/SatsMobiBot/internal/storage"
 
 	"github.com/massmux/SatsMobiBot/internal"
-
-	log "github.com/sirupsen/logrus"
-
 	"github.com/massmux/SatsMobiBot/internal/i18n"
 	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	"github.com/massmux/SatsMobiBot/internal/runtime"
 	"github.com/massmux/SatsMobiBot/internal/str"
+
+	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
@@ -360,17 +359,18 @@ func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User
 }
 
 // shouldUseBreezForInvoice determines if Breez should be used for invoice creation
+// SELF-CUSTODIAL FIRST: Always use Breez if available, fallback to LNbits if not initialized
 func (bot *TipBot) shouldUseBreezForInvoice(user *lnbits.User, amount int64) bool {
-	// Always try Breez FIRST if it's enabled and user has a Breez client
-	// This prioritizes self-custodial receiving over custodial
+	// Check if user has Breez available
 	userBreez := bot.GetUserBreezClient(user)
-	if userBreez != nil && userBreez.IsInitialized() {
-		log.Debugf("[shouldUseBreezForInvoice] User's Breez is available, will use it for invoice creation")
-		return true
+	if userBreez == nil || !userBreez.IsInitialized() {
+		log.Debugf("[shouldUseBreezForInvoice] User's Breez not available, falling back to LNbits")
+		return false
 	}
 
-	log.Debugf("[shouldUseBreezForInvoice] User's Breez not available, will use LNbits")
-	return false
+	// SELF-CUSTODIAL FIRST: Always prefer Breez for receiving if it's initialized
+	log.Infof("[shouldUseBreezForInvoice] Breez is available, routing invoice to Breez (self-custodial default)")
+	return true
 }
 
 // invoicelnHandler creates invoices ONLY using LNbits (bypasses Breez)
@@ -522,6 +522,78 @@ func (bot *TipBot) notifyInvoiceReceivedEvent(event Event) {
 		}
 		bot.trySendMessage(invoiceEvent.User.Telegram, fmt.Sprintf(i18n.Translate(invoiceEvent.User.Telegram.LanguageCode, "invoiceReceivedCurrencyMessage"), invoiceEvent.Amount, fiatAmount, strings.ToUpper(invoiceEvent.UserCurrency)))
 	}
+
+	// Check for auto-swap if balance exceeds S2 threshold
+	bot.checkAndPerformAutoSwap(invoiceEvent.User)
+}
+
+// checkAndPerformAutoSwap checks if LNbits balance exceeds S2 and performs automatic swap
+func (bot *TipBot) checkAndPerformAutoSwap(user *lnbits.User) {
+	// Check if user has Breez available
+	userBreez := bot.GetUserBreezClient(user)
+	if userBreez == nil || !userBreez.IsInitialized() {
+		log.Debugf("[AutoSwap] User %s doesn't have Breez initialized, skipping auto-swap", GetUserStr(user.Telegram))
+		return
+	}
+
+	// Get current LNbits balance
+	lnbitsBalance, err := bot.GetLNbitsBalance(user)
+	if err != nil {
+		log.Errorf("[AutoSwap] Failed to get LNbits balance for %s: %s", GetUserStr(user.Telegram), err)
+		return
+	}
+
+	// Get thresholds from config
+	S := internal.Configuration.Limits.LNbitsMaxBalance
+	S2 := internal.Configuration.Limits.AutoSwapThreshold
+	if S == 0 {
+		S = 50000
+	}
+	if S2 == 0 {
+		S2 = 60000
+	}
+
+	// Check if balance exceeds auto-swap threshold
+	if lnbitsBalance <= S2 {
+		log.Debugf("[AutoSwap] LNbits balance %d <= threshold %d, no auto-swap needed", lnbitsBalance, S2)
+		return
+	}
+
+	// Calculate swap amount: B - S
+	swapAmount := lnbitsBalance - S
+	if swapAmount < 1000 {
+		log.Debugf("[AutoSwap] Swap amount %d too small (< 1000 sats), skipping", swapAmount)
+		return
+	}
+
+	userStr := GetUserStr(user.Telegram)
+	log.Infof("[AutoSwap] Triggering auto-swap for %s: %d sats (balance=%d, S=%d, S2=%d)", 
+		userStr, swapAmount, lnbitsBalance, S, S2)
+
+	// Notify user about auto-swap
+	bot.trySendMessage(user.Telegram, fmt.Sprintf(
+		"⚡ *Auto-Swap Triggered*\n\n"+
+			"Your LNbits balance (%d sats) exceeded the threshold (%d sats).\n"+
+			"Automatically swapping %d sats to your Breez wallet...",
+		lnbitsBalance, S2, swapAmount))
+
+	// Perform the swap
+	ctx := context.Background()
+	err = bot.executeSwapWithContext(user, swapAmount, ctx)
+	if err != nil {
+		log.Errorf("[AutoSwap] Failed to execute auto-swap for %s: %s", userStr, err)
+		bot.trySendMessage(user.Telegram, fmt.Sprintf(
+			"❌ Auto-swap failed: %s\n\n"+
+				"Please try manual swap with /swaptobreez", err.Error()))
+		return
+	}
+
+	// Success notification
+	bot.trySendMessage(user.Telegram, fmt.Sprintf(
+		"✅ *Auto-Swap Complete*\n\n"+
+			"Successfully swapped %d sats from LNbits to Breez!\n"+
+			"Check your balance with /balance", swapAmount))
+	log.Infof("[AutoSwap] Successfully completed auto-swap for %s: %d sats", userStr, swapAmount)
 }
 
 type LNURLInvoice struct {
