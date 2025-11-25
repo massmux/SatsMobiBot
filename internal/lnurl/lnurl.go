@@ -358,25 +358,93 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 		}
 	}
 
-	invoice, err := user.Wallet.Invoice(
-		lnbits.InvoiceParams{
-			Amount:          amount_msat / 1000,
-			Out:             false,
-			DescriptionHash: descriptionHash,
-			Webhook:         w.WebhookCall},
-		w.c)
-	if err != nil {
-		err = fmt.Errorf("[serveLNURLpSecond] Couldn't create invoice: %v", err.Error())
-		resp = &lnurl.LNURLPayValues{
-			LNURLResponse: lnurl.LNURLResponse{
-				Status: api.StatusError,
-				Reason: "Couldn't create invoice."},
+	// Try to use Breez first if available, fallback to LNbits
+	var paymentRequest string
+	var paymentHash string
+
+	userBreez := w.bot.GetUserBreezClient(user)
+	useBreez := userBreez != nil && userBreez.IsInitialized()
+
+	if useBreez {
+		// Create invoice using Breez SDK
+		log.Infof("[LNURL] Creating Breez invoice for %s of %d sat", username, amount_msat/1000)
+
+		// Breez doesn't support description_hash in the same way as LNbits
+		// We'll use a simple memo instead
+		memo := fmt.Sprintf("LNURL payment to %s@%s", username, internal.Configuration.Bot.Name)
+		if len(comment) > 0 {
+			memo = comment
 		}
-		return resp, err
+
+		breezInvoice, breezErr := userBreez.CreateInvoice(amount_msat/1000, memo)
+		if breezErr != nil {
+			log.Warnf("[LNURL] Breez invoice creation failed: %s, falling back to LNbits", breezErr.Error())
+			useBreez = false
+		} else {
+			paymentRequest = breezInvoice.Bolt11
+			paymentHash = breezInvoice.PaymentHash
+			log.Infof("[LNURL] Breez invoice created successfully")
+
+			// Start listening for payment events (no need for message updates in LNURL)
+			go func(hash string, user *lnbits.User) {
+				_, listenerErr := userBreez.ListenForInvoicePayment(
+					hash,
+					120*time.Second,
+					func() {
+						// Payment received callback (panic recovery handled in event listener)
+						log.Infof("[LNURL-Breez] Invoice paid callback triggered: %s", hash)
+
+						// Sync Breez balance immediately after payment
+						userBreezClient := w.bot.GetUserBreezClient(user)
+						if userBreezClient != nil && userBreezClient.IsInitialized() {
+							if syncErr := userBreezClient.RefreshBalance(); syncErr != nil {
+								log.Warnf("[LNURL-Breez] Failed to sync balance after payment: %s", syncErr)
+							} else {
+								log.Infof("[LNURL-Breez] Balance synced after payment for user %s", user.Name)
+							}
+						}
+
+						// Trigger the InvoiceEvent callback
+						invoiceEventForCallback := telegram.InvoiceEvent{Invoice: &telegram.Invoice{PaymentHash: hash}}
+						if err := w.buntdb.Get(&invoiceEventForCallback); err == nil {
+							if callback, ok := telegram.InvoiceCallback[invoiceEventForCallback.Callback]; ok {
+								callback.Function(&invoiceEventForCallback)
+							}
+						}
+					},
+				)
+				if listenerErr != nil {
+					log.Warnf("[LNURL-Breez] Failed to start payment listener: %s", listenerErr)
+				}
+			}(paymentHash, user)
+		}
+	}
+
+	// Fallback to LNbits if Breez is not available or failed
+	if !useBreez {
+		log.Debugf("[LNURL] Creating LNbits invoice for %s of %d sat", username, amount_msat/1000)
+		invoice, err := user.Wallet.Invoice(
+			lnbits.InvoiceParams{
+				Amount:          amount_msat / 1000,
+				Out:             false,
+				DescriptionHash: descriptionHash,
+				Webhook:         w.WebhookCall},
+			w.c)
+		if err != nil {
+			err = fmt.Errorf("[serveLNURLpSecond] Couldn't create invoice: %v", err.Error())
+			resp = &lnurl.LNURLPayValues{
+				LNURLResponse: lnurl.LNURLResponse{
+					Status: api.StatusError,
+					Reason: "Couldn't create invoice."},
+			}
+			return resp, err
+		}
+		paymentRequest = invoice.PaymentRequest
+		paymentHash = invoice.PaymentHash
 	}
 	invoiceStruct := &telegram.Invoice{
-		PaymentRequest: invoice.PaymentRequest,
-		PaymentHash:    invoice.PaymentHash,
+		PaymentRequest: paymentRequest,
+		PaymentHash:    paymentHash,
 		Amount:         amount_msat / 1000,
 	}
 
@@ -390,7 +458,7 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 			Kind:      9735,
 			Tags: nostr.Tags{
 				*zapEvent.Tags.GetFirst([]string{"p"}),
-				[]string{"bolt11", invoice.PaymentRequest},
+				[]string{"bolt11", paymentRequest},
 				[]string{"description", zapEventSerializedStr},
 			},
 		}
@@ -423,7 +491,7 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 
 	return &lnurl.LNURLPayValues{
 		LNURLResponse: lnurl.LNURLResponse{Status: api.StatusOk},
-		PR:            invoice.PaymentRequest,
+		PR:            paymentRequest,
 		Routes:        make([]struct{}, 0),
 		SuccessAction: &lnurl.SuccessAction{Message: "Payment received!", Tag: "message"},
 	}, nil

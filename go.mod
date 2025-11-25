@@ -35,7 +35,9 @@ require (
 
 require (
 	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da // indirect
+	github.com/breez/breez-sdk-liquid-go v0.11.7 // indirect
 	github.com/lightningnetwork/lightning-onion v1.2.1-0.20240712235311-98bd56499dfb // indirect
+	github.com/tyler-smith/go-bip39 v1.1.0 // indirect
 )
 
 require (

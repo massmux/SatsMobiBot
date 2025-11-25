@@ -44,4 +44,14 @@ voucherbot:
  purchase_type: "LA-B"
  default_amount: "100"
  currency: "EUR"
+breez:
+  enabled: false
+  api_key: "YOUR_BREEZ_API_KEY"
+  working_dir: "data/breez"
+  network: "testnet"
+  mnemonic_encrypted: ""  # Deprecated - mnemonics now stored encrypted in DB
+  encryption_key: ""  # REQUIRED if breez enabled: 64-char hex string (32 bytes) for AES-256-GCM encryption
+limits:
+  lnbits_max_balance: 50000   # S - Maximum sats to keep in LNbits before routing to Breez
+  auto_swap_threshold: 60000  # S2 - Auto-swap (B-S) to Breez when LNbits balance exceeds this
 

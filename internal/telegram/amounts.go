@@ -231,6 +231,10 @@ func (bot *TipBot) enterAmountHandler(ctx intercept.Context) (intercept.Context,
 		ctx.Message().Text = fmt.Sprintf("/invoice %d", amount)
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
 		return bot.invoiceHandler(ctx)
+	case "CreateInvoiceLNState":
+		ctx.Message().Text = fmt.Sprintf("/invoiceln %d", amount)
+		SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")
+		return bot.invoicelnHandler(ctx)
 	case "CreateDonationState":
 		ctx.Message().Text = fmt.Sprintf("/donate %d", amount)
 		SetUserState(user, bot, lnbits.UserHasEnteredAmount, "")

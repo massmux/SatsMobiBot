@@ -2,29 +2,93 @@ package telegram
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
+	"github.com/eko/gocache/store"
+	"github.com/massmux/SatsMobiBot/internal/breez"
 	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	"github.com/massmux/SatsMobiBot/internal/str"
 	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
-	"github.com/eko/gocache/store"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
 
+// UnifiedPayment represents a payment from either LNbits or Breez
+type UnifiedPayment struct {
+	Time    int64
+	Amount  int64
+	Fee     int64
+	Memo    string
+	Pending bool
+	Source  string // "lnbits" or "breez"
+}
+
 type TransactionsList struct {
-	ID           string          `json:"id"`
-	User         *lnbits.User    `json:"from"`
-	Payments     lnbits.Payments `json:"payments"`
-	LanguageCode string          `json:"languagecode"`
-	CurrentPage  int             `json:"currentpage"`
-	MaxPages     int             `json:"maxpages"`
-	TxPerPage    int             `json:"txperpage"`
+	ID           string           `json:"id"`
+	User         *lnbits.User     `json:"from"`
+	Payments     []UnifiedPayment `json:"payments"`
+	LanguageCode string           `json:"languagecode"`
+	CurrentPage  int              `json:"currentpage"`
+	MaxPages     int              `json:"maxpages"`
+	TxPerPage    int              `json:"txperpage"`
+}
+
+// getMergedPayments merges LNbits and Breez payments into a unified list
+func (bot *TipBot) getMergedPayments(user *lnbits.User) ([]UnifiedPayment, error) {
+	var unified []UnifiedPayment
+
+	// Get LNbits payments
+	lnbitsPayments, lnbitsErr := bot.Client.Payments(*user.Wallet)
+	if lnbitsErr == nil {
+		for _, p := range lnbitsPayments {
+			unified = append(unified, UnifiedPayment{
+				Time:    int64(p.Time),
+				Amount:  p.Amount / 1000, // Convert msat to sat
+				Fee:     p.Fee,
+				Memo:    p.Memo,
+				Pending: p.Pending,
+				Source:  "lnbits",
+			})
+		}
+	} else {
+		log.Warnf("[getMergedPayments] Failed to get LNbits payments: %s", lnbitsErr)
+	}
+
+	// Get Breez payments if user has Breez
+	userBreez := bot.GetUserBreezClient(user)
+	if userBreez != nil && userBreez.IsInitialized() {
+		breezPayments, breezErr := userBreez.ListPayments(60)
+		if breezErr == nil {
+			for _, p := range breezPayments {
+				amount := p.Amount
+				if p.Direction == breez.PaymentDirectionOutbound {
+					amount = -amount // Negative for outbound
+				}
+				unified = append(unified, UnifiedPayment{
+					Time:    p.CreatedAt,
+					Amount:  amount,
+					Fee:     0, // Breez fees handled differently
+					Memo:    p.Description,
+					Pending: p.Status == breez.PaymentStatusPending,
+					Source:  "breez",
+				})
+			}
+		} else {
+			log.Warnf("[getMergedPayments] Failed to get Breez payments: %s", breezErr)
+		}
+	}
+
+	// Sort by timestamp (newest first)
+	sort.Slice(unified, func(i, j int) bool {
+		return unified[i].Time > unified[j].Time
+	})
+
+	return unified, nil
 }
 
 func (txlist *TransactionsList) printTransactions(ctx intercept.Context) string {
 	txstr := ""
-	// for _, p := range payments {
 	payments := txlist.Payments
 	pagenr := txlist.CurrentPage
 	tx_per_page := txlist.TxPerPage
@@ -41,6 +105,13 @@ func (txlist *TransactionsList) printTransactions(ctx intercept.Context) string 
 	}
 	for i := start; i <= end; i++ {
 		p := payments[i]
+
+		// Add source indicator
+		sourceEmoji := "🔵" // LNbits custodial
+		if p.Source == "breez" {
+			sourceEmoji = "⚡" // Breez self-custodial
+		}
+
 		if p.Pending {
 			txstr += "🔄"
 		} else {
@@ -50,9 +121,12 @@ func (txlist *TransactionsList) printTransactions(ctx intercept.Context) string 
 				txstr += "🟢"
 			}
 		}
-		timestr := time.Unix(int64(p.Time), 0).UTC().Format("2 Jan 06 15:04")
-		txstr += fmt.Sprintf("` %s`", timestr)
-		txstr += fmt.Sprintf("` %+d sat`", p.Amount/1000)
+
+		txstr += sourceEmoji // Add source indicator
+
+		timestr := time.Unix(p.Time, 0).UTC().Format("2 Jan 06 15:04")
+		txstr += fmt.Sprintf(" `%s`", timestr)
+		txstr += fmt.Sprintf(" `%+d sat`", p.Amount)
 		if p.Fee > 0 {
 			fee := p.Fee
 			if fee < 1000 {
@@ -71,6 +145,7 @@ func (txlist *TransactionsList) printTransactions(ctx intercept.Context) string 
 		txstr += "\n"
 	}
 	txstr += fmt.Sprintf("\nShowing %d transactions. Page %d of %d.", len(payments), txlist.CurrentPage+1, txlist.MaxPages)
+	txstr += "\n\n🔵 = LNbits (custodial) | ⚡ = Breez (self-custodial)"
 	return txstr
 }
 
@@ -107,11 +182,15 @@ func (bot *TipBot) makeTransactionsKeyboard(ctx intercept.Context, txlist Transa
 func (bot *TipBot) transactionsHandler(ctx intercept.Context) (intercept.Context, error) {
 	m := ctx.Message()
 	user := LoadUser(ctx)
-	payments, err := bot.Client.Payments(*user.Wallet)
+
+	// Get merged payments from both LNbits and Breez
+	payments, err := bot.getMergedPayments(user)
 	if err != nil {
 		log.Errorf("[transactions] Error: %s", err.Error())
+		bot.trySendMessage(m.Sender, Translate(ctx, "errorTryLaterMessage"))
 		return ctx, err
 	}
+
 	tx_per_page := 10
 	transactionsList := TransactionsList{
 		ID:           fmt.Sprintf("txlist:%d:%s", user.Telegram.ID, RandStringRunes(5)),
