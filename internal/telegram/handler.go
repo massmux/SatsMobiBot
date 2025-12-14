@@ -228,7 +228,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 				},
 			},
 		},
-		{
+		/*{  purchase from voucherbot now disabled
 			Endpoints: []interface{}{"/buy"},
 			Handler:   bot.buyHandler,
 			Interceptor: &Interceptor{
@@ -243,7 +243,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 					bot.unlockInterceptor,
 				},
 			},
-		},
+		},*/
 		{
 			Endpoints: []interface{}{"/swap"},
 			Handler:   bot.swapHandler,
@@ -309,7 +309,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			},
 		},
 
-		{
+		/*{
 			Endpoints: []interface{}{"/cancel"},
 			Handler:   bot.cancelHandler,
 			Interceptor: &Interceptor{
@@ -324,8 +324,9 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 					bot.unlockInterceptor,
 				},
 			},
-		},
-		{
+		},*/
+
+		/*{
 			Endpoints: []interface{}{"/confirm"},
 			Handler:   bot.confirmHandler,
 			Interceptor: &Interceptor{
@@ -340,7 +341,8 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 					bot.unlockInterceptor,
 				},
 			},
-		},
+		},*/
+		
 		{
 			Endpoints: []interface{}{"/invoice", &btnInvoiceMainMenu},
 			Handler:   bot.invoiceHandler,

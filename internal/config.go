@@ -10,16 +10,16 @@ import (
 )
 
 var Configuration = struct {
-	Bot        BotConfiguration        `yaml:"bot"`
-	Telegram   TelegramConfiguration   `yaml:"telegram"`
-	Database   DatabaseConfiguration   `yaml:"database"`
-	Lnbits     LnbitsConfiguration     `yaml:"lnbits"`
-	Generate   GenerateConfiguration   `yaml:"generate"`
-	Nostr      NostrConfiguration      `yaml:"nostr"`
-	Pos        PosConfiguration        `yaml:"pos"`
-	Voucherbot VoucherbotConfiguration `yaml:"voucherbot"`
-	Breez      BreezConfiguration      `yaml:"breez"`
-	Limits     LimitsConfiguration     `yaml:"limits"`
+	Bot      BotConfiguration      `yaml:"bot"`
+	Telegram TelegramConfiguration `yaml:"telegram"`
+	Database DatabaseConfiguration `yaml:"database"`
+	Lnbits   LnbitsConfiguration   `yaml:"lnbits"`
+	Generate GenerateConfiguration `yaml:"generate"`
+	Nostr    NostrConfiguration    `yaml:"nostr"`
+	Pos      PosConfiguration      `yaml:"pos"`
+	//Voucherbot VoucherbotConfiguration `yaml:"voucherbot"`
+	Breez  BreezConfiguration  `yaml:"breez"`
+	Limits LimitsConfiguration `yaml:"limits"`
 }{}
 
 type PosConfiguration struct {
@@ -27,13 +27,14 @@ type PosConfiguration struct {
 	Max_balance int64  `yaml:"max_balance"`
 }
 
-type VoucherbotConfiguration struct {
+/*type VoucherbotConfiguration struct {
 	Endpoint      string `yaml:"endpoint"`
 	ApiKey        string `yaml:"api_key"`
 	PurchaseType  string `yaml:"purchase_type"`
 	DefaultAmount string `yaml:"default_amount"`
 	Currency      string `yaml:"currency"`
 }
+*/
 
 type NostrConfiguration struct {
 	PrivateKey string `yaml:"private_key"`
