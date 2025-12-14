@@ -68,7 +68,7 @@ func (bot *TipBot) balanceHandler(ctx intercept.Context) (intercept.Context, err
 	userBreezClient := bot.GetUserBreezClient(user)
 	if userBreezClient != nil && userBreezClient.IsInitialized() {
 		// Show dual balance when user has Breez
-		message = formatDualBalanceMessage(lnbitsBalance, breezBalance, totalBalance)
+		message = formatDualBalanceMessage(ctx, lnbitsBalance, breezBalance, totalBalance)
 		log.Infof("[/balance] %s's balance - LNbits: %d sat, Breez: %d sat, Total: %d sat", usrStr, lnbitsBalance, breezBalance, totalBalance)
 	} else {
 		// Show only LNbits balance when Breez is disabled
@@ -106,13 +106,8 @@ func (bot *TipBot) GetBreezBalance(user *lnbits.User) (int64, error) {
 }
 
 // formatDualBalanceMessage formats a message showing both custodial and self-custodial balances
-func formatDualBalanceMessage(custodial, selfCustodial, total int64) string {
-	return fmt.Sprintf(
-		"💰 *Your Balance*\n\n"+
-			"Custodial (LNbits): `%d` sats\n"+
-			"Self-Custodial (Breez): `%d` sats\n"+
-			"━━━━━━━━━━━━━━━━\n"+
-			"Total: `%d` sats",
-		custodial, selfCustodial, total,
-	)
+func formatDualBalanceMessage(ctx intercept.Context, custodial, selfCustodial, total int64) string {
+	tpl := Translate(ctx, "balanceTotalMessage")
+	return fmt.Sprintf(tpl, custodial, selfCustodial, total)
+
 }

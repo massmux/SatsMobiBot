@@ -145,7 +145,7 @@ func (txlist *TransactionsList) printTransactions(ctx intercept.Context) string 
 		txstr += "\n"
 	}
 	txstr += fmt.Sprintf("\nShowing %d transactions. Page %d of %d.", len(payments), txlist.CurrentPage+1, txlist.MaxPages)
-	txstr += "\n\n🔵 = LNbits (custodial) | ⚡ = Breez (self-custodial)"
+	txstr += "\n\n🔵 = Hot Wallet | ⚡ = Safe Wallet"
 	return txstr
 }
 

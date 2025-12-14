@@ -64,8 +64,8 @@ payButtonEmoji = """💸"""
 # HELP
 
 helpMessage = """⚡️ *SatsMobi*
-_This is a Bitcoin Lightning Wallet that can send and receive tips on Telegram and manage NFC Cards. Nostr enabled.
-Maximum amount allowed is 300K Sats. Hit /basics for more info and Terms Of Service._
+_This is a Bitcoin Lightning self-custodial Wallet that is made of 2 Balances. One is Hot (this part is limited) and can send/receive small tips on Telegram. The second is Safe (based on Breez nodeless library) where the limits are your own.
+Maximum amount allowed on Hot is 50K Sats. Hit /basics for more info and Terms Of Service._
 
 %s
 
@@ -86,22 +86,22 @@ infoYourLightningAddress = """Your Lightning Address is: `%s`"""
 
 basicsMessage = """
 *Economics*
-_This Wallet has been created as a transit towards your own node. In any case no more than 300K Sats are allowed in this facility. This is a strict and hard limit. _
+_This is a Bitcoin Lightning self-custodial Wallet that is made of 2 Balances. One is Hot (this part is limited) and can send/receive small tips on Telegram. The second is Safe (based on Breez nodeless library) where the limits are your own. _
 
 *The Lightning Network*
-_You can connect this Wallet to Zeus easily using /link command._
+_You can connect the Hot Balance to Zeus easily using /link command. You can always recover your Safe Balance using the seedphrase using any Liquid wallet._
 
 *Lightning Wallets*
-_Your funds on this Bot can be sent to any other Lightning wallet and vice versa_.
+_Your Safe Balance can be used to send and receive funds over the Lightning network in a self-custodial manner, where you own your Keys. You can also swap from Hot to Safe Balance whenever you want. The Hot balance can be used for fast and small Tips over Telegram_. 
 
 *Open Source*
-_This Bot is free and opensource software. You can run it on your own computer and use it in your own community. It is a service intended for educational purposes._
+_This Bot is free and opensource software. You can run it on your own computer and use it in your own community. It is a tool intended for educational purposes._
 
 *Telegram*
 _Add this Bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
 
 *Terms of Service*
-_We are not custodian of your funds. We will act in your best interest. Be aware that this Bot is in beta development. Use at your own risk. The server may charge a small subscription fee to keep the service working.
+_Make the backup of your keys with /backup command, before starting using the tool. We cannot help in recoverying the keys in case of misuse. Be aware that this Bot is in beta development. Use at your own risk. The Swaps are subject to Swap fees due to the Breez Nodeless Library which is used to build this tool.
 
 Citizen and residents of the United States and any SECO sanctioned countries are prohibited to use this service. By going on, you confirm and declare you are NOT citizen of the United States or any SECO sanctioned countries._
 """
@@ -112,8 +112,8 @@ helpNoUsernameMessage = """👋 Please, set a Telegram username."""
 advancedMessage = """%s
 
 👉 *Inline commands*
-*send*: Send sats to chat: `%s send <amount> [<user>] [<memo>]`
-*receive*: Request a payment: `... receive <amount> [<user>] [<memo>]`
+*send*: Send Tip to chat: `%s send <amount> [<user>] [<memo>]`
+*receive*: Request a Tip: `... receive <amount> [<user>] [<memo>]`
 
 📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and *click* the result, don't press enter.
 
@@ -125,9 +125,9 @@ advancedMessage = """%s
 */pos*: Get your POS ready: `/pos`
 */group*: Group chat features: `/group`
 */shop*: Browse shops: `/shop` or `/shop <user/shop_id>`
-*/backup*: Backup your Breez wallet seed phrase: `/backup`
+*/backup*: Backup your Safe wallet Seedphrase: `/backup`
 */buybtc*: Buy Bitcoin with Moonpay: `/buybtc`
-*/swap*: Swap funds from LNbits to Breez: `/swap <amount>` or `/swap-all`
+*/swap*: Swap funds from Hot balance to Safe: `/swap <amount>` or `/swap-all`
 """
 
 # GENERIC
@@ -141,8 +141,8 @@ errorReasonMessage             = """🚫 Error: %s"""
 
 startSettingWalletMessage = """🧮 Setting up your wallet..."""
 startWalletCreatedMessage = """🧮 Wallet created."""
-startWalletReadyMessage   = """✅ *Your wallet is ready.*"""
-startWalletErrorMessage   = """🚫 Error initializing your wallet. Try again later."""
+startWalletReadyMessage   = """✅ *Your Wallet is ready.*"""
+startWalletErrorMessage   = """🚫 Error initializing your Wallet. Try again later."""
 startNoUsernameMessage    = """☝️ It looks like you don't have a Telegram @username yet. That's ok, you don't need one to use this bot. However, to make better use of your wallet, set up a username in the Telegram settings. Then, enter /balance so the bot can update its record of you."""
 
 # BALANCE
@@ -155,6 +155,13 @@ balanceOverMax      = """❗️ You are over max balance allowed. Please move fu
 
 You are required to keep your balance always below this threshold. Thank you for understanding.
 """
+
+balanceTotalMessage = """💰 *Your Balance recap.*
+			
+			Hot: `%d` Sats
+			Safe: `%d` Sats
+			━━━━━━━━━━━━━━━━
+			Total: `%d` Sats"""
 
 # TIP
 
@@ -564,46 +571,46 @@ Use `/swap <amount>` to swap a specific amount or `/swap-all` to swap your entir
 
 swapAmountPrompt = """💱 *Enter Swap Amount*
 
-Please enter the amount you want to swap from LNbits to Breez.
+Please enter the amount you want to swap from Hot to Safe Balance.
 
-Minimum: %d sats
-Your LNbits balance: %d sats"""
+Minimum: %d Sats
+Your Hot balance: %d Sats"""
 
 swapAllConfirmation = """💱 *Confirm Swap*
 
-Swap *%d sats* from LNbits to Breez?
+Swap *%d Sats* from Hot to Safe Wallet balance?
 
-LNbits balance: %d sats
-Estimated fees: ~%d sats
+Hot balance: %d Sats
+Estimated fees: ~%d Sats
 
-After this swap, your LNbits balance will be approximately 0 sats."""
+After this swap, your Hot balance will be approximately 0 Sats."""
 
 swapConfirmation = """💱 *Confirm Swap*
 
-Swap *%d sats* from LNbits to Breez?
+Swap *%d Sats* from Hot to Safe Wallet balance?
 
-This will create an invoice on your Breez wallet and pay it from your LNbits balance."""
+This will create an invoice on your Safe wallet balance and pay it from your Hot Balance."""
 
 swapSuccess = """✅ *Swap Successful!*
 
-%d sats have been transferred from LNbits to your Breez wallet.
+%d Sats have been transferred from Hot to your Safe wallet Balance.
 
-Use /balance to check your updated balances."""
+Use /balance to check your updated balances. Please note that Balances may take 2 minutes to get updated. """
 
-swapBreezNotInitialized = """⚠️ *Breez Wallet Not Initialized*
+swapBreezNotInitialized = """⚠️ *Safe Wallet Not Initialized*
 
-You need to set up your Breez self-custodial wallet first. Use /start to get started."""
+You need to set up your Safe self-custodial wallet first. Use /start to get started."""
 
 swapInsufficientFunds = """❌ *Insufficient Funds*
 
-Your LNbits balance: %d sats
-Amount requested: %d sats
+Your Hot balance: %d Sats
+Amount requested: %d Sats
 
 Please enter a smaller amount."""
 
 swapMinimumAmount = """⚠️ *Minimum Swap Amount*
 
-The minimum amount for swapping is %d sats to ensure the transaction can cover network fees."""
+The minimum amount for swapping is %d sats to ensure the transaction can cover network and swap fees."""
 
 swapFailed = """❌ *Swap Failed*
 
@@ -619,61 +626,61 @@ processingMessage = """⏳ Processing..."""
 # SWAP TO BREEZ (new smart routing)
 swapToBreezMinimum = """⚠️ *Insufficient Balance*
 
-Your LNbits balance: %d sats
-Minimum amount for swap: %d sats
+Your Hot balance: %d Sats
+Minimum amount for swap: %d Sats
 
 Please receive more funds before swapping."""
 
 swapToBreezConfirmation = """💱 *Confirm Swap to Breez*
 
-Swap *ALL* of your LNbits balance to Breez?
+Swap *ALL* of your Hot Balance to Safe Balance?
 
-LNbits balance: %d sats
-Estimated fees: ~%d sats
+Hot Balance: %d Sats
+Estimated fees: ~%d Sats
 
-After this swap, your LNbits balance will be 0 sats and the funds will be in your self-custodial Breez wallet."""
+After this swap, your Hot balance will be 0 Sats and the funds will be in your self-custodial Safe wallet."""
 
-swapToBreezSuccess = """✅ *Swap to Breez Complete!*
+swapToBreezSuccess = """✅ *Swap to Safe Balance Complete!*
 
-%d sats have been transferred to your Breez wallet.
+%d Sats have been transferred to your Safe Balance wallet.
 
-Use /balance to check your updated balances."""
+Use /balance to check your updated Balances. Please note that Balances update may take 2 minutes to update."""
 
 # SWAP TO LNBITS (Breez -> LNbits)
 swapToLNbitsMinimum = """⚠️ *Insufficient Balance*
 
-Your Breez balance: %d sats
-Minimum amount for swap: %d sats
+Your Safe balance: %d Sats
+Minimum amount for swap: %d Sats
 
 Please receive more funds before swapping."""
 
-swapToLNbitsFull = """⚠️ *LNbits Wallet Full*
+swapToLNbitsFull = """⚠️ *Hot Wallet Full*
 
-Your LNbits balance: %d sats
-Maximum capacity: %d sats
+Your Hot balance: %d Sats
+Maximum capacity: %d Sats
 
-Your custodial wallet is already at its maximum capacity. Consider keeping funds in your self-custodial Breez wallet."""
+Your Hot wallet is already at its maximum capacity. You must move funds in your self-custodial Safe wallet."""
 
 swapToLNbitsInsufficientAfterFees = """⚠️ *Insufficient Balance After Fees*
 
-Your Breez balance: %d sats
-Estimated fees: ~%d sats
+Your Safe balance: %d Sats
+Estimated fees: ~%d Sats
 
 The remaining amount after fees would be too small to swap. Please receive more funds first."""
 
-swapToLNbitsConfirmation = """💱 *Confirm Swap to LNbits*
+swapToLNbitsConfirmation = """💱 *Confirm Swap to Hot Balance*
 
-Swap *%d sats* from Breez to LNbits?
+Swap *%d Sats* from Safe to Hot Balance?
 
-Current Breez balance: %d sats
-Current LNbits balance: %d sats
-After swap LNbits balance: %d sats
-Estimated fees: ~%d sats
+Current Safe balance: %d Sats
+Current Hot balance: %d Sats
+After swap Hot Balance: %d Sats
+Estimated fees: ~%d Sats
 
 This will fill your custodial wallet up to its limit."""
 
-swapToLNbitsSuccess = """✅ *Swap to LNbits Complete!*
+swapToLNbitsSuccess = """✅ *Swap to Hot Balance Complete!*
 
-%d sats have been transferred from Breez to your LNbits wallet.
+%d sats have been transferred from Safe Balance to your Hot Balance.
 
-Use /balance to check your updated balances."""
+Use /balance to check your updated balances. Please note that balances may take 2 minutes to update."""
