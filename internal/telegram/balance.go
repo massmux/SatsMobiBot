@@ -75,12 +75,16 @@ func (bot *TipBot) balanceHandler(ctx intercept.Context) (intercept.Context, err
 		message = fmt.Sprintf(Translate(ctx, "balanceMessage"), lnbitsBalance)
 		log.Infof("[/balance] %s's balance: %d sat", usrStr, lnbitsBalance)
 	}
-
 	// Check 100k limit warning for custodial wallet
-	if lnbitsBalance >= internal.Configuration.Pos.Max_balance {
-		balanceWarningMessage := fmt.Sprintf(Translate(ctx, "balanceOverMax"), strconv.FormatInt(internal.Configuration.Pos.Max_balance, 10))
+	//if lnbitsBalance >= internal.Configuration.Pos.Max_balance {
+	if lnbitsBalance >= internal.Configuration.Limits.LNbitsMaxBalance {
+		//balanceWarningMessage := fmt.Sprintf(Translate(ctx, "balanceOverMax"), strconv.FormatInt(internal.Configuration.Pos.Max_balance, 10))
+		balanceWarningMessage := fmt.Sprintf(Translate(ctx, "balanceOverMax"), strconv.FormatInt(internal.Configuration.Limits.LNbitsMaxBalance, 10))
 		message += "\n\n⚠️ " + balanceWarningMessage
 		log.Infof("[/balance] User %s over max custodial balance: %d Sats", usrStr, lnbitsBalance)
+		// In case we are over the maximum balance, then we propose the swap-all
+		bot.trySendMessage(ctx.Sender(), message)
+		return bot.swapAllHandler(ctx)
 	}
 
 	bot.trySendMessage(ctx.Sender(), message)
