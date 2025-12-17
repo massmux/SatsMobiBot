@@ -101,9 +101,11 @@ _This Bot is free and opensource software. You can run it on your own computer a
 _Add this Bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
 
 *Terms of Service*
-_Make the backup of your keys with /backup command, before starting using the tool. We cannot help in recoverying the keys in case of misuse. Be aware that this Bot is in beta development. Use at your own risk. The Swaps are subject to Swap fees due to the Breez Nodeless Library which is used to build this tool.
+_Make the backup of your keys with /backup command, before starting using the tool. We cannot help in recoverying the keys in case of misuse. Be aware that this Bot is in beta development. Use at your own risk. The Swaps are subject to Swap fees due to the Breez Nodeless Library which is used to build this tool._
 
-Citizen and residents of the United States and any SECO sanctioned countries are prohibited to use this service. By going on, you confirm and declare you are NOT citizen of the United States or any SECO sanctioned countries._
+_Citizen and residents of the United States and any SECO sanctioned countries are prohibited to use this service. By going on, you confirm and declare you are NOT citizen of the United States or any SECO sanctioned countries._
+
+Breez Swap Fees: [Breez Fees](https://sdk-doc-liquid.breez.technology/guide/base_fees.html)
 """
 
 
@@ -356,7 +358,7 @@ User: %s
 
 # LINK
 
-walletConnectMessage = """🔗 *Link your wallet*
+walletConnectMessage = """🔗 *Link your HOT wallet*
 
 ⚠️ Never share the URL or the QR code with anyone or they will be able to access your funds. Use /api for your API keys.
 

@@ -69,9 +69,11 @@ func (bot TipBot) startHandler(ctx intercept.Context) (intercept.Context, error)
 
 	bot.helpHandler(ctx)
 	bot.trySendMessage(ctx.Sender(), Translate(ctx, "startWalletReadyMessage"))
-	bot.balanceHandler(ctx)
 
-	// send the user a warning about the fact that they need to set a username
+	// Disable checking Balance when hitting Start
+	//bot.balanceHandler(ctx)
+
+	// send the user a warning about the need to set a username
 	if len(ctx.Sender().Username) == 0 {
 		bot.trySendMessage(ctx.Sender(), Translate(ctx, "startNoUsernameMessage"), tb.NoPreview)
 	}
