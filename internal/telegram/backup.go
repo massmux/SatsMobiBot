@@ -60,6 +60,13 @@ func (bot *TipBot) backupHandler(ctx intercept.Context) (intercept.Context, erro
 		}
 	}
 
+	// Never reveal an invalid mnemonic (checksum)
+	if valErr := breez.ValidateMnemonic(mnemonic); valErr != nil {
+		log.Errorf("[/backup] Refusing to show invalid mnemonic to user %s: %s", GetUserStr(user.Telegram), valErr)
+		bot.trySendMessage(m.Sender, Translate(ctx, "backupNoMnemonicMessage"))
+		return ctx, fmt.Errorf("invalid mnemonic: %w", valErr)
+	}
+
 	// Send warning message first
 	bot.trySendMessage(m.Sender, Translate(ctx, "backupWarningMessage"))
 	time.Sleep(2 * time.Second)

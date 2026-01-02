@@ -293,6 +293,208 @@ func (bot *TipBot) swapToLNbitsHandler(ctx intercept.Context) (intercept.Context
 	return ctx, nil
 }
 
+// swapLNHandler handles the /swap-ln command - asks user for amount (Breez/Safe -> LNbits/Hot)
+func (bot *TipBot) swapLNHandler(ctx intercept.Context) (intercept.Context, error) {
+	// check and print all commands
+	bot.anyTextHandler(ctx)
+
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return ctx, errors.Create(errors.UserNoWalletError)
+	}
+
+	userStr := GetUserStr(ctx.Sender())
+
+	// Check if Breez is initialized
+	userBreez := bot.GetUserBreezClient(user)
+	if userBreez == nil || !userBreez.IsInitialized() {
+		bot.trySendMessage(ctx.Sender(), Translate(ctx, "swapBreezNotInitialized"))
+		log.Warnf("[/swap-ln] %s tried to swap-ln but Breez not initialized", userStr)
+		return ctx, errors.Create(errors.UserNoWalletError)
+	}
+
+	// Get Breez balance
+	breezBalance, err := bot.GetBreezBalance(user)
+	if err != nil {
+		log.Errorf("[/swap-ln] Error fetching %s's Breez balance: %s", userStr, err)
+		bot.trySendMessage(ctx.Sender(), Translate(ctx, "errorTryLaterMessage"))
+		return ctx, err
+	}
+
+	// Get LNbits balance
+	lnbitsBalance, err := bot.GetLNbitsBalance(user)
+	if err != nil {
+		log.Errorf("[/swap-ln] Error fetching %s's LNbits balance: %s", userStr, err)
+		bot.trySendMessage(ctx.Sender(), Translate(ctx, "errorTryLaterMessage"))
+		return ctx, err
+	}
+
+	// Get S (LNbits max balance) from config
+	S := internal.Configuration.Limits.LNbitsMaxBalance
+	if S == 0 {
+		S = 50000
+	}
+
+	// LNbits capacity remaining
+	capacity := S - lnbitsBalance
+	if capacity <= 0 {
+		bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "swapToLNbitsFull"), lnbitsBalance, S))
+		log.Warnf("[/swap-ln] %s's LNbits already at capacity: %d >= %d", userStr, lnbitsBalance, S)
+		return ctx, errors.Create(errors.InvalidAmountError)
+	}
+
+	// Max by Breez balance with a conservative fee model (1% + 100 sats)
+	// Require: amount + (amount*1% + 100) <= breezBalance  => amount <= (breezBalance - 100) / 1.01
+	maxByBreez := int64(0)
+	if breezBalance > 100 {
+		maxByBreez = int64(float64(breezBalance-100) / 1.01)
+	}
+
+	maxAllowed := capacity
+	if maxByBreez < maxAllowed {
+		maxAllowed = maxByBreez
+	}
+	if maxAllowed > breezBalance {
+		maxAllowed = breezBalance
+	}
+
+	if maxAllowed < MinimumSwapAmount {
+		// If Breez has funds but fees would eat everything, use the dedicated message; otherwise generic minimum
+		estimatedFees := int64(float64(maxAllowed)*0.01) + 100
+		if estimatedFees < 100 {
+			estimatedFees = 100
+		}
+		if breezBalance >= MinimumSwapAmount && capacity >= MinimumSwapAmount {
+			bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "swapToLNbitsInsufficientAfterFees"), breezBalance, estimatedFees))
+		} else {
+			bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "swapToLNbitsMinimum"), MinimumSwapAmount, breezBalance))
+		}
+		log.Warnf("[/swap-ln] %s max allowed too low: max=%d, breez=%d, capacity=%d", userStr, maxAllowed, breezBalance, capacity)
+		return ctx, errors.Create(errors.InvalidAmountError)
+	}
+
+	promptMessage := fmt.Sprintf(Translate(ctx, "swapLNAmountPrompt"), MinimumSwapAmount, maxAllowed, breezBalance, lnbitsBalance, S)
+	bot.trySendMessage(ctx.Sender(), promptMessage)
+
+	// Set user state to wait for amount input
+	SetUserState(user, bot, lnbits.UserStateSwapLNEnterAmount, "")
+	log.Infof("[/swap-ln] %s initiated swap-ln, waiting for amount (maxAllowed=%d)", userStr, maxAllowed)
+
+	return ctx, nil
+}
+
+// enterSwapLNAmountHandler processes user's swap-ln amount input (Breez/Safe -> LNbits/Hot)
+func (bot *TipBot) enterSwapLNAmountHandler(ctx intercept.Context) (intercept.Context, error) {
+	user := LoadUser(ctx)
+	if user.Wallet == nil {
+		return ctx, errors.Create(errors.UserNoWalletError)
+	}
+
+	userStr := GetUserStr(ctx.Sender())
+
+	// Parse amount from message
+	amountStr := strings.TrimSpace(ctx.Message().Text)
+	amount, err := strconv.ParseInt(amountStr, 10, 64)
+	if err != nil || amount <= 0 {
+		bot.trySendMessage(ctx.Sender(), Translate(ctx, "invalidAmountMessage"))
+		log.Warnf("[enterSwapLNAmount] %s entered invalid amount: %s", userStr, amountStr)
+		return ctx, errors.Create(errors.InvalidAmountError)
+	}
+
+	// Check minimum amount
+	if amount < MinimumSwapAmount {
+		bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "swapMinimumAmount"), MinimumSwapAmount))
+		log.Warnf("[enterSwapLNAmount] %s entered amount below minimum: %d sats", userStr, amount)
+		return ctx, errors.Create(errors.InvalidAmountError)
+	}
+
+	// Check Breez initialized + balances + LNbits capacity
+	userBreez := bot.GetUserBreezClient(user)
+	if userBreez == nil || !userBreez.IsInitialized() {
+		bot.trySendMessage(ctx.Sender(), Translate(ctx, "swapBreezNotInitialized"))
+		return ctx, errors.Create(errors.UserNoWalletError)
+	}
+
+	breezBalance, err := bot.GetBreezBalance(user)
+	if err != nil {
+		log.Errorf("[enterSwapLNAmount] Error fetching %s's Breez balance: %s", userStr, err)
+		bot.trySendMessage(ctx.Sender(), Translate(ctx, "errorTryLaterMessage"))
+		return ctx, err
+	}
+
+	lnbitsBalance, err := bot.GetLNbitsBalance(user)
+	if err != nil {
+		log.Errorf("[enterSwapLNAmount] Error fetching %s's LNbits balance: %s", userStr, err)
+		bot.trySendMessage(ctx.Sender(), Translate(ctx, "errorTryLaterMessage"))
+		return ctx, err
+	}
+
+	S := internal.Configuration.Limits.LNbitsMaxBalance
+	if S == 0 {
+		S = 50000
+	}
+
+	capacity := S - lnbitsBalance
+	if capacity <= 0 {
+		bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "swapToLNbitsFull"), lnbitsBalance, S))
+		log.Warnf("[enterSwapLNAmount] %s's LNbits already at capacity: %d >= %d", userStr, lnbitsBalance, S)
+		return ctx, errors.Create(errors.InvalidAmountError)
+	}
+
+	if amount > capacity {
+		bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "enterAmountRangeMessage"), MinimumSwapAmount, capacity))
+		log.Warnf("[enterSwapLNAmount] %s entered amount above capacity: amount=%d capacity=%d", userStr, amount, capacity)
+		return ctx, errors.Create(errors.InvalidAmountError)
+	}
+
+	// Conservative fee check (real fee is enforced at execution time)
+	estimatedFees := int64(float64(amount)*0.01) + 100
+	if estimatedFees < 100 {
+		estimatedFees = 100
+	}
+	if amount+estimatedFees > breezBalance {
+		bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "swapToLNbitsInsufficientAfterFees"), breezBalance, estimatedFees))
+		log.Warnf("[enterSwapLNAmount] %s insufficient Breez balance after fees: breez=%d amount=%d estFees=%d", userStr, breezBalance, amount, estimatedFees)
+		return ctx, errors.Create(errors.InvalidAmountError)
+	}
+
+	// Reset user state
+	ResetUserState(user, bot)
+
+	// Show confirmation with fee estimate (same format used by /swaptolnbits)
+	newLNbitsBalance := lnbitsBalance + amount
+	confirmText := fmt.Sprintf(Translate(ctx, "swapToLNbitsConfirmation"),
+		amount, breezBalance, lnbitsBalance, newLNbitsBalance, estimatedFees)
+
+	// Create swap confirmation data
+	id := fmt.Sprintf("swapln:%d-%d-%s", ctx.Sender().ID, amount, RandStringRunes(5))
+
+	confirmButton := swapConfirmationMenu.Data(Translate(ctx, "swapButtonConfirm"), "confirm_swap_to_lnbits", id)
+	cancelButton := swapConfirmationMenu.Data(Translate(ctx, "swapButtonCancel"), "cancel_swap", id)
+
+	swapConfirmationMenu.Inline(
+		swapConfirmationMenu.Row(
+			confirmButton,
+			cancelButton),
+	)
+
+	swapMessage := bot.trySendMessageEditable(ctx.Chat(), confirmText, swapConfirmationMenu)
+
+	swapData := &SwapData{
+		Base:            storage.New(storage.ID(id)),
+		From:            user,
+		Amount:          amount,
+		Message:         confirmText,
+		LanguageCode:    ctx.Value("publicLanguageCode").(string),
+		TelegramMessage: swapMessage,
+	}
+
+	runtime.IgnoreError(swapData.Set(swapData, bot.Bunt))
+	log.Infof("[enterSwapLNAmount] User: %s, amount: %d sat (LNbits %d->%d, estFees=%d)", userStr, amount, lnbitsBalance, newLNbitsBalance, estimatedFees)
+
+	return ctx, nil
+}
+
 // enterSwapAmountHandler processes user's swap amount input
 func (bot *TipBot) enterSwapAmountHandler(ctx intercept.Context) (intercept.Context, error) {
 	user := LoadUser(ctx)
@@ -736,10 +938,21 @@ func (bot *TipBot) executeReverseSwap(user *lnbits.User, amount int64, ctx inter
 		return fmt.Errorf("amount below minimum: %d < %d", amount, MinimumSwapAmount)
 	}
 
-	// Add 1% buffer for fees
-	requiredBalance := int64(float64(amount) * 1.01)
-	if requiredBalance > breezBalance {
-		return fmt.Errorf("insufficient Breez balance (including fees): %d < %d", breezBalance, requiredBalance)
+	// Enforce LNbits max balance (S) at execution time too
+	lnbitsBalance, err := bot.GetLNbitsBalance(user)
+	if err != nil {
+		return fmt.Errorf("failed to get LNbits balance: %w", err)
+	}
+	S := internal.Configuration.Limits.LNbitsMaxBalance
+	if S == 0 {
+		S = 50000
+	}
+	capacity := S - lnbitsBalance
+	if capacity <= 0 {
+		return fmt.Errorf("lnbits wallet full: balance=%d >= max=%d", lnbitsBalance, S)
+	}
+	if amount > capacity {
+		return fmt.Errorf("amount exceeds lnbits capacity: amount=%d > capacity=%d (balance=%d max=%d)", amount, capacity, lnbitsBalance, S)
 	}
 
 	// 4. Create LNbits invoice
@@ -757,7 +970,16 @@ func (bot *TipBot) executeReverseSwap(user *lnbits.User, amount int64, ctx inter
 
 	log.Infof("[executeReverseSwap] Created LNbits invoice for %s: %s", userStr, invoice.PaymentRequest)
 
-	// 5. Pay invoice from Breez
+	// 5. Enforce Breez balance including *real* fee estimate
+	feeSats, feeErr := userBreez.EstimatePaymentFee(invoice.PaymentRequest)
+	if feeErr != nil {
+		return fmt.Errorf("failed to estimate Breez fee: %w", feeErr)
+	}
+	if amount+feeSats > breezBalance {
+		return fmt.Errorf("insufficient Breez balance (amount+fee): balance=%d < need=%d (amount=%d fee=%d)", breezBalance, amount+feeSats, amount, feeSats)
+	}
+
+	// 6. Pay invoice from Breez
 	_, err = userBreez.PayInvoice(invoice.PaymentRequest)
 	if err != nil {
 		return fmt.Errorf("failed to pay invoice from Breez: %w", err)
@@ -765,14 +987,14 @@ func (bot *TipBot) executeReverseSwap(user *lnbits.User, amount int64, ctx inter
 
 	log.Infof("[executeReverseSwap] Paid invoice from Breez for %s", userStr)
 
-	// 6. Sync Breez balance
+	// 7. Sync Breez balance
 	err = userBreez.RefreshBalance()
 	if err != nil {
 		log.Warnf("[executeReverseSwap] Failed to sync Breez balance for %s: %s", userStr, err)
 		// Don't return error, swap was successful
 	}
 
-	// 7. Clear balance cache
+	// 8. Clear balance cache
 	cacheKey := fmt.Sprintf("%s_balance", user.Name)
 	bot.Cache.Delete(cacheKey)
 

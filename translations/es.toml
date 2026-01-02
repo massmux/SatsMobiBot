@@ -129,6 +129,8 @@ advancedMessage = """%s
 */backup*: Respaldar la frase semilla de tu billetera Breez: `/backup`
 */buybtc*: Comprar Bitcoin con Moonpay: `/buybtc`
 */swap*: Intercambiar fondos de LNbits a Breez: `/swap <cantidad>` o `/swap-all`
+*/swaptolnbits*: Llenar Hot desde Safe hasta el máximo (S): `/swaptolnbits`
+*/swap-ln*: Intercambiar fondos de Safe a Hot: `/swap-ln` e ingresa una cantidad
 """
 
 # GENERIC
@@ -616,3 +618,52 @@ swapButtonConfirm = """✅ Confirmar Intercambio"""
 swapButtonCancel = """🚫 Cancelar"""
 swapCancelled = """Intercambio cancelado."""
 processingMessage = """⏳ Procesando..."""
+
+# SWAP TO LNBITS (Breez -> LNbits)
+swapToLNbitsMinimum = """⚠️ *Saldo Insuficiente*
+
+Tu saldo Safe: %d sats
+Monto mínimo para intercambio: %d sats
+
+Por favor, recibe más fondos antes de intercambiar."""
+
+swapToLNbitsFull = """⚠️ *Billetera Hot Llena*
+
+Tu saldo Hot: %d sats
+Capacidad máxima: %d sats
+
+Tu billetera Hot ya está en su capacidad máxima. Debes mantener fondos en tu billetera Safe auto-custodial."""
+
+swapToLNbitsInsufficientAfterFees = """⚠️ *Saldo Insuficiente Después de Comisiones*
+
+Tu saldo Safe: %d sats
+Comisiones estimadas: ~%d sats
+
+El monto restante después de comisiones sería demasiado pequeño para intercambiar. Por favor, recibe más fondos primero."""
+
+swapToLNbitsConfirmation = """💱 *Confirmar Intercambio a Hot*
+
+¿Intercambiar *%d sats* de Safe a Hot?
+
+Saldo Safe actual: %d sats
+Saldo Hot actual: %d sats
+Saldo Hot después: %d sats
+Comisiones estimadas: ~%d sats
+
+Esto llenará tu billetera custodial hasta su límite."""
+
+swapToLNbitsSuccess = """✅ *¡Intercambio a Hot Completado!*
+
+%d sats han sido transferidos desde Safe a tu saldo Hot.
+
+Usa /balance para verificar tus saldos actualizados. Ten en cuenta que los saldos pueden tardar hasta 2 minutos en actualizarse."""
+
+swapLNAmountPrompt = """💱 *Ingresar Cantidad de Intercambio*
+
+Por favor, ingresa la cantidad que deseas intercambiar de Safe a Hot.
+
+Mínimo: %d sats
+Máximo: %d sats
+
+Tu saldo Safe: %d sats
+Tu saldo Hot: %d sats (máx %d)"""

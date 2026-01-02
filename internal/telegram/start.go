@@ -205,6 +205,12 @@ func (bot *TipBot) initUserBreezWallet(user *lnbits.User) error {
 			return fmt.Errorf("failed to generate mnemonic: %w", err)
 		}
 
+		// Validate generated mnemonic (checksum)
+		if valErr := breez.ValidateMnemonic(mnemonic); valErr != nil {
+			bot.tryDeleteMessage(creationMsg)
+			return fmt.Errorf("generated mnemonic failed validation: %w", valErr)
+		}
+
 		// Encrypt the mnemonic
 		encryptedMnemonic, err := breez.EncryptMnemonic(mnemonic, internal.Configuration.Breez.EncryptionKey)
 		if err != nil {
@@ -226,6 +232,12 @@ func (bot *TipBot) initUserBreezWallet(user *lnbits.User) error {
 		time.AfterFunc(3*time.Second, func() {
 			bot.tryDeleteMessage(creationMsg)
 		})
+	}
+
+	// Final guardrail: never initialize Breez with an invalid mnemonic
+	if valErr := breez.ValidateMnemonic(mnemonic); valErr != nil {
+		log.Errorf("[Breez] Refusing to initialize Breez client with invalid mnemonic for user %s: %s", GetUserStr(user.Telegram), valErr)
+		return fmt.Errorf("invalid mnemonic: %w", valErr)
 	}
 
 	// Initialize Breez client with decrypted mnemonic

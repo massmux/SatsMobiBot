@@ -78,6 +78,7 @@ const (
 	UserEnterDallePrompt
 	UserStateRefundAwaitingAddress
 	UserStateSwapEnterAmount
+	UserStateSwapLNEnterAmount
 )
 
 type UserStateKey int

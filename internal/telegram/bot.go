@@ -151,6 +151,12 @@ func (bot *TipBot) GetUserBreezClient(user *lnbits.User) *breez.Client {
 				}
 			}
 
+			// Final guardrail: don't initialize Breez with an invalid mnemonic (checksum)
+			if valErr := breez.ValidateMnemonic(mnemonic); valErr != nil {
+				log.Errorf("[GetUserBreezClient] Refusing to initialize Breez with invalid mnemonic for user %d: %s", user.Telegram.ID, valErr)
+				return nil
+			}
+
 			client, err := bot.initializeUserBreezClient(user.Telegram.ID, mnemonic)
 			if err != nil {
 				log.Errorf("[GetUserBreezClient] Failed to reinitialize: %s", err)

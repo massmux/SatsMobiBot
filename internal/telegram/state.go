@@ -23,5 +23,6 @@ func initializeStateCallbackMessage(bot *TipBot) {
 		lnbits.UserEnterDallePrompt:           bot.confirmGenerateImages,
 		lnbits.UserStateRefundAwaitingAddress: bot.handleRefundAddressInput,
 		lnbits.UserStateSwapEnterAmount:       bot.enterSwapAmountHandler,
+		lnbits.UserStateSwapLNEnterAmount:     bot.enterSwapLNAmountHandler,
 	}
 }
