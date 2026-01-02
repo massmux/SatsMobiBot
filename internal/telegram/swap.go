@@ -214,9 +214,6 @@ func (bot *TipBot) swapToLNbitsHandler(ctx intercept.Context) (intercept.Context
 
 	// Get S (LNbits max balance) from config
 	S := internal.Configuration.Limits.LNbitsMaxBalance
-	if S == 0 {
-		S = 50000
-	}
 
 	// Calculate maximum amount we can swap: S - B
 	maxSwapAmount := S - lnbitsBalance
@@ -331,9 +328,6 @@ func (bot *TipBot) swapLNHandler(ctx intercept.Context) (intercept.Context, erro
 
 	// Get S (LNbits max balance) from config
 	S := internal.Configuration.Limits.LNbitsMaxBalance
-	if S == 0 {
-		S = 50000
-	}
 
 	// LNbits capacity remaining
 	capacity := S - lnbitsBalance
@@ -430,9 +424,6 @@ func (bot *TipBot) enterSwapLNAmountHandler(ctx intercept.Context) (intercept.Co
 	}
 
 	S := internal.Configuration.Limits.LNbitsMaxBalance
-	if S == 0 {
-		S = 50000
-	}
 
 	capacity := S - lnbitsBalance
 	if capacity <= 0 {
@@ -944,9 +935,6 @@ func (bot *TipBot) executeReverseSwap(user *lnbits.User, amount int64, ctx inter
 		return fmt.Errorf("failed to get LNbits balance: %w", err)
 	}
 	S := internal.Configuration.Limits.LNbitsMaxBalance
-	if S == 0 {
-		S = 50000
-	}
 	capacity := S - lnbitsBalance
 	if capacity <= 0 {
 		return fmt.Errorf("lnbits wallet full: balance=%d >= max=%d", lnbitsBalance, S)
