@@ -3,6 +3,7 @@ package breez
 import (
 	"crypto/rand"
 	"fmt"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/tyler-smith/go-bip39"
@@ -78,22 +79,22 @@ func ValidateMnemonic(mnemonic string) error {
 		return fmt.Errorf("mnemonic cannot be empty")
 	}
 
-	// Basic validation: check word count (12, 15, 18, 21, or 24 words)
-	words := len(splitMnemonic(mnemonic))
-	validCounts := []int{12, 15, 18, 21, 24}
-	valid := false
-	for _, count := range validCounts {
-		if words == count {
-			valid = true
-			break
-		}
-	}
+	// Normalize whitespace (BIP39 library expects words separated by single spaces)
+	normalized := strings.Join(strings.Fields(mnemonic), " ")
+	words := len(strings.Fields(normalized))
 
-	if !valid {
+	// Basic validation: check word count (12, 15, 18, 21, or 24 words)
+	validCounts := map[int]bool{12: true, 15: true, 18: true, 21: true, 24: true}
+	if !validCounts[words] {
 		return fmt.Errorf("invalid mnemonic: expected 12, 15, 18, 21, or 24 words, got %d", words)
 	}
 
-	log.Debug("[Breez] Mnemonic validation passed")
+	// Strong validation: verify checksum & wordlist membership
+	if !bip39.IsMnemonicValid(normalized) {
+		return fmt.Errorf("invalid mnemonic: checksum or wordlist validation failed")
+	}
+
+	log.Debug("[Breez] Mnemonic validation passed (checksum OK)")
 	return nil
 }
 
@@ -135,6 +136,11 @@ func GenerateMnemonic() (string, error) {
 	mnemonic, err := bip39.NewMnemonic(entropy)
 	if err != nil {
 		return "", fmt.Errorf("failed to create mnemonic from entropy: %w", err)
+	}
+
+	// Sanity-check: ensure mnemonic passes checksum validation
+	if err := ValidateMnemonic(mnemonic); err != nil {
+		return "", fmt.Errorf("generated mnemonic failed validation: %w", err)
 	}
 
 	log.Debug("[Breez] Generated new 12-word BIP39 mnemonic")

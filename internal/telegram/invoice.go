@@ -546,12 +546,6 @@ func (bot *TipBot) checkAndPerformAutoSwap(user *lnbits.User) {
 	// Get thresholds from config
 	S := internal.Configuration.Limits.LNbitsMaxBalance
 	S2 := internal.Configuration.Limits.AutoSwapThreshold
-	if S == 0 {
-		S = 50000
-	}
-	if S2 == 0 {
-		S2 = 60000
-	}
 
 	// Check if balance exceeds auto-swap threshold
 	if lnbitsBalance <= S2 {

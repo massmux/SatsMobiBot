@@ -123,6 +123,8 @@ advancedMessage = """%s
 */backup*: Backup della frase di recupero del portafoglio Breez: `/backup`
 */buybtc*: Acquista Bitcoin con Moonpay: `/buybtc`
 */swap*: Scambia fondi da LNbits a Breez: `/swap <importo>` o `/swap-all`
+*/swaptolnbits*: Riempi Hot da Safe fino al massimo (S): `/swaptolnbits`
+*/swap-ln*: Scambia fondi da Safe a Hot: `/swap-ln` e poi inserisci un importo
 """
 
 # GENERIC
@@ -541,3 +543,52 @@ swapButtonConfirm = """✅ Conferma Scambio"""
 swapButtonCancel = """🚫 Annulla"""
 swapCancelled = """Scambio annullato."""
 processingMessage = """⏳ Elaborazione..."""
+
+# SWAP TO LNBITS (Breez -> LNbits)
+swapToLNbitsMinimum = """⚠️ *Saldo insufficiente*
+
+Il tuo saldo Safe: %d sats
+Importo minimo: %d sats
+
+Ricevi più fondi prima di effettuare lo swap."""
+
+swapToLNbitsFull = """⚠️ *Wallet Hot pieno*
+
+Il tuo saldo Hot: %d sats
+Capacità massima: %d sats
+
+Il tuo wallet Hot è già alla capacità massima. Mantieni i fondi nel wallet Safe (self-custodial)."""
+
+swapToLNbitsInsufficientAfterFees = """⚠️ *Saldo insufficiente dopo commissioni*
+
+Il tuo saldo Safe: %d sats
+Commissioni stimate: ~%d sats
+
+L'importo rimanente dopo le commissioni sarebbe troppo basso per effettuare lo swap. Ricevi prima più fondi."""
+
+swapToLNbitsConfirmation = """💱 *Conferma swap verso Hot*
+
+Scambiare *%d sats* da Safe a Hot?
+
+Saldo Safe attuale: %d sats
+Saldo Hot attuale: %d sats
+Saldo Hot dopo swap: %d sats
+Commissioni stimate: ~%d sats
+
+Questo riempirà il wallet custodial fino al suo limite."""
+
+swapToLNbitsSuccess = """✅ *Swap verso Hot completato!*
+
+%d sats sono stati trasferiti dal saldo Safe al tuo saldo Hot.
+
+Usa /balance per verificare i saldi aggiornati. Nota: l'aggiornamento può richiedere fino a 2 minuti."""
+
+swapLNAmountPrompt = """💱 *Inserisci importo swap*
+
+Inserisci l'importo che vuoi scambiare da Safe a Hot.
+
+Minimo: %d sats
+Massimo: %d sats
+
+Il tuo saldo Safe: %d sats
+Il tuo saldo Hot: %d sats (max %d)"""

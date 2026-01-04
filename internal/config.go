@@ -166,20 +166,18 @@ func checkLnbitsConfiguration() {
 }
 
 func checkLimitsConfiguration() {
-	// Set defaults if not configured
+	// Validate required configuration
 	if Configuration.Limits.LNbitsMaxBalance == 0 {
-		Configuration.Limits.LNbitsMaxBalance = 50000 // 50k sats default
+		panic(fmt.Errorf("please configure limits.lnbits_max_balance in config.yaml"))
 	}
 	if Configuration.Limits.AutoSwapThreshold == 0 {
-		Configuration.Limits.AutoSwapThreshold = 60000 // 60k sats default
+		panic(fmt.Errorf("please configure limits.auto_swap_threshold in config.yaml"))
 	}
 
 	// Validate that auto-swap threshold is greater than max balance
 	if Configuration.Limits.AutoSwapThreshold <= Configuration.Limits.LNbitsMaxBalance {
-		log.Warnf("[Config] auto_swap_threshold (%d) should be greater than lnbits_max_balance (%d), using default values",
-			Configuration.Limits.AutoSwapThreshold, Configuration.Limits.LNbitsMaxBalance)
-		Configuration.Limits.LNbitsMaxBalance = 50000
-		Configuration.Limits.AutoSwapThreshold = 60000
+		panic(fmt.Errorf("limits.auto_swap_threshold (%d) must be greater than limits.lnbits_max_balance (%d)",
+			Configuration.Limits.AutoSwapThreshold, Configuration.Limits.LNbitsMaxBalance))
 	}
 
 	log.Infof("[Config] Limits: LNbits max balance=%d sats, Auto-swap threshold=%d sats",

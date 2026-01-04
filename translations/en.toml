@@ -130,6 +130,8 @@ advancedMessage = """%s
 */backup*: Backup your Safe wallet Seedphrase: `/backup`
 */buybtc*: Buy Bitcoin with Moonpay: `/buybtc`
 */swap*: Swap funds from Hot balance to Safe: `/swap <amount>` or `/swap-all`
+*/swaptolnbits*: Fill Hot from Safe up to the max (S): `/swaptolnbits`
+*/swap-ln*: Swap funds from Safe to Hot: `/swap-ln` then enter an amount
 """
 
 # GENERIC
@@ -686,3 +688,13 @@ swapToLNbitsSuccess = """✅ *Swap to Hot Balance Complete!*
 %d sats have been transferred from Safe Balance to your Hot Balance.
 
 Use /balance to check your updated balances. Please note that balances may take 2 minutes to update."""
+
+swapLNAmountPrompt = """💱 *Enter Swap Amount*
+
+Please enter the amount you want to swap from Safe to Hot Balance.
+
+Minimum: %d Sats
+Maximum: %d Sats
+
+Your Safe balance: %d Sats
+Your Hot balance: %d Sats (max %d)"""
