@@ -84,12 +84,12 @@ func TestSwapToLNbitsCapacityCalculation(t *testing.T) {
 	S := int64(50000) // LNbits max balance
 
 	tests := []struct {
-		name              string
-		currentLNbits     int64
-		breezBalance      int64
-		expectedMaxSwap   int64
-		canSwap           bool
-		description       string
+		name            string
+		currentLNbits   int64
+		breezBalance    int64
+		expectedMaxSwap int64
+		canSwap         bool
+		description     string
 	}{
 		{
 			name:            "LNbits empty, can fill completely",
@@ -294,7 +294,7 @@ func TestCompleteBalanceFlow(t *testing.T) {
 	t.Logf("Received on Breez: LNbits=%d, Breez=%d", lnbitsBalance, breezBalance)
 
 	// Step 5: Manual swap all LNbits to Breez
-	t.Log("\n--- Step 5: Manual /swaptobreez ---")
+	t.Log("\n--- Step 5: Manual /swaptosafe ---")
 	if lnbitsBalance > 0 {
 		swapAmount := lnbitsBalance
 		t.Logf("Swapping %d sats from LNbits to Breez", swapAmount)
@@ -304,7 +304,7 @@ func TestCompleteBalanceFlow(t *testing.T) {
 	}
 
 	// Step 6: Partial swap back to LNbits
-	t.Log("\n--- Step 6: Manual /swaptolnbits ---")
+	t.Log("\n--- Step 6: Manual /swaptohot ---")
 	if breezBalance > 0 {
 		maxCapacity := S - lnbitsBalance
 		swapAmount := maxCapacity
@@ -366,4 +366,3 @@ func TestBreezFirstRouting(t *testing.T) {
 		})
 	}
 }
-

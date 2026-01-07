@@ -129,9 +129,9 @@ advancedMessage = """%s
 */shop*: Browse shops: `/shop` or `/shop <user/shop_id>`
 */backup*: Backup your Safe wallet Seedphrase: `/backup`
 */buybtc*: Buy Bitcoin with Moonpay: `/buybtc`
-*/swap*: Swap funds from Hot balance to Safe: `/swap <amount>` or `/swap-all`
-*/swaptolnbits*: Fill Hot from Safe up to the max (S): `/swaptolnbits`
-*/swap-ln*: Swap funds from Safe to Hot: `/swap-ln` then enter an amount
+*/swaptosafe*: Swap ALL funds from Hot to Safe: `/swaptosafe`
+*/swapall*: Alias for swapping all Hot → Safe: `/swapall`
+*/swaptohot*: Fill Hot from Safe up to the max (S): `/swaptohot`
 """
 
 # GENERIC
@@ -569,9 +569,10 @@ Tap the button below to complete your Bitcoin purchase through Moonpay (opens in
 💰 The Bitcoin will be sent directly to your self-custodial Breez wallet."""
 
 # SWAP
-swapHelpText = """💱 *Swap from LNbits to Breez*
+swapHelpText = """💱 *Swaps (Hot ↔ Safe)*
 
-Use `/swap <amount>` to swap a specific amount or `/swap-all` to swap your entire LNbits balance to your Breez wallet."""
+Use `/swaptosafe` (or `/swapall`) to move all your Hot balance to your Safe wallet.
+Use `/swaptohot` to fill your Hot wallet from your Safe wallet up to its max capacity."""
 
 swapAmountPrompt = """💱 *Enter Swap Amount*
 
