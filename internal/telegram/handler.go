@@ -230,23 +230,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 		},
 
 		{
-			Endpoints: []interface{}{"/swap"},
-			Handler:   bot.swapHandler,
-			Interceptor: &Interceptor{
-				Before: []intercept.Func{
-					bot.requirePrivateChatInterceptor,
-					bot.localizerInterceptor,
-					bot.logMessageInterceptor,
-					bot.requireUserInterceptor,
-					bot.lockInterceptor,
-				},
-				OnDefer: []intercept.Func{
-					bot.unlockInterceptor,
-				},
-			},
-		},
-		{
-			Endpoints: []interface{}{"/swap-all"},
+			Endpoints: []interface{}{"/swapall"},
 			Handler:   bot.swapAllHandler,
 			Interceptor: &Interceptor{
 				Before: []intercept.Func{
@@ -262,7 +246,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			},
 		},
 		{
-			Endpoints: []interface{}{"/swaptobreez"},
+			Endpoints: []interface{}{"/swaptosafe"},
 			Handler:   bot.swapToBreezHandler,
 			Interceptor: &Interceptor{
 				Before: []intercept.Func{
@@ -278,7 +262,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			},
 		},
 		{
-			Endpoints: []interface{}{"/swaptolnbits"},
+			Endpoints: []interface{}{"/swaptohot"},
 			Handler:   bot.swapToLNbitsHandler,
 			Interceptor: &Interceptor{
 				Before: []intercept.Func{
@@ -293,23 +277,6 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 				},
 			},
 		},
-		{
-			Endpoints: []interface{}{"/swap-ln"},
-			Handler:   bot.swapLNHandler,
-			Interceptor: &Interceptor{
-				Before: []intercept.Func{
-					bot.requirePrivateChatInterceptor,
-					bot.localizerInterceptor,
-					bot.logMessageInterceptor,
-					bot.requireUserInterceptor,
-					bot.lockInterceptor,
-				},
-				OnDefer: []intercept.Func{
-					bot.unlockInterceptor,
-				},
-			},
-		},
-
 		{
 			Endpoints: []interface{}{"/invoice", &btnInvoiceMainMenu},
 			Handler:   bot.invoiceHandler,

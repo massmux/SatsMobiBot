@@ -71,8 +71,8 @@ go test -v ./test/... -run "TestMnemonic|TestBreezAmount|TestBreezStructures"
 ✅ **Threshold validation**: S2 must be > S
 
 ### Manual Swaps
-✅ **`/swaptobreez`**: Swap ALL LNbits balance to Breez  
-✅ **`/swaptolnbits`**: Fill LNbits up to capacity (S - B)  
+✅ **`/swaptosafe`**: Swap ALL Hot balance to Safe  
+✅ **`/swaptohot`**: Fill Hot up to capacity (S - B) from Safe  
 ✅ **Capacity limits**: Cannot exceed LNbits max balance
 
 ### Configuration

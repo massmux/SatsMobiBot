@@ -16,4 +16,6 @@ donate - Donate: /donate 1000
 faucet - Create a faucet: /faucet 2100 21 
 pos - Create POS
 advanced - Advanced help
-swap-ln - Swap from Safe (Breez) to Hot (LNbits): /swap-ln
+swaptosafe - Swap ALL Hot → Safe: /swaptosafe
+swaptohot - Fill Hot from Safe up to max: /swaptohot
+swapall - Swap ALL Hot → Safe (alias): /swapall

@@ -463,7 +463,7 @@ func (bot *TipBot) invoicelnHandler(ctx intercept.Context) (intercept.Context, e
 // createLNbitsInvoiceWithEvent creates an invoice using ONLY LNbits (no Breez fallback)
 func (bot *TipBot) createLNbitsInvoiceWithEvent(ctx context.Context, user *lnbits.User, amount int64, memo string, currency string, callback int, callbackData string) (InvoiceEvent, error) {
 	log.Debugf("[createLNbitsInvoice] Creating LNbits invoice for %s of %d sat", GetUserStr(user.Telegram), amount)
-	
+
 	invoice, err := user.Wallet.Invoice(
 		lnbits.InvoiceParams{
 			Out:     false,
@@ -561,7 +561,7 @@ func (bot *TipBot) checkAndPerformAutoSwap(user *lnbits.User) {
 	}
 
 	userStr := GetUserStr(user.Telegram)
-	log.Infof("[AutoSwap] Triggering auto-swap for %s: %d sats (balance=%d, S=%d, S2=%d)", 
+	log.Infof("[AutoSwap] Triggering auto-swap for %s: %d sats (balance=%d, S=%d, S2=%d)",
 		userStr, swapAmount, lnbitsBalance, S, S2)
 
 	// Notify user about auto-swap
@@ -578,7 +578,7 @@ func (bot *TipBot) checkAndPerformAutoSwap(user *lnbits.User) {
 		log.Errorf("[AutoSwap] Failed to execute auto-swap for %s: %s", userStr, err)
 		bot.trySendMessage(user.Telegram, fmt.Sprintf(
 			"❌ Auto-swap failed: %s\n\n"+
-				"Please try manual swap with /swaptobreez", err.Error()))
+				"Please try manual swap with /swaptosafe", err.Error()))
 		return
 	}
 
