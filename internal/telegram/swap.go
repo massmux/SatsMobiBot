@@ -118,24 +118,33 @@ func (bot *TipBot) swapToBreezHandler(ctx intercept.Context) (intercept.Context,
 
 	// Check if user has sufficient balance
 	if lnbitsBalance < MinimumSwapAmount {
-		bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "swapToBreezMinimum"), MinimumSwapAmount, lnbitsBalance))
+		bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "swapToBreezMinimum"), lnbitsBalance, MinimumSwapAmount))
 		log.Warnf("[/swaptobreez] %s has insufficient balance for swap: %d sats", userStr, lnbitsBalance)
 		return ctx, errors.Create(errors.InvalidAmountError)
 	}
 
-	// Estimate fees (1% + 100 sats conservative estimate)
+	// Estimate fees (1% + 100 sats conservative estimate for LNbits routing fees)
+	// LNbits needs to pay: invoiceAmount + routingFee, so we reduce the invoice amount
 	estimatedFees := int64(float64(lnbitsBalance)*0.01) + 100
 	if estimatedFees < 100 {
 		estimatedFees = 100
 	}
 
-	// Show confirmation with fee estimate
-	confirmText := fmt.Sprintf(Translate(ctx, "swapToBreezConfirmation"), lnbitsBalance, estimatedFees)
-	log.Infof("[/swaptobreez] User: %s, LNbits balance: %d, estimated fees: %d",
-		userStr, lnbitsBalance, estimatedFees)
+	// Calculate actual swap amount (what Breez will receive) = balance - fees
+	swapAmount := lnbitsBalance - estimatedFees
+	if swapAmount < MinimumSwapAmount {
+		bot.trySendMessage(ctx.Sender(), fmt.Sprintf(Translate(ctx, "swapToBreezInsufficientAfterFees"), lnbitsBalance, estimatedFees))
+		log.Warnf("[/swaptobreez] %s swap amount too low after fees: balance=%d, fees=%d, swapAmount=%d", userStr, lnbitsBalance, estimatedFees, swapAmount)
+		return ctx, errors.Create(errors.InvalidAmountError)
+	}
+
+	// Show confirmation with fee estimate (show swapAmount, not lnbitsBalance)
+	confirmText := fmt.Sprintf(Translate(ctx, "swapToBreezConfirmation"), swapAmount, estimatedFees)
+	log.Infof("[/swaptobreez] User: %s, LNbits balance: %d, swap amount: %d, estimated fees: %d",
+		userStr, lnbitsBalance, swapAmount, estimatedFees)
 
 	// Create swap confirmation data
-	id := fmt.Sprintf("swaptobreez:%d-%d-%s", ctx.Sender().ID, lnbitsBalance, RandStringRunes(5))
+	id := fmt.Sprintf("swaptobreez:%d-%d-%s", ctx.Sender().ID, swapAmount, RandStringRunes(5))
 
 	// Create inline buttons
 	confirmButton := swapConfirmationMenu.Data(Translate(ctx, "swapButtonConfirm"), "confirm_swap_to_breez", id)
@@ -152,7 +161,7 @@ func (bot *TipBot) swapToBreezHandler(ctx intercept.Context) (intercept.Context,
 	swapData := &SwapData{
 		Base:            storage.New(storage.ID(id)),
 		From:            user,
-		Amount:          lnbitsBalance,
+		Amount:          swapAmount, // Use reduced amount (after fees) to ensure payment succeeds
 		Message:         confirmText,
 		LanguageCode:    ctx.Value("publicLanguageCode").(string),
 		TelegramMessage: swapMessage,
@@ -742,19 +751,37 @@ func (bot *TipBot) executeSwap(user *lnbits.User, amount int64, ctx intercept.Co
 		return fmt.Errorf("amount below minimum: %d < %d", amount, MinimumSwapAmount)
 	}
 
-	if amount > lnbitsBalance {
-		return fmt.Errorf("insufficient LNbits balance: %d < %d", lnbitsBalance, amount)
+	// 4. Calculate fee buffer and validate balance can cover amount + fees
+	// LNbits needs to pay: invoiceAmount + routingFee
+	// We add a safety buffer (1% of amount + 50 sats) to ensure payment succeeds
+	feeBuffer := int64(float64(amount)*0.01) + 50
+	if feeBuffer < 50 {
+		feeBuffer = 50
 	}
 
-	// 4. Create Breez invoice
+	// If balance is too tight, reduce the amount further
+	if amount+feeBuffer > lnbitsBalance {
+		// Recalculate amount to fit within balance with safety margin
+		newAmount := lnbitsBalance - feeBuffer
+		if newAmount < MinimumSwapAmount {
+			return fmt.Errorf("insufficient LNbits balance after fees: balance=%d, need=%d (amount=%d + buffer=%d)",
+				lnbitsBalance, amount+feeBuffer, amount, feeBuffer)
+		}
+		log.Warnf("[executeSwap] Reducing swap amount from %d to %d to accommodate fees (balance=%d, buffer=%d)",
+			amount, newAmount, lnbitsBalance, feeBuffer)
+		amount = newAmount
+	}
+
+	// 5. Create Breez invoice
 	invoice, err := userBreez.CreateInvoice(amount, fmt.Sprintf("Swap from LNbits: %d sats", amount))
 	if err != nil {
 		return fmt.Errorf("failed to create Breez invoice: %w", err)
 	}
 
-	log.Infof("[executeSwap] Created Breez invoice for %s: %s", userStr, invoice.Bolt11)
+	log.Infof("[executeSwap] Created Breez invoice for %s: %s (amount=%d, balance=%d)",
+		userStr, invoice.Bolt11, amount, lnbitsBalance)
 
-	// 5. Pay invoice from LNbits
+	// 6. Pay invoice from LNbits
 	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoice.Bolt11}, bot.Client)
 	if err != nil {
 		return fmt.Errorf("failed to pay invoice from LNbits: %w", err)
@@ -762,7 +789,7 @@ func (bot *TipBot) executeSwap(user *lnbits.User, amount int64, ctx intercept.Co
 
 	log.Infof("[executeSwap] Paid invoice from LNbits for %s", userStr)
 
-	// 6. Sync Breez balance
+	// 7. Sync Breez balance
 	err = userBreez.RefreshBalance()
 	if err != nil {
 		log.Warnf("[executeSwap] Failed to sync Breez balance for %s: %s", userStr, err)
@@ -794,19 +821,37 @@ func (bot *TipBot) executeSwapWithContext(user *lnbits.User, amount int64, ctx c
 		return fmt.Errorf("amount below minimum: %d < %d", amount, MinimumSwapAmount)
 	}
 
-	if amount > lnbitsBalance {
-		return fmt.Errorf("insufficient LNbits balance: %d < %d", lnbitsBalance, amount)
+	// 4. Calculate fee buffer and validate balance can cover amount + fees
+	// LNbits needs to pay: invoiceAmount + routingFee
+	// We add a safety buffer (1% of amount + 50 sats) to ensure payment succeeds
+	feeBuffer := int64(float64(amount)*0.01) + 50
+	if feeBuffer < 50 {
+		feeBuffer = 50
 	}
 
-	// 4. Create Breez invoice
+	// If balance is too tight, reduce the amount further
+	if amount+feeBuffer > lnbitsBalance {
+		// Recalculate amount to fit within balance with safety margin
+		newAmount := lnbitsBalance - feeBuffer
+		if newAmount < MinimumSwapAmount {
+			return fmt.Errorf("insufficient LNbits balance after fees: balance=%d, need=%d (amount=%d + buffer=%d)",
+				lnbitsBalance, amount+feeBuffer, amount, feeBuffer)
+		}
+		log.Warnf("[executeSwapWithContext] Reducing swap amount from %d to %d to accommodate fees (balance=%d, buffer=%d)",
+			amount, newAmount, lnbitsBalance, feeBuffer)
+		amount = newAmount
+	}
+
+	// 5. Create Breez invoice
 	invoice, err := userBreez.CreateInvoice(amount, fmt.Sprintf("Auto-swap from LNbits: %d sats", amount))
 	if err != nil {
 		return fmt.Errorf("failed to create Breez invoice: %w", err)
 	}
 
-	log.Infof("[executeSwapWithContext] Created Breez invoice for %s: %s", userStr, invoice.Bolt11)
+	log.Infof("[executeSwapWithContext] Created Breez invoice for %s: %s (amount=%d, balance=%d)",
+		userStr, invoice.Bolt11, amount, lnbitsBalance)
 
-	// 5. Pay invoice from LNbits
+	// 6. Pay invoice from LNbits
 	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoice.Bolt11}, bot.Client)
 	if err != nil {
 		return fmt.Errorf("failed to pay invoice from LNbits: %w", err)
@@ -814,14 +859,14 @@ func (bot *TipBot) executeSwapWithContext(user *lnbits.User, amount int64, ctx c
 
 	log.Infof("[executeSwapWithContext] Paid invoice from LNbits for %s", userStr)
 
-	// 6. Sync Breez balance
+	// 7. Sync Breez balance
 	err = userBreez.RefreshBalance()
 	if err != nil {
 		log.Warnf("[executeSwapWithContext] Failed to sync Breez balance for %s: %s", userStr, err)
 		// Don't return error, swap was successful
 	}
 
-	// 7. Clear balance cache
+	// 8. Clear balance cache
 	cacheKey := fmt.Sprintf("%s_balance", user.Name)
 	bot.Cache.Delete(cacheKey)
 

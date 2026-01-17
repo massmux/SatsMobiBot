@@ -636,14 +636,21 @@ Minimum amount for swap: %d Sats
 
 Please receive more funds before swapping."""
 
-swapToBreezConfirmation = """💱 *Confirm Swap to Breez*
+swapToBreezInsufficientAfterFees = """⚠️ *Insufficient Balance After Fees*
 
-Swap *ALL* of your Hot Balance to Safe Balance?
-
-Hot Balance: %d Sats
+Your Hot balance: %d Sats
 Estimated fees: ~%d Sats
 
-After this swap, your Hot balance will be 0 Sats and the funds will be in your self-custodial Safe wallet."""
+The remaining amount after fees would be too small to swap. Please receive more funds first."""
+
+swapToBreezConfirmation = """💱 *Confirm Swap to Safe Balance*
+
+Swap your Hot Balance to Safe Balance?
+
+Amount to transfer: *%d Sats*
+Estimated routing fees: ~%d Sats
+
+After this swap, your Hot balance will be near 0 Sats and the funds will be in your self-custodial Safe wallet."""
 
 swapToBreezSuccess = """✅ *Swap to Safe Balance Complete!*
 
