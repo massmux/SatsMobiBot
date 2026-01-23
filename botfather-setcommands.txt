@@ -6,16 +6,15 @@
 4 - Paste this:
 
 help - Read the help.
-balance - Check balance. 
+balance - Check balances. 
 transactions - Transactions list.
 tip - Reply to a message to tip: /tip 50
-send - Send funds to a user: /send 100 @SatsMobiBot
-invoice - Receive with Lightning: /invoice 1000
-pay - Pay with Lightning: /pay lnbc10n1ps...
+send - Send Hot funds to a user: /send 100 @SatsMobiBot
+invoice - Create Lightning invoice: /invoice 1000
+pay - Pay Invoice: /pay lnbc10n1ps...
 donate - Donate: /donate 1000
 faucet - Create a faucet: /faucet 2100 21 
 pos - Create POS
-advanced - Advanced help
-swaptosafe - Swap ALL Hot → Safe: /swaptosafe
+swaptosafe - Swap ALL Hot to Safe: /swaptosafe
 swaptohot - Fill Hot from Safe up to max: /swaptohot
-swapall - Swap ALL Hot → Safe (alias): /swapall
+swapall - Swap ALL from Hot to Safe (alias): /swapall

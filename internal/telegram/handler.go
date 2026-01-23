@@ -656,22 +656,22 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 				},
 			},
 		},
-		{
-			Endpoints: []interface{}{"/advanced"},
-			Handler:   bot.advancedHelpHandler,
-			Interceptor: &Interceptor{
-				Before: []intercept.Func{
-					bot.requirePrivateChatInterceptor,
-					bot.localizerInterceptor,
-					bot.logMessageInterceptor,
-					bot.requireUserInterceptor,
-					bot.lockInterceptor,
-				},
-				OnDefer: []intercept.Func{
-					bot.unlockInterceptor,
-				},
-			},
-		},
+		//{
+		//	Endpoints: []interface{}{"/advanced"},
+		//	Handler:   bot.advancedHelpHandler,
+		//	Interceptor: &Interceptor{
+		//		Before: []intercept.Func{
+		//		bot.requirePrivateChatInterceptor,
+		//		bot.localizerInterceptor,
+		//		bot.logMessageInterceptor,
+		//		bot.requireUserInterceptor,
+		//		bot.lockInterceptor,
+		//	},
+		//		OnDefer: []intercept.Func{
+		//			bot.unlockInterceptor,
+		//		},
+		//	},
+		//},
 		{
 			Endpoints: []interface{}{"/link"},
 			Handler:   bot.lndhubHandler,

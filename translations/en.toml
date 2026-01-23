@@ -64,75 +64,71 @@ payButtonEmoji = """💸"""
 # HELP
 
 helpMessage = """⚡️ *SatsMobi*
-_This is a Bitcoin Lightning self-custodial Wallet that is made of 2 Balances. One is Hot (this part is limited) and can send/receive small tips on Telegram. The second is Safe (based on Breez nodeless library) where the limits are your own.
-Maximum amount allowed on Hot is 50K Sats. Hit /basics for more info and Terms Of Service._
+_This is a Bitcoin Lightning opensource self-custodial Wallet Suite. There are 2 Balances: Hot and Safe. Breez Library is used. Backup your mnemonic first after /start. Hit /basics for TOS._
 
-%s
-
-⚙️ *Basic Commands*
-*/tip*: Reply to a message to tip: `/tip <amount> [<memo>]`
-*/balance*: Check your balance: `/balance`
-*/send*: Send funds to a user: `/send <amount> @user or user@sats.mobi [<memo>]`
-*/invoice*: Receive with Lightning: `/invoice <amount> [<memo>]`
-*/pay*: Pay with Lightning: `/pay <invoice>`
+👉 *Basic commands* (Hot/Safe)
+*/tip*: Reply to a message to tip (Hot): `/tip <amount> [<memo>]`
+*/balance*: Check your balance (Hot|Safe): `/balance`
+*/send*: Send tips to a user (Hot): `/send <amount> @user or user@sats.mobi [<memo>]`
+*/invoice*: Receive (Safe): `/invoice <amount> [<memo>]`
+*/pay*: Pay Invoice (Safe): `/pay <invoice>`
 */rate*: Check exchange rates: `/rate [amount] [currency]` - Example: `/rate 10000 USD`
 */cashback*: QRCODE for receiving cashback.
 */activatecard*: Request activation of a SatsMobi NFC Card `/activatecard <CardID>`
-*/advanced*: Advanced features.
-*/help*: Read this help."""
 
+👉 *Inline commands*
+*send*: Send sats to chat: `@%s send <amount> [<user>] [<memo>]`
+*receive*: Request a payment: `... receive <amount> [<user>] [<memo>]`
+*faucet*: Create a faucet: `... faucet <capacity> <per_user> [<memo>]`
+*tipjar*: Create a tipjar: `... tipjar <capacity> <per_user> [<memo>]`
+
+📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and *click* the result, don't press enter.
+
+👉 *Advanced commands* (Hot/Safe)
+*/transactions*: Transactions list
+*/link*: Link Hot to Bluewallet or Zeus
+*/lnurl*: Lnurl receive or pay (Hot): `/lnurl` or `/lnurl <lnurl> [memo]`
+*/nostr*: Connect to Nostr: `/nostr` first time: `/nostr help`
+*/pos*: Get your POS ready (Hot): `/pos`
+*/group*: Group chat features (Hot): `/group`
+*/shop*: Browse shops: `/shop` or `/shop <user/shop_id>`
+*/backup*: Backup your Safe Seedphrase: `/backup`
+*/buybtc*: Buy Bitcoin with Moonpay: `/buybtc`
+*/swaptosafe*: Swap ALL funds from Hot to Safe: `/swaptosafe`
+*/swapall*: Alias for swapping all from Hot to Safe: `/swapall`
+*/swaptohot*: Fill Hot with Safe up to the limit: `/swaptohot`
+*/help*: Read this help.
+"""
 infoHelpMessage = """ℹ️ *Info*"""
-infoYourLightningAddress = """Your Lightning Address is: `%s`"""
+infoYourLightningAddress = """Your (Hot) Lightning Address is: `%s`
+"""
+infoYourAnonLightningAddress = """Your (Hot) Anon Lightning Address is: `%s`
+"""
+infoYourAnonLNURL = """Your (Hot) Anonymous LNURL is: `%s`
+"""
 
 basicsMessage = """
 *Economics*
-_This is a Bitcoin Lightning self-custodial Wallet that is made of 2 Balances. One is Hot (this part is limited) and can send/receive small tips on Telegram. The second is Safe (based on Breez nodeless library) where the limits are your own. _
-
-*The Lightning Network*
-_You can connect the Hot Balance to Zeus easily using /link command. You can always recover your Safe Balance using the seedphrase using any Liquid wallet._
+_This is a Bitcoin Lightning opensource self-custodial Wallet Suite. There are 2 Balances: Hot and Safe. Breez Lib is used. Backup your mnemonic after /start. _
 
 *Lightning Wallets*
 _Your Safe Balance can be used to send and receive funds over the Lightning network in a self-custodial manner, where you own your Keys. You can also swap from Hot to Safe Balance whenever you want. The Hot balance can be used for fast and small Tips over Telegram_. 
 
 *Open Source*
-_This Bot is free and opensource software. You can run it on your own computer and use it in your own community. It is a tool intended for educational purposes._
+_This Bot is free and opensource software. You can run it on your own computer and use it in your own community. It is a tool intended for educational purposes only._
 
 *Telegram*
 _Add this Bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
 
 *Terms of Service*
-_Make the backup of your keys with /backup command, before starting using the tool. We cannot help in recoverying the keys in case of misuse. Be aware that this Bot is in beta development. Use at your own risk. The Swaps are subject to Swap fees due to the Breez Nodeless Library which is used to build this tool._
+_Backup of your keys with /backup command, just after /start. We cannot help in recoverying the keys in case of misuse. This Bot is in beta development. Use at your own risk. The Swaps are subject to Swap fees due to the Breez Nodeless Library which is used in this tool._
 
 _Citizen and residents of the United States and any SECO sanctioned countries are prohibited to use this service. By going on, you confirm and declare you are NOT citizen of the United States or any SECO sanctioned countries._
 
-Breez Swap Fees: [Breez Fees](https://sdk-doc-liquid.breez.technology/guide/base_fees.html)
+About Breez Swap Fees: [Breez Fees](https://sdk-doc-liquid.breez.technology/guide/base_fees.html)
 """
-
 
 helpNoUsernameMessage = """👋 Please, set a Telegram username."""
-
-advancedMessage = """%s
-
-👉 *Inline commands*
-*send*: Send Tip to chat: `%s send <amount> [<user>] [<memo>]`
-*receive*: Request a Tip: `... receive <amount> [<user>] [<memo>]`
-
-📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and *click* the result, don't press enter.
-
-⚙️ *Advanced commands*
-*/transactions*: Transactions list
-*/link*: Link your wallet to [BlueWallet](https://bluewallet.io/) or [Zeus](https://zeusln.app/)
-*/lnurl*: Lnurl receive or pay: `/lnurl` or `/lnurl <lnurl> [memo]`
-*/nostr*: Connect to Nostr: `/nostr` first time: `/nostr help`
-*/pos*: Get your POS ready: `/pos`
-*/group*: Group chat features: `/group`
-*/shop*: Browse shops: `/shop` or `/shop <user/shop_id>`
-*/backup*: Backup your Safe wallet Seedphrase: `/backup`
-*/buybtc*: Buy Bitcoin with Moonpay: `/buybtc`
-*/swaptosafe*: Swap ALL funds from Hot to Safe: `/swaptosafe`
-*/swapall*: Alias for swapping all Hot → Safe: `/swapall`
-*/swaptohot*: Fill Hot from Safe up to the max (S): `/swaptohot`
-"""
 
 # GENERIC
 enterAmountRangeMessage        = """💯 Enter an amount between %d and %d sat."""
@@ -398,7 +394,7 @@ inlineFaucetInvalidPeruserAmountMessage = """🚫 Peruser amount not divisor of 
 inlineFaucetInvalidAmountMessage        = """🚫 Invalid amount."""
 inlineFaucetSentMessage                 = """🚰 %d sat sent to %s."""
 inlineFaucetReceivedMessage             = """🚰 %s sent you %d sat."""
-inlineFaucetHelpFaucetInGroup           = """Create a faucet in a group with the bot inside or use 👉 inline command (/advanced for more)."""
+inlineFaucetHelpFaucetInGroup           = """Create a faucet in a group with the bot inside or use 👉 inline command (/help for more)."""
 inlineFaucetAlreadyTookMessage          = """🚫 You already took from this faucet."""
 inlineFaucetHelpText                    = """📖 Oops, that didn't work. %s
 
@@ -454,7 +450,7 @@ inlineTipjarInvalidPeruserAmountMessage = """🚫 Peruser amount not divisor of 
 inlineTipjarInvalidAmountMessage        = """🚫 Invalid amount."""
 inlineTipjarSentMessage                 = """🍯 %d sat sent to %s."""
 inlineTipjarReceivedMessage             = """🍯 %s sent you %d sat."""
-inlineTipjarHelpTipjarInGroup           = """Create a tipjar in a group with the bot inside or use 👉 inline command (/advanced for more)."""
+inlineTipjarHelpTipjarInGroup           = """Create a tipjar in a group with the bot inside or use 👉 inline command (/help for more)."""
 inlineTipjarHelpText                    = """📖 Oops, that didn't work. %s
 
 *Usage:* `/tipjar <capacity> <per_user>`
