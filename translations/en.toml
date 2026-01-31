@@ -112,7 +112,7 @@ basicsMessage = """
 _This is a Bitcoin Lightning opensource self-custodial Wallet Suite. There are 2 Balances: Hot and Safe. Breez Lib is used. Backup your mnemonic after /start. _
 
 *Lightning Wallets*
-_Your Safe Balance can be used to send and receive funds over the Lightning network in a self-custodial manner, where you own your Keys. You can also swap from Hot to Safe Balance whenever you want. The Hot balance can be used for fast and small Tips over Telegram_. 
+_Your Safe Balance can be used to send and receive funds over the Lightning network in a self-custodial manner, where you own your Keys. You can also swap from Hot to Safe Balance whenever you want. The Hot balance can be used for fast and small Tips over Telegram. Immediately backup the seedphrase_. 
 
 *Open Source*
 _This Bot is free and opensource software. You can run it on your own computer and use it in your own community. It is a tool intended for educational purposes only._
@@ -121,7 +121,7 @@ _This Bot is free and opensource software. You can run it on your own computer a
 _Add this Bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
 
 *Terms of Service*
-_Backup of your keys with /backup command, just after /start. We cannot help in recoverying the keys in case of misuse. This Bot is in beta development. Use at your own risk. The Swaps are subject to Swap fees due to the Breez Nodeless Library which is used in this tool._
+_Immediately Backup of your keys with /backup command, just after /start. We cannot help in recoverying the keys in case of misuse. This Bot is in beta development and experimental. Use at your own risk. The Swaps are subject to Swap fees due to the Breez Nodeless Library which is used in this tool._
 
 _Citizen and residents of the United States and any SECO sanctioned countries are prohibited to use this service. By going on, you confirm and declare you are NOT citizen of the United States or any SECO sanctioned countries._
 

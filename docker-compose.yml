@@ -14,6 +14,7 @@ services:
         environment:
           - TZ=Europe/Rome
           - BOT_WEBHOOK_PORT=5588
+          - ENCRYPTION_KEY=${ENCRYPTION_KEY} # 64-char hex string (32 bytes)
         ports:
           - 5454:5454
           - 5588:5588

@@ -43,7 +43,6 @@ breez:
   api_key: "YOUR_BREEZ_API_KEY"
   working_dir: "data/breez"
   network: "mainnet"
-  encryption_key: ""  # 64-char hex string (32 bytes) for AES-256-GCM encryption
 limits:
   lnbits_max_balance: 50000   # S - Maximum sats in Hot before routing to Breez
   auto_swap_threshold: 60000  # S2 - Auto-swap (B-S) to Breez when Hot
