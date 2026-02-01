@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/massmux/SatsMobiBot/internal"
@@ -37,22 +38,73 @@ func (bot *TipBot) setPinHandler(ctx intercept.Context) (intercept.Context, erro
 		return ctx, nil
 	}
 
-	// Primo PIN, chiedi di impostarlo
-	msg := "🔐 *Set Your PIN*\n\n" +
-		"Please choose a PIN to secure your wallet.\n\n" +
-		"Requirements:\n" +
-		"• 4-6 digits\n" +
-		"• Not all same digit (e.g. 1111)\n" +
-		"• Not sequential (e.g. 1234)\n\n" +
-		"Enter your PIN:"
+	// ✨ PRIMO PIN: Mostra warning CRITICO
+	warningMsg := "⚠️ *CRITICAL WARNING* ⚠️\n\n" +
+		"You are about to set a PIN that will encrypt your seed phrase.\n\n" +
+		"🔴 *IMPORTANT:*\n" +
+		"• If you *forget your PIN*, your funds are *PERMANENTLY LOST*\n" +
+		"• There is *NO recovery option*\n" +
+		"• Nobody can help you recover it (not even the bot admin)\n\n" +
+		"✅ *What you MUST do:*\n" +
+		"1. Choose a PIN you will REMEMBER\n" +
+		"2. After setting PIN, use /backup to save your seed phrase\n" +
+		"3. Write down your seed phrase on paper\n" +
+		"4. Store it in a secure place\n\n" +
+		"💡 Your seed phrase is your ultimate backup. Keep it safe!\n\n" +
+		"Do you understand and want to continue?\n" +
+		"Reply with *YES* to proceed or *NO* to cancel."
 
-	bot.trySendMessage(user.Telegram, msg, tb.ModeMarkdown)
+	bot.trySendMessage(user.Telegram, warningMsg, tb.ModeMarkdown)
 
-	user.StateKey = lnbits.UserStateEnterNewPin
+	user.StateKey = lnbits.UserStateConfirmPinWarning
 	user.StateData = ""
 	UpdateUserRecord(user, *bot)
 
 	return ctx, nil
+}
+
+// handleConfirmPinWarning gestisce la conferma del warning prima di impostare il PIN
+func (bot *TipBot) handleConfirmPinWarning(ctx intercept.Context, user *lnbits.User, input string) (intercept.Context, error) {
+	// Cancella il messaggio dell'utente
+	bot.tryDeleteMessage(ctx.Message())
+
+	// Normalizza l'input
+	input = strings.ToUpper(strings.TrimSpace(input))
+
+	if input == "YES" {
+		// Utente ha confermato, procedi con impostazione PIN
+		msg := "🔐 *Set Your PIN*\n\n" +
+			"Please choose a PIN to secure your wallet.\n\n" +
+			"Requirements:\n" +
+			"• 4-6 digits\n" +
+			"• Not all same digit (e.g. 1111)\n" +
+			"• Not sequential (e.g. 1234)\n\n" +
+			"Enter your PIN:"
+
+		bot.trySendMessage(user.Telegram, msg, tb.ModeMarkdown)
+
+		user.StateKey = lnbits.UserStateEnterNewPin
+		user.StateData = ""
+		UpdateUserRecord(user, *bot)
+
+		return ctx, nil
+	} else if input == "NO" {
+		// Utente ha cancellato
+		bot.trySendMessage(user.Telegram,
+			"❌ PIN setup cancelled.\n\n"+
+				"Your wallet cannot be created without a PIN.\n"+
+				"Use /setpin when you're ready to secure your wallet.")
+
+		user.ResetState()
+		UpdateUserRecord(user, *bot)
+		return ctx, nil
+	} else {
+		// Input non valido
+		bot.trySendMessage(user.Telegram,
+			"⚠️ Please reply with *YES* to continue or *NO* to cancel.",
+			tb.ModeMarkdown)
+		return ctx, nil
+	}
 }
 
 // handlePinInput gestisce l'input del PIN basato sullo stato
@@ -61,6 +113,8 @@ func (bot *TipBot) handlePinInput(ctx intercept.Context) (intercept.Context, err
 	pinInput := ctx.Message().Text
 
 	switch user.StateKey {
+	case lnbits.UserStateConfirmPinWarning:
+		return bot.handleConfirmPinWarning(ctx, user, pinInput)
 	case lnbits.UserStateEnterNewPin:
 		return bot.handleNewPinInput(ctx, user, pinInput)
 	case lnbits.UserStateConfirmNewPin:
@@ -138,6 +192,76 @@ func (bot *TipBot) handleConfirmPinInput(ctx intercept.Context, user *lnbits.Use
 	user.ResetState()
 	UpdateUserRecord(user, *bot)
 
+	// ✨ NUOVO: Se non ha mnemonic, crea il wallet Breez automaticamente
+	if user.BreezMnemonic == "" {
+		log.Infof("[PIN] User %s has no mnemonic, creating Breez wallet", GetUserStr(user.Telegram))
+
+		// Mostra messaggio di creazione
+		creatingMsg := bot.trySendMessage(user.Telegram, "🔐 Creating your secure wallet...")
+
+		// Genera nuova mnemonic
+		mnemonic, err := breez.GenerateMnemonic()
+		if err != nil {
+			bot.tryDeleteMessage(creatingMsg)
+			log.Errorf("[PIN] Failed to generate mnemonic: %s", err)
+			bot.trySendMessage(user.Telegram,
+				"❌ Failed to create wallet. Please try /start again.")
+			return ctx, err
+		}
+
+		// Cifra con il PIN appena impostato
+		encryptedMnemonic, err := breez.EncryptMnemonicWithPin(mnemonic, pin, user.PinSalt)
+		if err != nil {
+			bot.tryDeleteMessage(creatingMsg)
+			log.Errorf("[PIN] Failed to encrypt mnemonic: %s", err)
+			bot.trySendMessage(user.Telegram,
+				"❌ Failed to encrypt wallet. Please try /start again.")
+			return ctx, err
+		}
+
+		// Salva nel database
+		user.BreezMnemonic = encryptedMnemonic
+		user.BreezInitialized = true
+		err = UpdateUserRecord(user, *bot)
+		if err != nil {
+			bot.tryDeleteMessage(creatingMsg)
+			log.Errorf("[PIN] Failed to save encrypted mnemonic: %s", err)
+			bot.trySendMessage(user.Telegram,
+				"❌ Failed to save wallet. Please try /start again.")
+			return ctx, err
+		}
+
+		// Inizializza il client Breez
+		_, err = bot.initializeUserBreezClient(user.Telegram.ID, mnemonic)
+		if err != nil {
+			log.Errorf("[PIN] Failed to initialize Breez client: %s", err)
+			// Non blocchiamo qui, il client verrà inizializzato al prossimo accesso
+		}
+
+		bot.tryDeleteMessage(creatingMsg)
+
+		// Messaggio di successo con reminder backup
+		bot.trySendMessage(user.Telegram,
+			"✅ *Wallet Created Successfully!*\n\n"+
+				"Your self-custodial wallet is ready!\n\n"+
+				"⚠️ *IMPORTANT - Back Up Your Seed Phrase NOW:*\n"+
+				"1. Use /backup to view your seed phrase\n"+
+				"2. Write it down on paper\n"+
+				"3. Store it in a secure place\n\n"+
+				"💡 Your seed phrase is your ultimate backup.\n"+
+				"If you lose your PIN, the seed phrase is your only way to recover your funds!\n\n"+
+				"Use /balance to check your wallet.",
+			tb.ModeMarkdown)
+
+		// ✨ Show help now that wallet is fully set up
+		bot.helpHandler(ctx)
+		bot.trySendMessage(user.Telegram, Translate(ctx, "startWalletReadyMessage"))
+
+		log.Infof("[PIN] Successfully created and encrypted Breez wallet for user %s", GetUserStr(user.Telegram))
+		return ctx, nil
+	}
+
+	// Utente aveva già mnemonic (cambio PIN o migrazione)
 	bot.trySendMessage(user.Telegram,
 		"✅ *PIN Set Successfully!*\n\n"+
 			"Your wallet is now protected with your PIN.\n"+
@@ -245,14 +369,25 @@ func (bot *TipBot) handlePaymentPinInput(ctx intercept.Context, user *lnbits.Use
 	// PIN corretto
 	bot.resetPinAttempts(user)
 
-	// ✨ NUOVO: Esegui il pagamento Breez
+	// ✨ MODIFICATO: Inizializza il client Breez prima di eseguire il pagamento
 	payDataID := user.StateData
 	user.ResetState()
 	UpdateUserRecord(user, *bot)
 
 	if payDataID != "" {
-		log.Infof("[PIN] PIN verified, executing Breez payment for user %s", GetUserStr(user.Telegram))
-		err := bot.executeBreezPaymentWithPin(ctx, user, payDataID)
+		log.Infof("[PIN] PIN verified, initializing Breez for payment for user %s", GetUserStr(user.Telegram))
+
+		// Inizializza il client Breez con il PIN
+		_, err := bot.InitializeBreezClientWithPin(user, pin)
+		if err != nil {
+			log.Errorf("[PIN] Failed to initialize Breez: %s", err)
+			bot.trySendMessage(user.Telegram,
+				"❌ Failed to unlock wallet. Please try again.")
+			return ctx, err
+		}
+
+		// Esegui il pagamento
+		err = bot.executeBreezPaymentWithPin(ctx, user, payDataID)
 		if err != nil {
 			return ctx, err
 		}

@@ -67,6 +67,13 @@ func (bot TipBot) startHandler(ctx intercept.Context) (intercept.Context, error)
 		}
 	}
 
+	// Check if user needs to set PIN before proceeding
+	if internal.Configuration.Breez.Enabled && !user.HasPin() {
+		log.Infof("[/start] User %s needs to set PIN, not showing help yet", GetUserStr(ctx.Sender()))
+		// Don't show help or ready message yet - user needs to set PIN first
+		return ctx, nil
+	}
+
 	bot.helpHandler(ctx)
 	bot.trySendMessage(ctx.Sender(), Translate(ctx, "startWalletReadyMessage"))
 

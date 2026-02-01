@@ -39,25 +39,6 @@ func (bot *TipBot) balanceHandler(ctx intercept.Context) (intercept.Context, err
 
 	usrStr := GetUserStr(ctx.Sender())
 
-	// added by massmux: Initialize Breez wallet if enabled and not already initialized
-	if internal.Configuration.Breez.Enabled && !user.BreezInitialized {
-		log.Infof("[/balance] Initializing Breez wallet for user %s", usrStr)
-		err = bot.initUserBreezWallet(user)
-		if err != nil {
-			log.Warnf("[/balance] Failed to initialize Breez for user: %s", err)
-		} else {
-			// Update user record and reload to ensure we have the initialized state
-			err = UpdateUserRecord(user, *bot)
-			if err != nil {
-				log.Warnf("[/balance] Failed to update user record: %s", err)
-			}
-			// Clear cache to force reload of fresh user data
-			bot.Cache.Delete(user.Name)
-			// Reload user
-			user, _ = GetUser(ctx.Sender(), *bot)
-		}
-	}
-
 	// Get LNbits custodial balance (ONLY LNbits, not total)
 	lnbitsBalance, err := bot.GetLNbitsBalance(user)
 	if err != nil {

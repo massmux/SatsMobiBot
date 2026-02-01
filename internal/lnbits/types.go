@@ -40,11 +40,11 @@ type User struct {
 	BreezInitialized bool         `json:"breez_initialized"` // Whether user's Breez wallet is initialized
 
 	// PIN Protection Fields
-	PinSalt           string     `json:"pin_salt" gorm:"type:varchar(128)"`      // Salt for PBKDF2 (hex)
-	PinHash           string     `json:"pin_hash" gorm:"type:varchar(128)"`      // Bcrypt hash of PIN for verification
-	PinSetAt          *time.Time `json:"pin_set_at" gorm:"type:datetime"`        // Timestamp when PIN was set
-	PinFailedAttempts int        `json:"pin_failed_attempts" gorm:"default:0"`   // Number of failed PIN attempts
-	PinLockedUntil    *time.Time `json:"pin_locked_until" gorm:"type:datetime"`  // When PIN lockout expires
+	PinSalt           string     `json:"pin_salt" gorm:"type:varchar(128)"`     // Salt for PBKDF2 (hex)
+	PinHash           string     `json:"pin_hash" gorm:"type:varchar(128)"`     // Bcrypt hash of PIN for verification
+	PinSetAt          *time.Time `json:"pin_set_at" gorm:"type:datetime"`       // Timestamp when PIN was set
+	PinFailedAttempts int        `json:"pin_failed_attempts" gorm:"default:0"`  // Number of failed PIN attempts
+	PinLockedUntil    *time.Time `json:"pin_locked_until" gorm:"type:datetime"` // When PIN lockout expires
 }
 
 // HasPin returns true if user has a PIN set
@@ -99,6 +99,7 @@ const (
 	// PIN-related states
 	UserStateEnterNewPin
 	UserStateConfirmNewPin
+	UserStateConfirmPinWarning
 	UserStateEnterPinForOperation
 	UserStateEnterPinForBackup
 	UserStateEnterPinForPayment

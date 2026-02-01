@@ -192,26 +192,56 @@ func (bot *TipBot) confirmPayHandler(ctx intercept.Context) (intercept.Context, 
 		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
-	// ✨ NUOVO: Check se il pagamento userà Breez e richiedi PIN
-	userBreezCheck := bot.GetUserBreezClient(user)
-	willUseBreez := bot.shouldUseBreezForPayment(user, payData.Amount) && userBreezCheck != nil && userBreezCheck.IsInitialized()
+	// ✨ MODIFICATO: Check if user has Breez initialized and enough balance
+	// If client is not in memory but user has PIN, request PIN first
+	if user.BreezInitialized && user.HasPin() {
+		userBreezCheck := bot.GetUserBreezClient(user)
 
-	if willUseBreez && user.HasPin() {
-		// Pagamento Breez richiede PIN
-		log.Infof("[/pay] Breez payment detected, requesting PIN from user %s", GetUserStr(ctx.Sender()))
+		// Se il client non è in memoria, chiedi il PIN per inizializzarlo
+		if userBreezCheck == nil {
+			log.Infof("[/pay] User %s has Breez but client not in memory, requesting PIN", GetUserStr(ctx.Sender()))
 
-		// Salva i dati del pagamento nello stato utente per recuperarli dopo il PIN
-		user.StateKey = lnbits.UserStateEnterPinForPayment
-		user.StateData = string(payData.ID) // Salva l'ID della transazione
-		UpdateUserRecord(user, *bot)
+			// Salva i dati del pagamento nello stato utente
+			user.StateKey = lnbits.UserStateEnterPinForPayment
+			user.StateData = string(payData.ID)
+			UpdateUserRecord(user, *bot)
 
-		// Chiedi il PIN
-		bot.trySendMessage(user.Telegram,
-			"🔐 This payment will use your self-custodial wallet.\n\n"+
-				"Please enter your PIN to confirm:")
+			// Chiedi il PIN
+			bot.trySendMessage(user.Telegram,
+				"🔐 Your self-custodial wallet requires your PIN.\n\n"+
+					"Enter your PIN to process this payment:")
 
-		return ctx, nil
+			return ctx, nil
+		}
+
+		// Se il client è in memoria, verifica se ha abbastanza saldo per il pagamento
+		if userBreezCheck.IsInitialized() {
+			breezBalance, err := userBreezCheck.GetBalance()
+			if err == nil {
+				requiredBalance := int64(float64(payData.Amount) * 1.01) // 1% buffer for fees
+				willUseBreez := breezBalance >= requiredBalance
+
+				if willUseBreez {
+					// Breez ha abbastanza saldo, chiedi il PIN per confermare
+					log.Infof("[/pay] Breez has sufficient balance, requesting PIN from user %s", GetUserStr(ctx.Sender()))
+
+					user.StateKey = lnbits.UserStateEnterPinForPayment
+					user.StateData = string(payData.ID)
+					UpdateUserRecord(user, *bot)
+
+					bot.trySendMessage(user.Telegram,
+						"🔐 This payment will use your self-custodial wallet.\n\n"+
+							"Please enter your PIN to confirm:")
+
+					return ctx, nil
+				} else {
+					log.Infof("[/pay] Breez balance insufficient (%d < %d), will use LNbits", breezBalance, requiredBalance)
+				}
+			}
+		}
 	}
+
+	// ✨ Se arriviamo qui, o non ha Breez o non ha abbastanza saldo -> usa LNbits senza PIN
 
 	// reset state immediately
 	ResetUserState(user, bot)
@@ -328,7 +358,7 @@ func (bot *TipBot) shouldUseBreezForPayment(user *lnbits.User, amount int64) boo
 	return breezBalance >= requiredBalance
 }
 
-// ✨ NUOVA FUNZIONE: executeBreezPaymentWithPin esegue il pagamento Breez dopo verifica PIN
+// ✨ MODIFICATA: executeBreezPaymentWithPin esegue il pagamento Breez dopo verifica PIN
 func (bot *TipBot) executeBreezPaymentWithPin(ctx intercept.Context, user *lnbits.User, payDataID string) error {
 	// Recupera i dati del pagamento
 	tx := &PayData{Base: storage.New(storage.ID(payDataID))}
@@ -351,11 +381,17 @@ func (bot *TipBot) executeBreezPaymentWithPin(ctx intercept.Context, user *lnbit
 	// Mostra messaggio "processing"
 	processingMsg := bot.trySendMessage(user.Telegram, "⚡ Processing payment...")
 
-	// Esegui il pagamento con Breez
+	// ✨ NUOVO: Verifica che il client Breez sia inizializzato
+	// Il PIN è già stato verificato in handlePaymentPinInput, quindi possiamo usarlo
 	userBreez := bot.GetUserBreezClient(user)
 	if userBreez == nil || !userBreez.IsInitialized() {
+		log.Warnf("[/pay] Breez client not in memory, attempting to initialize")
+
+		// Il client deve essere inizializzato con il PIN prima di pagare
+		// Questo non dovrebbe succedere se il flusso è corretto, ma come fallback
 		bot.tryDeleteMessage(processingMsg)
-		bot.trySendMessage(user.Telegram, "❌ Breez wallet not initialized.")
+		bot.trySendMessage(user.Telegram,
+			"❌ Breez wallet not ready. Please try the payment again.")
 		return fmt.Errorf("breez not initialized")
 	}
 
