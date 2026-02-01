@@ -1425,7 +1425,7 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 					bot.unlockInterceptor,
 				}},
 		},
-		// ✨ HANDLER PER /setpin
+		// ✨ HANDLER PER /setpin - AGGIUNTO QUI
 		{
 			Endpoints: []interface{}{"/setpin"},
 			Handler:   bot.setPinHandler,

@@ -192,6 +192,27 @@ func (bot *TipBot) confirmPayHandler(ctx intercept.Context) (intercept.Context, 
 		return ctx, errors.Create(errors.UserNoWalletError)
 	}
 
+	// ✨ NUOVO: Check se il pagamento userà Breez e richiedi PIN
+	userBreezCheck := bot.GetUserBreezClient(user)
+	willUseBreez := bot.shouldUseBreezForPayment(user, payData.Amount) && userBreezCheck != nil && userBreezCheck.IsInitialized()
+
+	if willUseBreez && user.HasPin() {
+		// Pagamento Breez richiede PIN
+		log.Infof("[/pay] Breez payment detected, requesting PIN from user %s", GetUserStr(ctx.Sender()))
+
+		// Salva i dati del pagamento nello stato utente per recuperarli dopo il PIN
+		user.StateKey = lnbits.UserStateEnterPinForPayment
+		user.StateData = string(payData.ID) // Salva l'ID della transazione
+		UpdateUserRecord(user, *bot)
+
+		// Chiedi il PIN
+		bot.trySendMessage(user.Telegram,
+			"🔐 This payment will use your self-custodial wallet.\n\n"+
+				"Please enter your PIN to confirm:")
+
+		return ctx, nil
+	}
+
 	// reset state immediately
 	ResetUserState(user, bot)
 
@@ -305,6 +326,61 @@ func (bot *TipBot) shouldUseBreezForPayment(user *lnbits.User, amount int64) boo
 	// Add 1% buffer for fees
 	requiredBalance := int64(float64(amount) * 1.01)
 	return breezBalance >= requiredBalance
+}
+
+// ✨ NUOVA FUNZIONE: executeBreezPaymentWithPin esegue il pagamento Breez dopo verifica PIN
+func (bot *TipBot) executeBreezPaymentWithPin(ctx intercept.Context, user *lnbits.User, payDataID string) error {
+	// Recupera i dati del pagamento
+	tx := &PayData{Base: storage.New(storage.ID(payDataID))}
+	sn, err := tx.Get(tx, bot.Bunt)
+	if err != nil {
+		log.Errorf("[executeBreezPaymentWithPin] Failed to get payment data: %s", err)
+		bot.trySendMessage(user.Telegram, "❌ Payment data not found. Please try again.")
+		return err
+	}
+	payData := sn.(*PayData)
+
+	if !payData.Active {
+		bot.trySendMessage(user.Telegram, "❌ Payment is no longer active.")
+		return fmt.Errorf("payment not active")
+	}
+
+	userStr := GetUserStr(user.Telegram)
+	log.Infof("[/pay] Executing Breez payment for %s: %d sats", userStr, payData.Amount)
+
+	// Mostra messaggio "processing"
+	processingMsg := bot.trySendMessage(user.Telegram, "⚡ Processing payment...")
+
+	// Esegui il pagamento con Breez
+	userBreez := bot.GetUserBreezClient(user)
+	if userBreez == nil || !userBreez.IsInitialized() {
+		bot.tryDeleteMessage(processingMsg)
+		bot.trySendMessage(user.Telegram, "❌ Breez wallet not initialized.")
+		return fmt.Errorf("breez not initialized")
+	}
+
+	breezPayment, breezErr := userBreez.PayInvoice(payData.Invoice)
+	if breezErr != nil {
+		bot.tryDeleteMessage(processingMsg)
+		log.Errorf("[/pay] Breez payment failed: %s", breezErr)
+		bot.trySendMessage(user.Telegram,
+			fmt.Sprintf("❌ Payment failed: %s", breezErr.Error()))
+		return breezErr
+	}
+
+	// Pagamento riuscito
+	payData.Hash = breezPayment.PaymentHash
+	payData.Set(payData, bot.Bunt)
+
+	bot.tryDeleteMessage(processingMsg)
+	bot.trySendMessage(user.Telegram,
+		"✅ Payment successful!\n\n"+
+			fmt.Sprintf("Payment hash: `%s`", breezPayment.PaymentHash),
+		tb.ModeMarkdown)
+
+	log.Infof("[/pay] Breez payment successful: %s", breezPayment.PaymentHash)
+
+	return nil
 }
 
 // cancelPaymentHandler invoked when user clicked cancel on payment confirmation

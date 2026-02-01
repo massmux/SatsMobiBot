@@ -69,6 +69,26 @@ func (bot *TipBot) balanceHandler(ctx intercept.Context) (intercept.Context, err
 	var breezBalance int64 = 0
 	userBreez := bot.GetUserBreezClient(user)
 	log.Debugf("[/balance] User %s - BreezInitialized: %v, BreezClient exists: %v", usrStr, user.BreezInitialized, userBreez != nil)
+
+	// ✨ NUOVO: Se l'utente ha PIN ma il client non è in memoria, chiedi PIN
+	if userBreez == nil && user.BreezInitialized && user.HasPin() {
+		log.Infof("[/balance] Breez client not in memory for user with PIN, requesting PIN")
+
+		// Salva lo stato per sapere che stiamo aspettando il PIN per il balance
+		user.StateKey = lnbits.UserStateEnterPinForOperation
+		user.StateData = "view_balance"
+		UpdateUserRecord(user, *bot)
+
+		bot.trySendMessage(user.Telegram,
+			"🔐 Your self-custodial wallet requires your PIN.\n\n"+
+				"Enter your PIN to view your complete balance:")
+
+		// Mostra solo il balance LNbits per ora
+		message := fmt.Sprintf(Translate(ctx, "balanceMessage"), lnbitsBalance)
+		bot.trySendMessage(ctx.Message().Chat, message)
+		return ctx, nil
+	}
+
 	if userBreez != nil && userBreez.IsInitialized() {
 		log.Debugf("[/balance] Fetching Breez balance for %s", usrStr)
 		breezBalance, err = bot.GetBreezBalance(user)

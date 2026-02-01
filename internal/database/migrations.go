@@ -60,3 +60,6 @@ func MigrateUUIDSha265Hash(db *gorm.DB) error {
 	}
 	return nil
 }
+
+// NOTA: MigratePinFields è definita in pin_migration.go
+// Non duplicare qui per evitare errori di redeclaration

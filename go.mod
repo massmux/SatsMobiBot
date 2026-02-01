@@ -5,6 +5,7 @@ go 1.24.2
 require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/PuerkitoBio/goquery v1.8.0
+	github.com/breez/breez-sdk-liquid-go v0.11.7
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4
 	github.com/eko/gocache v1.2.0
 	github.com/fiatjaf/go-lnurl v1.13.1
@@ -25,8 +26,9 @@ require (
 	github.com/tidwall/buntdb v1.2.7
 	github.com/tidwall/gjson v1.12.1
 	github.com/tidwall/sjson v1.2.4
-	golang.org/x/net v0.36.0
-	golang.org/x/text v0.22.0
+	github.com/tyler-smith/go-bip39 v1.1.0
+	golang.org/x/net v0.48.0
+	golang.org/x/text v0.33.0
 	golang.org/x/time v0.3.0
 	gopkg.in/lightningtipbot/telebot.v3 v3.0.0-20220828121412-0dea11ecc6dd
 	gorm.io/driver/sqlite v1.1.4
@@ -35,9 +37,7 @@ require (
 
 require (
 	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da // indirect
-	github.com/breez/breez-sdk-liquid-go v0.11.7 // indirect
 	github.com/lightningnetwork/lightning-onion v1.2.1-0.20240712235311-98bd56499dfb // indirect
-	github.com/tyler-smith/go-bip39 v1.1.0 // indirect
 )
 
 require (
@@ -45,7 +45,6 @@ require (
 	github.com/SaveTheRbtz/generic-sync-map-go v0.0.0-20220414055132-a37292614db8 // indirect
 	github.com/XiaoMi/pegasus-go-client v0.0.0-20210427083443-f3b6b08bc4c2 // indirect
 	github.com/aead/siphash v1.0.1 // indirect
-	github.com/almerlucke/go-iban v0.0.0-20220324081643-09bcab81b879
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/bradfitz/gomemcache v0.0.0-20190913173617-a41fca850d0b // indirect
 	github.com/btcsuite/btcd v0.24.3-0.20240921052913-67b8efd3ba53 // indirect
@@ -111,13 +110,13 @@ require (
 	github.com/vulpemventures/fastsha256 v0.0.0-20160815193821-637e65642941 // indirect
 	github.com/vulpemventures/go-elements v0.5.5 // indirect
 	github.com/vulpemventures/go-secp256k1-zkp v1.1.6 // indirect
-	golang.org/x/crypto v0.35.0 // indirect
+	golang.org/x/crypto v0.47.0
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
-	golang.org/x/mod v0.17.0 // indirect
-	golang.org/x/sync v0.11.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/term v0.29.0 // indirect
-	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
+	golang.org/x/mod v0.31.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/term v0.39.0 // indirect
+	golang.org/x/tools v0.40.0 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect

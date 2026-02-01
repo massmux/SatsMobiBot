@@ -24,5 +24,12 @@ func initializeStateCallbackMessage(bot *TipBot) {
 		lnbits.UserStateRefundAwaitingAddress: bot.handleRefundAddressInput,
 		lnbits.UserStateSwapEnterAmount:       bot.enterSwapAmountHandler,
 		lnbits.UserStateSwapLNEnterAmount:     bot.enterSwapLNAmountHandler,
+
+		// ✨ AGGIUNGI QUESTE RIGHE PER GESTIONE STATI PIN:
+		lnbits.UserStateEnterNewPin:          bot.handlePinInput,
+		lnbits.UserStateConfirmNewPin:        bot.handlePinInput,
+		lnbits.UserStateEnterPinForOperation: bot.handlePinInput,
+		lnbits.UserStateEnterPinForBackup:    bot.handlePinInput,
+		lnbits.UserStateEnterPinForPayment:   bot.handlePinInput,
 	}
 }

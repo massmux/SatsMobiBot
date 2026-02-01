@@ -100,6 +100,16 @@ func ColumnMigrationTasks(db *gorm.DB) error {
 		err = database.MigrateUUIDSha265Hash(db)
 	}
 
+	// ✨ PIN fields migration (2025-01-31)
+	if !db.Migrator().HasColumn(&lnbits.User{}, "pin_salt") {
+		log.Info("Running PIN fields database migrations ...")
+		err = database.MigratePinFields(db)
+		if err != nil {
+			log.Errorf("[Migration] PIN fields migration failed: %s", err)
+			return err
+		}
+	}
+
 	// todo -- add more database field migrations here in the future
 	return err
 }
