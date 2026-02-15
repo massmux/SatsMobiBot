@@ -183,6 +183,26 @@ func (bot *TipBot) transactionsHandler(ctx intercept.Context) (intercept.Context
 	m := ctx.Message()
 	user := LoadUser(ctx)
 
+	// Verify user is initialized
+	if user == nil || !user.Initialized {
+		log.Infof("[/transactions] User not initialized, redirecting to /start")
+		return bot.startHandler(ctx)
+	}
+
+	// ✨ NUOVO: Check if user needs to set PIN first
+	if !user.HasPin() {
+		log.Infof("[/transactions] User %s needs to set PIN first", GetUserStr(user.Telegram))
+		msg := "🔐 *Welcome to Your Self-Custodial Wallet*\n\n" +
+			"To protect your funds, you need to set a PIN.\n\n" +
+			"This PIN will:\n" +
+			"• Encrypt your seed phrase\n" +
+			"• Protect your wallet access\n" +
+			"• Cannot be recovered if forgotten\n\n" +
+			"Use /setpin to continue."
+		bot.trySendMessage(m.Sender, msg, tb.ModeMarkdown)
+		return ctx, nil
+	}
+
 	// Get merged payments from both LNbits and Breez
 	payments, err := bot.getMergedPayments(user)
 	if err != nil {

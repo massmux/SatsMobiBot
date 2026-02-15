@@ -16,10 +16,6 @@ import (
 
 func (bot *TipBot) balanceHandler(ctx intercept.Context) (intercept.Context, error) {
 	m := ctx.Message()
-	// check and print all commands
-	if len(m.Text) > 0 {
-		bot.anyTextHandler(ctx)
-	}
 
 	// reply only in private message
 	if m.Chat.Type != tb.ChatPrivate {
@@ -37,7 +33,46 @@ func (bot *TipBot) balanceHandler(ctx intercept.Context) (intercept.Context, err
 		return bot.startHandler(ctx)
 	}
 
+	// ✨ NUOVO: Check if user needs to set PIN first
+	if !user.HasPin() {
+		log.Infof("[/balance] User %s needs to set PIN first", GetUserStr(ctx.Sender()))
+		msg := "🔐 *Welcome to Your Self-Custodial Wallet*\n\n" +
+			"To protect your funds, you need to set a PIN.\n\n" +
+			"This PIN will:\n" +
+			"• Encrypt your seed phrase\n" +
+			"• Protect your wallet access\n" +
+			"• Cannot be recovered if forgotten\n\n" +
+			"Use /setpin to continue."
+		bot.trySendMessage(ctx.Sender(), msg, tb.ModeMarkdown)
+		return ctx, nil
+	}
+
 	usrStr := GetUserStr(ctx.Sender())
+
+	// added by massmux: Initialize Breez wallet if enabled and not already initialized
+	if internal.Configuration.Breez.Enabled && !user.BreezInitialized {
+		log.Infof("[/balance] Initializing Breez wallet for user %s", usrStr)
+		err = bot.initUserBreezWallet(user)
+		if err != nil {
+			log.Warnf("[/balance] Failed to initialize Breez for user: %s", err)
+			// Se l'errore indica che serve il PIN, initUserBreezWallet ha già gestito
+			// la richiesta all'utente, quindi dobbiamo fare return per evitare di mostrare il balance
+			errMsg := err.Error()
+			if errMsg == "PIN required - user must set PIN first" || errMsg == "waiting for PIN to create wallet" {
+				return ctx, nil
+			}
+		} else {
+			// Update user record and reload to ensure we have the initialized state
+			err = UpdateUserRecord(user, *bot)
+			if err != nil {
+				log.Warnf("[/balance] Failed to update user record: %s", err)
+			}
+			// Clear cache to force reload of fresh user data
+			bot.Cache.Delete(user.Name)
+			// Reload user
+			user, _ = GetUser(ctx.Sender(), *bot)
+		}
+	}
 
 	// Get LNbits custodial balance (ONLY LNbits, not total)
 	lnbitsBalance, err := bot.GetLNbitsBalance(user)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
+	log "github.com/sirupsen/logrus"
 
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
@@ -31,6 +32,27 @@ func (bot TipBot) makeHelpMessage(ctx context.Context, m *tb.Message) string {
 
 func (bot TipBot) helpHandler(ctx intercept.Context) (intercept.Context, error) {
 	user := LoadUser(ctx)
+
+	// Verify user is initialized
+	if user == nil || !user.Initialized {
+		log.Infof("[/help] User not initialized, redirecting to /start")
+		return bot.startHandler(ctx)
+	}
+
+	// ✨ NUOVO: Check if user needs to set PIN first
+	if !user.HasPin() {
+		log.Infof("[/help] User %s needs to set PIN first", GetUserStr(user.Telegram))
+		msg := "🔐 *Welcome to Your Self-Custodial Wallet*\n\n" +
+			"To protect your funds, you need to set a PIN.\n\n" +
+			"This PIN will:\n" +
+			"• Encrypt your seed phrase\n" +
+			"• Protect your wallet access\n" +
+			"• Cannot be recovered if forgotten\n\n" +
+			"Use /setpin to continue."
+		bot.trySendMessage(ctx.Sender(), msg, tb.ModeMarkdown)
+		return ctx, nil
+	}
+
 	// helpMessage has 2 placeholders for the bot username
 	//helpMsg := fmt.Sprintf(Translate(ctx, "helpMessage"), bot.Telegram.Me.Username, bot.Telegram.Me.Username)
 	// metti qui i lightning address e lnurl
