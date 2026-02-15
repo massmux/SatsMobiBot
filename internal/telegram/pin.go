@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/massmux/SatsMobiBot/internal"
 	"github.com/massmux/SatsMobiBot/internal/breez"
 	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
@@ -253,10 +252,6 @@ func (bot *TipBot) handleConfirmPinInput(ctx intercept.Context, user *lnbits.Use
 				"Use /balance to check your wallet.",
 			tb.ModeMarkdown)
 
-		// ✨ Show help now that wallet is fully set up
-		bot.helpHandler(ctx)
-		bot.trySendMessage(user.Telegram, Translate(ctx, "startWalletReadyMessage"))
-
 		log.Infof("[PIN] Successfully created and encrypted Breez wallet for user %s", GetUserStr(user.Telegram))
 		return ctx, nil
 	}
@@ -369,25 +364,14 @@ func (bot *TipBot) handlePaymentPinInput(ctx intercept.Context, user *lnbits.Use
 	// PIN corretto
 	bot.resetPinAttempts(user)
 
-	// ✨ MODIFICATO: Inizializza il client Breez prima di eseguire il pagamento
+	// ✨ NUOVO: Esegui il pagamento Breez
 	payDataID := user.StateData
 	user.ResetState()
 	UpdateUserRecord(user, *bot)
 
 	if payDataID != "" {
-		log.Infof("[PIN] PIN verified, initializing Breez for payment for user %s", GetUserStr(user.Telegram))
-
-		// Inizializza il client Breez con il PIN
-		_, err := bot.InitializeBreezClientWithPin(user, pin)
-		if err != nil {
-			log.Errorf("[PIN] Failed to initialize Breez: %s", err)
-			bot.trySendMessage(user.Telegram,
-				"❌ Failed to unlock wallet. Please try again.")
-			return ctx, err
-		}
-
-		// Esegui il pagamento
-		err = bot.executeBreezPaymentWithPin(ctx, user, payDataID)
+		log.Infof("[PIN] PIN verified, executing Breez payment for user %s", GetUserStr(user.Telegram))
+		err := bot.executeBreezPaymentWithPin(ctx, user, payDataID)
 		if err != nil {
 			return ctx, err
 		}
@@ -400,7 +384,7 @@ func (bot *TipBot) handlePaymentPinInput(ctx intercept.Context, user *lnbits.Use
 func (bot *TipBot) savePinForUser(user *lnbits.User, pin string) error {
 	var err error
 
-	// Se l'utente ha già una seedphrase cifrata con la vecchia chiave, ricifra
+	// Se l'utente ha già una seedphrase e sta cambiando PIN
 	isRecrypt := user.HasPin() && user.BreezMnemonic != ""
 
 	if isRecrypt {
@@ -412,30 +396,14 @@ func (bot *TipBot) savePinForUser(user *lnbits.User, pin string) error {
 
 		user.PinSalt = newSalt
 	} else {
-		// Primo PIN o non ha ancora seedphrase
-		// Genera salt
+		// Primo PIN - genera salt
 		user.PinSalt, err = breez.GenerateSalt()
 		if err != nil {
 			return fmt.Errorf("failed to generate salt: %w", err)
 		}
 
-		// Se ha già una seedphrase cifrata con la master key, ricifra con il PIN
-		if user.BreezMnemonic != "" {
-			// Decifra con la master key
-			mnemonic, err := breez.DecryptMnemonic(user.BreezMnemonic,
-				internal.Configuration.Breez.EncryptionKey)
-			if err != nil {
-				// Prova a vedere se è già cifrata con un PIN (caso edge)
-				log.Warnf("[PIN] Failed to decrypt with master key, might already be PIN-encrypted: %s", err)
-			} else {
-				// Ricifra con il PIN
-				encrypted, err := breez.EncryptMnemonicWithPin(mnemonic, pin, user.PinSalt)
-				if err != nil {
-					return fmt.Errorf("failed to encrypt with PIN: %w", err)
-				}
-				user.BreezMnemonic = encrypted
-			}
-		}
+		// Note: If user has existing mnemonic, it will be re-encrypted
+		// when they next access it (handled in initUserBreezWallet)
 	}
 
 	// Hash il PIN per la verifica

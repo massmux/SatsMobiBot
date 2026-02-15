@@ -67,13 +67,6 @@ func (bot TipBot) startHandler(ctx intercept.Context) (intercept.Context, error)
 		}
 	}
 
-	// Check if user needs to set PIN before proceeding
-	if internal.Configuration.Breez.Enabled && !user.HasPin() {
-		log.Infof("[/start] User %s needs to set PIN, not showing help yet", GetUserStr(ctx.Sender()))
-		// Don't show help or ready message yet - user needs to set PIN first
-		return ctx, nil
-	}
-
 	bot.helpHandler(ctx)
 	bot.trySendMessage(ctx.Sender(), Translate(ctx, "startWalletReadyMessage"))
 
@@ -164,7 +157,7 @@ func (bot *TipBot) initUserBreezWallet(user *lnbits.User) error {
 	var mnemonic string
 	var err error
 
-	// ✨ NUOVO: Check if user has PIN set
+	// Check if user has PIN set
 	if !user.HasPin() {
 		log.Infof("[Breez] User %s needs to set PIN first", GetUserStr(user.Telegram))
 
@@ -182,91 +175,16 @@ func (bot *TipBot) initUserBreezWallet(user *lnbits.User) error {
 
 	// Check if user has encrypted mnemonic stored in DB
 	if user.BreezMnemonic != "" {
-		// Try to decrypt existing mnemonic
+		// User has existing mnemonic, decrypt it with PIN
 		log.Infof("[Breez] User %s has existing encrypted mnemonic", GetUserStr(user.Telegram))
 
-		// ✨ MODIFICATO: Prova prima con PIN, poi con master key (backward compatibility)
-		if user.HasPin() {
-			// L'utente ha un PIN, ma la mnemonic potrebbe essere ancora cifrata con master key
-			// Proviamo prima con master key per backward compatibility
-			mnemonic, err = breez.DecryptMnemonic(user.BreezMnemonic, internal.Configuration.Breez.EncryptionKey)
-			if err != nil {
-				// Se fallisce con master key, potrebbe essere già cifrata con PIN
-				// Ma questo caso non dovrebbe verificarsi in questo flusso
-				log.Warnf("[Breez] Failed to decrypt with master key: %s", err)
-
-				// Check if it's plaintext
-				if breez.ValidateMnemonic(user.BreezMnemonic) == nil {
-					log.Infof("[Breez] Found plaintext mnemonic for user %s", GetUserStr(user.Telegram))
-					mnemonic = user.BreezMnemonic
-
-					// Encrypt with PIN
-					encryptedMnemonic, encErr := breez.EncryptMnemonicWithPin(mnemonic, user.PinHash, user.PinSalt)
-					if encErr != nil {
-						log.Errorf("[Breez] Failed to encrypt with PIN: %s", encErr)
-					} else {
-						user.BreezMnemonic = encryptedMnemonic
-						if updateErr := UpdateUserRecord(user, *bot); updateErr != nil {
-							log.Errorf("[Breez] Failed to save PIN-encrypted mnemonic: %s", updateErr)
-						} else {
-							log.Infof("[Breez] Successfully migrated plaintext to PIN-encrypted mnemonic for user %s", GetUserStr(user.Telegram))
-						}
-					}
-				} else {
-					log.Errorf("[Breez] Mnemonic is neither valid encrypted nor valid plaintext")
-					return fmt.Errorf("failed to decrypt mnemonic: %w", err)
-				}
-			} else {
-				// Successfully decrypted with master key
-				// Migrate to PIN encryption
-				log.Infof("[Breez] Migrating from master key to PIN encryption for user %s", GetUserStr(user.Telegram))
-
-				encryptedMnemonic, encErr := breez.EncryptMnemonicWithPin(mnemonic, user.PinHash, user.PinSalt)
-				if encErr != nil {
-					log.Errorf("[Breez] Failed to encrypt with PIN: %s", encErr)
-					// Continue with master key encryption for now
-				} else {
-					user.BreezMnemonic = encryptedMnemonic
-					if updateErr := UpdateUserRecord(user, *bot); updateErr != nil {
-						log.Errorf("[Breez] Failed to save PIN-encrypted mnemonic: %s", updateErr)
-					} else {
-						log.Infof("[Breez] Successfully migrated to PIN encryption for user %s", GetUserStr(user.Telegram))
-					}
-				}
-			}
-		} else {
-			// User doesn't have PIN yet, use master key (backward compatibility)
-			mnemonic, err = breez.DecryptMnemonic(user.BreezMnemonic, internal.Configuration.Breez.EncryptionKey)
-			if err != nil {
-				// Migration: Check if mnemonic is plaintext (old format)
-				log.Warnf("[Breez] Decryption failed, checking if plaintext mnemonic: %s", err)
-
-				if breez.ValidateMnemonic(user.BreezMnemonic) == nil {
-					log.Infof("[Breez] Using plaintext mnemonic for user %s", GetUserStr(user.Telegram))
-					mnemonic = user.BreezMnemonic
-
-					// Encrypt with master key
-					encryptedMnemonic, encErr := breez.EncryptMnemonic(mnemonic, internal.Configuration.Breez.EncryptionKey)
-					if encErr != nil {
-						log.Errorf("[Breez] Failed to encrypt plaintext mnemonic: %s", encErr)
-					} else {
-						user.BreezMnemonic = encryptedMnemonic
-						if updateErr := UpdateUserRecord(user, *bot); updateErr != nil {
-							log.Errorf("[Breez] Failed to save encrypted mnemonic: %s", updateErr)
-						} else {
-							log.Infof("[Breez] Successfully migrated and encrypted mnemonic for user %s", GetUserStr(user.Telegram))
-						}
-					}
-				} else {
-					log.Errorf("[Breez] Mnemonic is neither valid encrypted nor valid plaintext")
-					return fmt.Errorf("failed to decrypt mnemonic: %w", err)
-				}
-			} else {
-				log.Infof("[Breez] Successfully decrypted mnemonic with master key for user %s", GetUserStr(user.Telegram))
-			}
+		mnemonic, err = breez.DecryptMnemonicWithPin(user.BreezMnemonic, user.PinHash, user.PinSalt)
+		if err != nil {
+			log.Errorf("[Breez] Failed to decrypt mnemonic with PIN: %s", err)
+			return fmt.Errorf("failed to decrypt mnemonic: %w", err)
 		}
 	} else {
-		// ✨ MODIFICATO: Generate new mnemonic with PIN protection
+		// Generate new mnemonic with PIN protection
 		log.Infof("[Breez] Generating new mnemonic for user %s", GetUserStr(user.Telegram))
 
 		// Request PIN to encrypt the new mnemonic

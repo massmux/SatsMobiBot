@@ -3,7 +3,6 @@ package internal
 import (
 	"fmt"
 	"net/url"
-	"os"
 	"strings"
 
 	"github.com/jinzhu/configor"
@@ -96,9 +95,7 @@ type BreezConfiguration struct {
 	APIKey            string `yaml:"api_key"`
 	WorkingDir        string `yaml:"working_dir"`
 	Network           string `yaml:"network"`
-	MnemonicEncrypted string `yaml:"mnemonic_encrypted"` // Deprecated
-	//EncryptionKey     string `yaml:"encryption_key"`     // 32-byte hex key for AES-256-GCM
-	EncryptionKey string
+	MnemonicEncrypted string `yaml:"mnemonic_encrypted"` // Deprecated - not used anymore
 }
 
 type LimitsConfiguration struct {
@@ -134,16 +131,11 @@ func init() {
 }
 */
 
-// New init function to load encryption key from environment variable
+// Init function to load configuration
 func init() {
 	err := configor.Load(&Configuration, "config.yaml")
 	if err != nil {
 		panic(err)
-	}
-
-	// Carica la chiave di cifratura dalla variabile d'ambiente
-	if Configuration.Breez.Enabled {
-		Configuration.Breez.EncryptionKey = os.Getenv("ENCRYPTION_KEY")
 	}
 
 	webhookUrl, err := url.Parse(Configuration.Lnbits.WebhookServer)
@@ -191,7 +183,7 @@ func checkBreezConfiguration() {
 }
 */
 
-// new check function to load encryption key from environment variable
+// checkBreezConfiguration validates Breez settings
 func checkBreezConfiguration() {
 	if Configuration.Breez.Enabled {
 		if Configuration.Breez.WorkingDir == "" {
@@ -200,22 +192,8 @@ func checkBreezConfiguration() {
 		if Configuration.Breez.Network == "" {
 			Configuration.Breez.Network = "testnet"
 		}
-		if Configuration.Breez.EncryptionKey == "" {
-			panic(fmt.Errorf("ENCRYPTION_KEY environment variable is required when Breez is enabled. Please run with ./start.sh"))
-		}
-		// Validate encryption key is 64 hex characters (32 bytes)
-		if len(Configuration.Breez.EncryptionKey) != 64 {
-			panic(fmt.Errorf("ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes), got %d characters", len(Configuration.Breez.EncryptionKey)))
-		}
 
-		// Validate it's valid hex
-		for i, c := range Configuration.Breez.EncryptionKey {
-			if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
-				panic(fmt.Errorf("ENCRYPTION_KEY contains invalid hex character at position %d: '%c'", i, c))
-			}
-		}
-
-		log.Infof("[Config] Breez enabled: network=%s, workingDir=%s (encryption key loaded from environment)",
+		log.Infof("[Config] Breez enabled: network=%s, workingDir=%s",
 			Configuration.Breez.Network, Configuration.Breez.WorkingDir)
 	} else {
 		log.Debugf("[Config] Breez integration disabled")

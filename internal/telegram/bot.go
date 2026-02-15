@@ -123,59 +123,17 @@ func (bot *TipBot) GetUserBreezClient(user *lnbits.User) *breez.Client {
 		if internal.Configuration.Breez.Enabled && user.BreezInitialized && user.BreezMnemonic != "" {
 			log.Infof("[GetUserBreezClient] Breez client not in memory for user %d", user.Telegram.ID)
 
-			var mnemonic string
-			var err error
-
-			// ✨ MODIFICATO: Se l'utente ha PIN, NON possiamo decifrare senza il PIN
+			// User has PIN-encrypted mnemonic, cannot decrypt without PIN
 			if user.HasPin() {
 				log.Infof("[GetUserBreezClient] User %d has PIN-encrypted mnemonic, cannot decrypt without PIN", user.Telegram.ID)
-				// Ritorna nil - la funzione chiamante DEVE richiedere il PIN
+				// Return nil - calling function MUST request PIN
 				return nil
 			}
 
-			// Utente SENZA PIN: usa master key (backward compatibility)
-			log.Infof("[GetUserBreezClient] User has no PIN, using master key decryption")
-			mnemonic, err = breez.DecryptMnemonic(user.BreezMnemonic, internal.Configuration.Breez.EncryptionKey)
-			if err != nil {
-				// Migration: Check if mnemonic is plaintext (old format)
-				log.Warnf("[GetUserBreezClient] Decryption failed, checking if plaintext mnemonic: %s", err)
-
-				// Validate if it's a valid plaintext mnemonic
-				if breez.ValidateMnemonic(user.BreezMnemonic) == nil {
-					log.Infof("[GetUserBreezClient] Migrating plaintext mnemonic to encrypted for user %d", user.Telegram.ID)
-					mnemonic = user.BreezMnemonic
-
-					// Encrypt the plaintext mnemonic with master key
-					encryptedMnemonic, encErr := breez.EncryptMnemonic(mnemonic, internal.Configuration.Breez.EncryptionKey)
-					if encErr != nil {
-						log.Errorf("[GetUserBreezClient] Failed to encrypt plaintext mnemonic: %s", encErr)
-					} else {
-						// Update DB with encrypted version
-						user.BreezMnemonic = encryptedMnemonic
-						if updateErr := UpdateUserRecord(user, *bot); updateErr != nil {
-							log.Errorf("[GetUserBreezClient] Failed to save encrypted mnemonic: %s", updateErr)
-						} else {
-							log.Infof("[GetUserBreezClient] Successfully migrated and encrypted mnemonic for user %d", user.Telegram.ID)
-						}
-					}
-				} else {
-					log.Errorf("[GetUserBreezClient] Mnemonic is neither valid encrypted nor valid plaintext")
-					return nil
-				}
-			}
-
-			// Final guardrail: don't initialize Breez with an invalid mnemonic (checksum)
-			if valErr := breez.ValidateMnemonic(mnemonic); valErr != nil {
-				log.Errorf("[GetUserBreezClient] Refusing to initialize Breez with invalid mnemonic for user %d: %s", user.Telegram.ID, valErr)
-				return nil
-			}
-
-			client, err := bot.initializeUserBreezClient(user.Telegram.ID, mnemonic)
-			if err != nil {
-				log.Errorf("[GetUserBreezClient] Failed to reinitialize: %s", err)
-				return nil
-			}
-			return client
+			// This should never happen in the new system
+			// All users must have PIN to use Breez
+			log.Errorf("[GetUserBreezClient] User %d has Breez but no PIN - invalid state", user.Telegram.ID)
+			return nil
 		}
 		return nil
 	}
