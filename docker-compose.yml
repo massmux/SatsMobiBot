@@ -2,7 +2,7 @@ version: "3.3"
 
 services:
     satsmobi:
-        container_name: satsmobi
+        container_name: origsatsmobi
         hostname: satsmobi
         image: massmux/satsmobi
         restart: on-failure

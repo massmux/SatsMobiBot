@@ -295,3 +295,29 @@ func UpdateUserRecord(user *lnbits.User, bot TipBot) error {
 	}
 	return nil
 }
+
+
+// StartBuntCleanup avvia un goroutine che pulisce periodicamente il BuntDB
+// eliminando gli oggetti non aggiornati da più di maxAge.
+func StartBuntCleanup(db *storage.DB, interval time.Duration, maxAge time.Duration) {
+	log.Infof("[BuntCleanup] Avviato — intervallo: %s, maxAge: %s", interval, maxAge)
+	time.AfterFunc(5*time.Minute, func() {
+		runBuntCleanup(db, maxAge)
+	})
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for range ticker.C {
+		runBuntCleanup(db, maxAge)
+	}
+}
+
+func runBuntCleanup(db *storage.DB, maxAge time.Duration) {
+	log.Infof("[BuntCleanup] Inizio pulizia oggetti più vecchi di %s...", maxAge)
+	t := time.Now()
+	n, err := db.Cleanup(maxAge)
+	if err != nil {
+		log.Errorf("[BuntCleanup] Errore: %v", err)
+		return
+	}
+	log.Infof("[BuntCleanup] Eliminati %d oggetti in %s", n, time.Since(t))
+}

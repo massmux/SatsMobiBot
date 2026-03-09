@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"time"
 	"runtime/debug"
 
 	"github.com/massmux/SatsMobiBot/internal"
@@ -39,6 +40,10 @@ func main() {
 	defer withRecovery()
 	price.NewPriceWatcher().Start()
 	bot := telegram.NewBot()
+
+	go telegram.StartBuntCleanup(bot.Bunt, 24*time.Hour, 30*24*time.Hour)
+    	go telegram.StartBuntCleanup(bot.ShopBunt, 24*time.Hour, 90*24*time.Hour)
+
 	startApiServer(&bot)
 	bot.Start()
 }
