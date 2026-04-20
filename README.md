@@ -19,6 +19,7 @@ The first time you run /start command, you will immediately get a @sats.mobi Lig
 - [gozxing](https://github.com/makiuchi-d/gozxing) – barcode image processing library in Go.
 - [ln-decodepay](https://github.com/fiatjaf/ln-decodepay) – Lightning Network BOLT11 invoice decoder.
 - [go-lnurl](https://github.com/fiatjaf/go-lnurl) - Helpers for building lnurl support into services.
+- [breesdk](https://github.com/breez/breez-sdk-liquid) - BreezSDK Liquid.
 
 ## What this Bot can do
 
