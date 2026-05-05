@@ -1,27 +1,27 @@
-bot:  
- socks_proxy:  
-     host:    
-     username:    
-     password:    
- tor_proxy:  
-     host:    
- lnurl_public_host_name: "https://PUBLIC_HOSTNAME_FOR_YOURVPS"  
- lnurl_server: "http://satsmobi:5454"  
- lnurl_image: true  
- admin_api_host: satsmobi:6060  
- username: "@yourusername"
- name: "sats.mobi"
- botadmin: "yourbotadmin"
+bot:
+  socks_proxy:
+      host:
+      username:
+      password:
+  tor_proxy:
+      host:
+  lnurl_public_host_name: "https://sats.mobi"
+  lnurl_server: "http://satsmobi:5454"
+  lnurl_image: true
+  admin_api_host: localhost:6060
+  username: "@SatsMobiBot"
+  name: "sats.mobi"
+  botadmin: "telegramuserofadmin"
 telegram:  
  message_dispose_duration: 10  
- api_key: "YOURTELEGRAMBOTKEY"  
-lnbits:  
- url: "https://mylnurl.com"  
- admin_key: "YOUR_LNBITS_ADMINKEY"  
- admin_id: "YOUR_LNBITS_ADMINID"  
- webhook_call: "http://PUBLIC_HOST_IP_FOR_YOURVPS:5588"
- webhook_server: "http://satsmobi:5588"
- lnbits_public_url: "https://YOUR_LNBITS_PUBLIC_URL/"  
+ api_key: "XXXX"  
+lnbits:
+  url: "https://seven.gwoq.com"
+  admin_key: "XXXX"
+  admin_id: "XXXX"
+  webhook_call: "http://IP:5588"
+  webhook_server: "http://satsmobi:5588"
+  lnbits_public_url: "https://lnbitspublicurl/"
 database:  
  db_path: "data/bot.db"  
  buntdb_path: "data/bunt.db"  
@@ -39,11 +39,11 @@ pos:
  currency: "EUR"
  max_balance: 1000000
 breez:
-  enabled: false
-  api_key: "YOUR_BREEZ_API_KEY"
+  enabled: true  # Set to true when you want to enable Breez
+  api_key: "XXXX"
   working_dir: "data/breez"
   network: "mainnet"
 limits:
-  lnbits_max_balance: 50000   # S - Maximum sats in Hot before routing to Breez
-  auto_swap_threshold: 60000  # S2 - Auto-swap (B-S) to Breez when Hot
+  lnbits_max_balance: 50000
+  auto_swap_threshold: 60000
 

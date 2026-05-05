@@ -1,20 +1,10 @@
-# Instructions:
-
-1 - Talk to the botfather
-2 - Use: /setcommands
-3 - Select your tip bot
-4 - Paste this:
-
 help - Read the help.
-balance - Check balances. 
+balance - Check balance. 
 transactions - Transactions list.
 tip - Reply to a message to tip: /tip 50
-send - Send Hot funds to a user: /send 100 @SatsMobiBot
-invoice - Create Lightning invoice: /invoice 1000
-pay - Pay Invoice: /pay lnbc10n1ps...
-donate - Donate: /donate 1000
+send - Send funds to a user: /send 100 @SatsMobiBot
+invoice - Receive: /invoice 1000
+pay - Pay an invoice: /pay lnbc10n1ps...
 faucet - Create a faucet: /faucet 2100 21 
 pos - Create POS
-swaptosafe - Swap ALL Hot to Safe: /swaptosafe
-swaptohot - Fill Hot from Safe up to max: /swaptohot
-swapall - Swap ALL from Hot to Safe (alias): /swapall
+basics - Description and TOS
