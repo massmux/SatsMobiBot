@@ -4,7 +4,7 @@ services:
     satsmobi:
         container_name: satsmobi
         hostname: satsmobi
-        image: massmux/satsmobi:selfcustodial
+        image: massmux/satsmobi
         restart: on-failure
         volumes:
           - ${PWD}/data:/opt/SatsMobiBot/data
