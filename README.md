@@ -1,6 +1,6 @@
-# @SatsMobiBot
+# @SatsMobiBot (classic)
 
-A Telegram Lightning ⚡️ Bitcoin wallet, with built-in POS, Scrub function and NFC Cards management. This project is a fork and evolution of the decommissioned LightningTipBot.
+A Telegram Lightning ⚡️ Bitcoin wallet, with built-in POS, Scrub function and NFC Cards management. This project is a fork and evolution of the decommissioned LightningTipBot. Classic branch.
 
 This repository contains everything you need to set up and run your own Bot and POS facility. If you simply want to use this bot in your group chat without having to install anything just start a conversation with [@SatsMobiBot](https://t.me/SatsMobiBot) and invite it into your group chat.
 

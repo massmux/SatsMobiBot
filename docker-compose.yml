@@ -2,9 +2,9 @@ version: "3.3"
 
 services:
     satsmobi:
-        container_name: origsatsmobi
+        container_name: classic
         hostname: satsmobi
-        image: massmux/satsmobi
+        image: massmux/satsmobi:classic
         restart: on-failure
         volumes:
           - ${PWD}/data:/opt/SatsMobiBot/data
