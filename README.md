@@ -41,9 +41,9 @@ SatsMobiBot implements a **PIN-based encryption system** for self-custodial Bree
 
 ### How PIN Protection Works
 
-When a user sets up their self-custodial wallet, the following happens:
+When a user sets up their self-custodial wallet, the Breez SDK libreary used and the following happens:
 
-1. **Mnemonic generation** — A fresh BIP39 mnemonic (seed phrase) is generated for the user.
+1. **Mnemonic generation** — A fresh BIP39 mnemonic (seed phrase) is generated for the user using Breez SDK
 2. **Key derivation** — A 256-bit AES key is derived from the user's PIN using PBKDF2-SHA256 with a random per-user salt.
 3. **Encryption** — The mnemonic is encrypted with AES-256-GCM using the derived key.
 4. **Storage** — Only the encrypted mnemonic and the salt are stored in the database. The PIN itself is never stored.
@@ -54,7 +54,7 @@ When a user subsequently uses a wallet command:
 2. The PIN arrives as plaintext in the Go bot process memory.
 3. PBKDF2 re-derives the AES key from the PIN and the stored salt.
 4. The mnemonic is decrypted in RAM using AES-256-GCM.
-5. The Breez SDK is initialized with the plaintext mnemonic.
+5. The Breez SDK is initialized with the mnemonic.
 6. The mnemonic is used for the operation and is not persisted anywhere in plaintext.
 
 ### Known Limitations
