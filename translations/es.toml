@@ -48,12 +48,12 @@ backButtonMessage = """Atrás"""
 acceptButtonMessage = """Aceptar"""
 denyButtonMessage = """Rechazar"""
 tipButtonMessage = """Propina"""
-revealButtonMessage = """Mostrar"""
+revealButtonMessage = """Revelar"""
 showButtonMessage = """Mostrar"""
 hideButtonMessage = """Ocultar"""
 joinButtonMessage = """Unirse"""
 optionsButtonMessage = """Opciones"""
-settingsButtonMessage = """Configuración"""
+settingsButtonMessage = """Ajustes"""
 saveButtonMessage = """Guardar"""
 deleteButtonMessage = """Eliminar"""
 infoButtonMessage = """Info"""
@@ -64,17 +64,17 @@ payButtonEmoji = """💸"""
 # HELP
 
 helpMessage = """⚡️ *SatsMobi*
-_Esta es una suite de cartera Bitcoin Lightning de código abierto y autocustodia. Hay 2 saldos: Hot y Safe. Se utiliza la biblioteca Breez. Haz una copia de seguridad de tu mnemónico después de /start. Usa /basics para los Términos de Servicio._
+_Esta es una suite de carteras Bitcoin Lightning opensource self-custodial. Hay 2 Saldos: Hot y Safer. Se utiliza la librería Breez. Haz una copia de seguridad de tu mnémónico después de /start. Usa /basics para los TdS._
 
-👉 *Comandos básicos* (Hot/Safe)
+👉 *Comandos básicos* (Hot/Safer)
 */tip*: Responde a un mensaje para dar propina (Hot): `/tip <cantidad> [<memo>]`
-*/balance*: Revisa tu saldo (Hot|Safe): `/balance`
-*/send*: Envía sats a un usuario (Hot): `/send <cantidad> @usuario o usuario@sats.mobi [<memo>]`
-*/invoice*: Recibir (Safe): `/invoice <cantidad> [<memo>]`
-*/pay*: Pagar factura (Safe): `/pay <factura>`
-*/rate*: Verificar tipos de cambio: `/rate [cantidad] [moneda]` - Ejemplo: `/rate 10000 USD`
+*/balance*: Comprueba tu saldo (Hot|Safer): `/balance`
+*/send*: Envía propinas a un usuario (Hot): `/send <cantidad> @usuario o usuario@sats.mobi [<memo>]`
+*/invoice*: Recibir (Safer): `/invoice <cantidad> [<memo>]`
+*/pay*: Pagar factura (Safer): `/pay <factura>`
+*/rate*: Consulta tipos de cambio: `/rate [cantidad] [moneda]` - Ejemplo: `/rate 10000 USD`
 */cashback*: QRCODE para recibir cashback.
-*/activatecard*: Solicitar activación de una NFC Card SatsMobi `/activatecard <CardID>`
+*/activatecard*: Solicita la activación de una NFC Card SatsMobi `/activatecard <CardID>`
 
 👉 *Comandos inline*
 *send*: Enviar sats al chat: `@%s send <cantidad> [<usuario>] [<memo>]`
@@ -82,21 +82,21 @@ _Esta es una suite de cartera Bitcoin Lightning de código abierto y autocustodi
 *faucet*: Crear un faucet: `... faucet <capacidad> <por_usuario> [<memo>]`
 *tipjar*: Crear un tipjar: `... tipjar <capacidad> <por_usuario> [<memo>]`
 
-📖 Puedes usar comandos inline en cualquier chat, incluso en conversaciones privadas. Espera un segundo después de ingresar un comando inline y *haz clic* en el resultado, no presiones enter.
+📖 Puedes usar comandos inline en cualquier chat, incluso en conversaciones privadas. Espera un segundo después de introducir un comando inline y *haz clic* en el resultado, no pulses intro.
 
-👉 *Comandos avanzados* (Hot/Safe)
+👉 *Comandos avanzados* (Hot/Safer)
 */transactions*: Lista de transacciones
 */link*: Vincular Hot a Bluewallet o Zeus
-*/lnurl*: Lnurl recibir o pagar (Hot): `/lnurl` o `/lnurl <lnurl> [memo]`
-*/nostr*: Conectarse a Nostr: `/nostr` primera vez: `/nostr help`
+*/lnurl*: Recibir o pagar mediante Lnurl (Hot): `/lnurl` o `/lnurl <lnurl> [memo]`
+*/nostr*: Conectar con Nostr: `/nostr` primera vez: `/nostr help`
 */pos*: Prepara tu POS (Hot): `/pos`
-*/group*: Funciones de chat grupal (Hot): `/group`
+*/group*: Funciones de chat de grupo (Hot): `/group`
 */shop*: Explorar tiendas: `/shop` o `/shop <usuario/shop_id>`
-*/backup*: Copia de seguridad de tu Seed Safe: `/backup`
-*/buybtc*: Comprar Bitcoin con Moonpay: `/buybtc`
-*/swaptosafe*: Mover TODOS los fondos de Hot a Safe: `/swaptosafe`
-*/swapall*: Alias para mover todo de Hot a Safe: `/swapall`
-*/swaptohot*: Recargar Hot desde Safe hasta el límite: `/swaptohot`
+*/backup*: Copia de seguridad de tu Seedphrase Safer: `/backup`
+*/buybtc*: Compra Bitcoin con Moonpay: `/buybtc`
+*/swaptosafe*: Intercambiar TODOS los fondos de Hot a Safer: `/swaptosafe`
+*/swapall*: Alias para intercambiar todo de Hot a Safer: `/swapall`
+*/swaptohot*: Llenar Hot con Safer hasta el límite: `/swaptohot`
 */help*: Leer esta ayuda.
 """
 infoHelpMessage = """ℹ️ *Info*"""
@@ -109,32 +109,32 @@ infoYourAnonLNURL = """Tu LNURL Anónimo (Hot) es: `%s`
 
 basicsMessage = """
 *Economía*
-_Esta es una suite de cartera Bitcoin Lightning de código abierto y autocustodia. Hay 2 saldos: Hot y Safe. Se utiliza la lib Breez. Haz una copia de seguridad de tu mnemónico después de /start._
+_Esta es una suite de carteras Bitcoin Lightning opensource self-custodial (se aplican limitaciones de Telegram y Breez). Hay 2 Saldos: Hot y Safer. Se usa la librería Breez. Haz copia de seguridad de tu mnémónico después de /start. Investiga por tu cuenta y usa solo pequeñas cantidades, este es software en beta y puede ser inseguro._
 
 *Carteras Lightning*
-_Tu saldo Safe puede usarse para enviar y recibir fondos en la red Lightning de forma autocustodia, donde posees tus claves. También puedes intercambiar de Hot a Safe cuando quieras. El saldo Hot puede usarse para propinas rápidas y pequeñas en Telegram. Haz una copia de seguridad de la frase semilla inmediatamente._
+_Tu Saldo Safer puede usarse para enviar y recibir fondos en la red Lightning de forma que poseas tus propias claves. También puedes intercambiar de Hot a Saldo Safer cuando quieras. El saldo Hot puede usarse para propinas rápidas y pequeñas en Telegram. Haz inmediatamente la copia de seguridad de la seedphrase_.
 
-*Código Abierto*
-_Este Bot es software libre y de código abierto. Puedes ejecutarlo en tu propio ordenador y usarlo en tu propia comunidad. Es una herramienta destinada solo con fines educativos._
+*Open Source*
+_Este Bot es software libre y opensource. Puedes ejecutarlo en tu propio ordenador y usarlo en tu comunidad. Es una herramienta destinada únicamente con fines educativos._
 
 *Telegram*
-_Añade este Bot a tu chat de grupo de Telegram para dar /tip a los mensajes. Si haces al bot administrador del grupo, también limpiará los comandos para mantener el chat ordenado._
+_Añade este Bot a tu chat de grupo de Telegram para enviar /tip a los mensajes. Si haces al bot administrador del grupo, también eliminará los comandos para mantener el chat ordenado._
 
 *Términos de Servicio*
-_Haz una copia de seguridad inmediata de tus claves con el comando /backup, justo después de /start. No podemos ayudar a recuperar las claves en caso de uso indebido. Este Bot está en desarrollo beta y es experimental. Úsalo bajo tu propio riesgo. Los swaps están sujetos a comisiones de swap debido a la biblioteca Breez Nodeless utilizada en esta herramienta._
+_Haz inmediatamente una copia de seguridad de tus claves con el comando /backup, justo después de /start. No podemos ayudar a recuperar las claves en caso de uso indebido. Este Bot está en desarrollo beta y es experimental. Úsalo bajo tu propio riesgo. Los intercambios están sujetos a comisiones de swap debidas a la librería Breez Nodeless utilizada en esta herramienta. No uses más que pequeñas cantidades. Ten en cuenta las limitaciones conocidas por el uso de Telegram y la librería Breez._
 
-_Los ciudadanos y residentes de los Estados Unidos y cualquier país sancionado por la SECO tienen prohibido usar este servicio. Al continuar, confirmas y declaras que NO eres ciudadano de los Estados Unidos o de ningún país sancionado por la SECO._
+_Los ciudadanos y residentes de los Estados Unidos y cualquier país sancionado por la SECO tienen prohibido usar este servicio. Al continuar, confirmas y declaras que NO eres ciudadano de los Estados Unidos ni de ningún país sancionado por la SECO._
 
-Sobre las comisiones de Breez Swap: [Comisiones Breez](https://sdk-doc-liquid.breez.technology/guide/base_fees.html)
+Acerca de las comisiones de Swap Breez: [Comisiones Breez](https://sdk-doc-liquid.breez.technology/guide/base_fees.html)
 """
 
 helpNoUsernameMessage = """👋 Por favor, establece un nombre de usuario de Telegram."""
 
 # GENERIC
-enterAmountRangeMessage        = """💯 Ingresa una cantidad entre %d y %d sat."""
-enterAmountMessage             = """💯 Ingresa una cantidad."""
-enterUserMessage               = """👤 Ingresa un usuario."""
-enterTextMessage               = """⌨️ Ingresa texto."""
+enterAmountRangeMessage        = """💯 Introduce una cantidad entre %d y %d sat."""
+enterAmountMessage             = """💯 Introduce una cantidad."""
+enterUserMessage               = """👤 Introduce un usuario."""
+enterTextMessage               = """⌨️ Introduce el texto."""
 errorReasonMessage             = """🚫 Error: %s"""
 
 # START
@@ -142,46 +142,38 @@ errorReasonMessage             = """🚫 Error: %s"""
 startSettingWalletMessage = """🧮 Configurando tu cartera..."""
 startWalletCreatedMessage = """🧮 Cartera creada."""
 startWalletReadyMessage   = """✅ *Tu Cartera está lista.*"""
-startWalletErrorMessage   = """🚫 Error al inicializar tu Cartera. Inténtalo más tarde."""
-startNoUsernameMessage    = """☝️ Parece que aún no tienes un @nombre de usuario de Telegram. Está bien, no necesitas uno para usar este bot. Sin embargo, para hacer un mejor uso de tu cartera, configura un nombre de usuario en la configuración de Telegram. Luego, ingresa /balance para que el bot pueda actualizar tu registro."""
+startWalletErrorMessage   = """🚫 Error al inicializar tu Cartera. Inténtalo de nuevo más tarde."""
+startNoUsernameMessage    = """☝️ Parece que aún no tienes un @username de Telegram. No pasa nada, no lo necesitas para usar este bot. Sin embargo, para aprovechar mejor tu cartera, establece un nombre de usuario en los ajustes de Telegram. Luego, introduce /balance para que el bot actualice tus datos."""
 
 # BALANCE
 
 balanceMessage      = """👑 *Tu saldo:* %d sat"""
-balanceErrorMessage = """🚫 No se pudo obtener tu saldo. Por favor, inténtalo más tarde."""
-balanceOverMax      = """El saldo HOT está sobre el límite. El máximo es:
-
-*%s Sats*
-
-Por favor, mueve el saldo de Hot a Safe Wallet.
-"""
+balanceErrorMessage = """🚫 No se pudo obtener tu saldo. Por favor, inténtalo de nuevo más tarde."""
+balanceOverMax      = """El saldo HOT ha superado el límite. El máximo es:\n\n*%s Sats*\n\nPor favor intercambia el Saldo de Hot a la Cartera Safer.\n"""
 
 balanceTotalMessage = """💰 *Resumen de tu Saldo.*
 			
 			Hot: `%d` Sats
-			Safe: `%d` Sats
+			Safer: `%d` Sats
 			━━━━━━━━━━━━━━━━
 			Total: `%d` Sats"""
 
 # TIP
 
-tipDidYouReplyMessage = """¿Respondiste a un mensaje para dar propina? Para responder a cualquier mensaje, clic derecho -> Responder en tu computadora o desliza el mensaje en tu teléfono. Si quieres enviar directamente a otro usuario, usa el comando /send."""
-tipInviteGroupMessage = """ℹ️ Por cierto, puedes invitar a este bot a cualquier grupo para empezar a dar propinas allí."""
-tipEnterAmountMessage = """¿Ingresaste una cantidad?"""
-tipValidAmountMessage = """¿Ingresaste una cantidad válida?"""
+tipDidYouReplyMessage = """¿Respondiste a un mensaje para dar propina? Para responder a cualquier mensaje, haz clic derecho -> Responder en tu ordenador o desliza el mensaje en tu teléfono. Si quieres enviar directamente a otro usuario, usa el comando /send."""
+tipInviteGroupMessage = """ℹ️ Por cierto, puedes invitar a este bot a cualquier grupo para empezar a dar propinas ahí."""
+tipEnterAmountMessage = """¿Introdujiste una cantidad?"""
+tipValidAmountMessage = """¿Introdujiste una cantidad válida?"""
 tipYourselfMessage    = """📖 No puedes darte propina a ti mismo."""
 tipSentMessage        = """💸 %d sat enviados a %s."""
-tipReceivedMessage    = """🏅 %s te ha dado una propina de %d sat."""
+tipReceivedMessage    = """🏅 %s te ha enviado una propina de %d sat."""
 tipErrorMessage       = """🚫 Propina fallida."""
-tipUndefinedErrorMsg  = """por favor, inténtalo más tarde."""
-tipHelpText           = """📖 Vaya, eso no funcionó. %s
-
-*Uso:* `/tip <cantidad> [<memo>]`
-*Ejemplo:* `/tip 1000 ¡Meme genial!`"""
+tipUndefinedErrorMsg  = """por favor inténtalo de nuevo más tarde."""
+tipHelpText           = """📖 Vaya, algo salió mal. %s\n\n*Uso:* `/tip <cantidad> [<memo>]`\n*Ejemplo:* `/tip 1000 ¡Meme genial!`"""
 
 # SEND
 
-sendValidAmountMessage     = """¿Ingresaste una cantidad válida?"""
+sendValidAmountMessage     = """¿Introdujiste una cantidad válida?"""
 sendUserHasNoWalletMessage = """🚫 El usuario %s aún no ha creado una cartera."""
 sendSentMessage            = """💸 %d sat enviados a %s."""
 sendPublicSentMessage      = """💸 %d sat enviados de %s a %s."""
@@ -190,27 +182,19 @@ sendErrorMessage           = """🚫 Envío fallido."""
 confirmSendMessage         = """¿Quieres pagar a %s?\n\n💸 Cantidad: %d sat"""
 confirmSendAppendMemo      = """\n✉️ %s"""
 sendCancelledMessage       = """🚫 Envío cancelado."""
-errorTryLaterMessage       = """🚫 Error. Por favor, inténtalo más tarde."""
-sendSyntaxErrorMessage     = """¿Ingresaste una cantidad y un destinatario? Puedes usar el comando /send para enviar a usuarios de Telegram como %s o a una dirección Lightning como USERNAME@sats.mobi ."""
-sendHelpText               = """📖 Vaya, eso no funcionó. %s
-
-*Uso:* `/send <cantidad> <usuario> [<memo>]`
-*Ejemplo:* `/send 1000 @SatsMobiBot Me encanta este bot ❤️`
-"""
+errorTryLaterMessage       = """🚫 Error. Por favor inténtalo de nuevo más tarde."""
+sendSyntaxErrorMessage     = """¿Introdujiste una cantidad y un destinatario? Puedes usar el comando /send para enviar a usuarios de Telegram como %s o a una dirección Lightning como USERNAME@sats.mobi ."""
+sendHelpText               = """📖 Vaya, algo salió mal. %s\n\n*Uso:* `/send <cantidad> <usuario> [<memo>]`\n*Ejemplo:* `/send 1000 @SatsMobiBot Me encanta este bot ❤️`\n"""
 
 # INVOICE
 
 invoiceReceivedMessage    = """⚡️ Recibiste %d sat."""
 invoiceReceivedCurrencyMessage    = """⚡️ Recibiste %d sat (%.2f %s)."""
-invoiceEnterAmountMessage = """¿Ingresaste una cantidad?"""
-invoiceValidAmountMessage = """¿Ingresaste una cantidad válida?"""
-invoiceHelpText           = """📖 Vaya, eso no funcionó. %s
-
-*Uso:* `/invoice <cantidad> [<memo>]`
-*Ejemplo:* `/invoice 1000 ¡Gracias!`"""
-
+invoiceEnterAmountMessage = """¿Introdujiste una cantidad?"""
+invoiceValidAmountMessage = """¿Introdujiste una cantidad válida?"""
+invoiceHelpText           = """📖 Vaya, algo salió mal. %s\n\n*Uso:* `/invoice <cantidad> [<memo>]`\n*Ejemplo:* `/invoice 1000 ¡Gracias!`"""
 invoicePaidText           = """✅ Factura pagada."""
-invoiceWaitingMessage     = """⏳ Esperando que se pague la factura..."""
+invoiceWaitingMessage     = """⏳ Esperando el pago de la factura..."""
 invoicePaidConfirmedMessage = """✅ Factura Pagada"""
 
 # PAY
@@ -218,36 +202,26 @@ invoicePaidConfirmedMessage = """✅ Factura Pagada"""
 paymentCancelledMessage      = """🚫 Pago cancelado."""
 invoicePaidMessage           = """⚡️ Pago enviado."""
 invoicePublicPaidMessage     = """⚡️ Pago enviado por %s."""
-invalidInvoiceHelpMessage    = """¿Ingresaste una factura Lightning válida? Intenta /send si quieres enviar a un usuario de Telegram o a una dirección Lightning."""
+invalidInvoiceHelpMessage    = """¿Introdujiste una factura Lightning válida? Prueba /send si quieres enviar a un usuario de Telegram o a una dirección Lightning."""
 invoiceNoAmountMessage       = """🚫 No se pueden pagar facturas sin cantidad."""
-insufficientFundsMessage     = """🚫 Fondos insuficientes. Tienes %d sat pero necesitas al menos %d sat."""
-feeReserveMessage            = """⚠️ Enviar todo tu saldo podría fallar debido a las comisiones de red. Reserva al menos el 1% para comisiones."""
+insufficientFundsMessage     = """🚫 Fondos insuficientes. Tienes %d sat pero necesitas al menos %d."""
+feeReserveMessage            = """⚠️ Enviar todo tu saldo podría fallar por las comisiones de red. Reserva al menos un 1%% para comisiones."""
 invoicePaymentFailedMessage  = """🚫 Pago fallido: %s"""
 invoiceUndefinedErrorMessage = """No se pudo pagar la factura."""
 confirmPayInvoiceMessage     = """¿Quieres enviar este pago?\n\n💸 Cantidad: %d sat"""
 confirmPayAppendMemo         = """\n✉️ %s"""
-payHelpText                  = """📖 Vaya, eso no funcionó. %s
+payHelpText                  = """📖 Vaya, algo salió mal. %s\n\n*Uso:* `/pay <factura>`\n*Ejemplo:* `/pay lnbc20n1psscehd...`"""
 
-*Uso:* `/pay <factura>`
-*Ejemplo:* `/pay lnbc20n1psscehd...`"""
+activatecardHelpText         = """📖 Vaya, algo salió mal. No olvides el CardID (código de 14 caracteres) después del comando\n\n*Uso:* `/activatecard <cardid>`\n*Ejemplo:* `/activatecard 04B4596A926980`"""
 
-activatecardHelpText         = """📖 Vaya, eso no funcionó. No olvides el CardID (código de 14 caracteres) después del comando
-
-*Uso:* `/activatecard <cardid>`
-*Ejemplo:* `/activatecard 04B4596A926980`"""
-
-activateScrubHelpText         = """📖 Vaya, eso no funcionó. No olvides el argumento después del comando
-
-*Uso:* `/scrub <Dirección-Lightning|off>`
-*Ejemplo:* `/scrub someuser@getalby.com` envía fondos a esa dirección o `/scrub off` desactiva el servicio Scrub"""
-
+activateScrubHelpText         = """📖 Vaya, algo salió mal. No olvides el argumento después del comando\n\n*Uso:* `/scrub <dirección-Lightning|off>`\n*Ejemplo:* `/scrub someuser@getalby.com` envía fondos a esa dirección o `/scrub off` desactiva el servicio Scrub"""
 
 # NFC CARDS
 
 activatecardSendText                  = """
 ✅Activación de NFC Card solicitada
 
-Solicitaste la activación de tu tarjeta %s para tu usuario de Telegram. Esta opción solo está disponible para tarjetas SatsMobi, no para las genéricas.
+Has solicitado la activación de tu card %s para tu usuario de Telegram. Esta opción solo está disponible para cards SatsMobi, no para las genéricas.
 
 ❗️Ten en cuenta que la activación tardará al menos 24 horas. Cuando esté lista recibirás un mensaje de confirmación"""
 
@@ -263,13 +237,13 @@ Notificación
 #activatecard
 """
 confirmCardAdminSendText                  = """
-✅Activación de Tarjeta confirmada
+✅Activación de Card confirmada
 
-Tu ID de tarjeta NFC
+Tu NFC card ID
 
 `%s`
 
-ha sido activado exitosamente en tu Cuenta de Telegram.
+¡ha sido activado correctamente en tu Cuenta de Telegram!
 """
 
 # DONATE
@@ -278,38 +252,31 @@ donationSuccess          = """🙏 Gracias por tu donación."""
 donationErrorMessage     = """🚫 Oh no. Donación fallida."""
 donationProgressMessage  = """🧮 Preparando tu donación..."""
 donationFailedMessage    = """🚫 Donación fallida: %s"""
-donateEnterAmountMessage = """¿Ingresaste una cantidad?"""
-donateValidAmountMessage = """¿Ingresaste una cantidad válida?"""
-donateHelpText           = """📖 Vaya, eso no funcionó. %s
-
-*Uso:* `/send <cantidad> 0x8859a71ff4569543@sats.mobi`
-*Ejemplo:* `/send 1000 0x8859a71ff4569543@sats.mobi`"""
+donateEnterAmountMessage = """¿Introdujiste una cantidad?"""
+donateValidAmountMessage = """¿Introdujiste una cantidad válida?"""
+donateHelpText           = """📖 Vaya, algo salió mal. %s\n\n*Uso:* `/send <cantidad> 0x8859a71ff4569543@sats.mobi`\n*Ejemplo:* `/send 1000 0x8859a71ff4569543@sats.mobi`"""
 
 # PHOTO
 
-photoQrNotRecognizedMessage = """🚫 No se pudo reconocer una factura Lightning o un LNURL. Intenta centrar el código QR, recortar la foto o hacer zoom."""
-photoQrRecognizedMessage = """✅ Código QR:
-`%s`"""
+photoQrNotRecognizedMessage = """🚫 No se pudo reconocer una factura Lightning o un LNURL. Intenta centrar el código QR, recortar la foto o acercar el zoom."""
+photoQrRecognizedMessage = """✅ Código QR:\n`%s`"""
 
 # LNURL
 
-cashbackReceiveInfoText        = """Mi QRCODE Personal para Cashback."""
+cashbackReceiveInfoText        = """Mi QRCODE Personal para el Cashback."""
 lnurlReceiveInfoText           = """👇 Puedes usar este LNURL estático para recibir pagos."""
 lnurlResolvingUrlMessage       = """🧮 Resolviendo dirección..."""
 lnurlGettingUserMessage        = """🧮 Preparando pago..."""
 lnurlPaymentFailed             = """🚫 Pago fallido: %s"""
 lnurlInvalidAmountMessage      = """🚫 Cantidad inválida."""
 lnurlInvalidAmountRangeMessage = """🚫 La cantidad debe estar entre %d y %d sat."""
-lnurlNoUsernameMessage         = """🚫 Necesitas establecer un nombre de usuario de Telegram para recibir pagos vía LNURL."""
-lnurlHelpText                  = """📖 Vaya, eso no funcionó. %s
-
-*Uso:* `/lnurl [cantidad] <lnurl>`
-*Ejemplo:* `/lnurl LNURL1DP68GUR...`"""
+lnurlNoUsernameMessage         = """🚫 Necesitas establecer un nombre de usuario de Telegram para recibir pagos mediante LNURL."""
+lnurlHelpText                  = """📖 Vaya, algo salió mal. %s\n\n*Uso:* `/lnurl [cantidad] <lnurl>`\n*Ejemplo:* `/lnurl LNURL1DP68GUR...`"""
 
 # LNURL LOGIN
 
 confirmLnurlAuthMessager        = """¿Quieres iniciar sesión en %s?"""
-lnurlSuccessfulLogin            = """✅ Inicio de sesión exitoso."""
+lnurlSuccessfulLogin            = """✅ Sesión iniciada correctamente."""
 loginButtonMessage              = """✅ Iniciar sesión"""
 loginCancelledMessage           = """🚫 Inicio de sesión cancelado."""
 
@@ -325,7 +292,7 @@ lnurlWithdrawSuccess          = """✅ Retiro solicitado."""
 
 posSendText = """*Tu POS*
 
-Abre este enlace donde quieras. El pago que recibas con este POS estará disponible automáticamente en tu Cuenta
+Simplemente abre este enlace donde quieras. El pago que recibas con este POS estará disponible automáticamente en tu Cuenta
 
 Este es tu POS activado:
 
@@ -338,19 +305,19 @@ Usuario: %s
 
 scrubSendText = """↗️*Servicio Scrub ACTIVADO*
 
-El Servicio Scrub ha sido ACTIVADO en tu cuenta. Esto reenviará a la dirección Lightning especificada todos los pagos entrantes en tu cuenta. Es tu responsabilidad proporcionar una dirección Lightning correcta que poseas.
+El Servicio Scrub ha sido ACTIVADO en tu cuenta. Reenviará a la dirección Lightning que especificaste todos los pagos entrantes de tu cuenta. Es tu responsabilidad proporcionar una dirección Lightning correcta que poseas.
 
-Estos son tus detalles de activación:
+Detalles de activación:
 
 Usuario: %s
 Dirección Lightning de destino: %s
 
-Para cambiar la dirección de destino, simplemente vuelve a ejecutar el comando con una dirección Lightning diferente
+Para cambiar la dirección de destino, vuelve a ejecutar el comando con una dirección Lightning diferente
 """
 
 scrubOffSendText = """↘️*Servicio Scrub DESACTIVADO*
 
-El servicio Scrub ha sido DESACTIVADO. Esto significa que los pagos entrantes ya no se reenviarán al exterior. Solo llama de nuevo al comando con una dirección de destino para reactivarlo.
+El servicio Scrub ha sido DESACTIVADO. Los pagos entrantes ya no se reenviarán al exterior. Vuelve a llamar al comando con una dirección de destino para reactivarlo.
 
 Usuario: %s
 """
@@ -361,10 +328,10 @@ walletConnectMessage = """🔗 *Vincula tu cartera HOT*
 
 ⚠️ Nunca compartas la URL o el código QR con nadie o podrán acceder a tus fondos. Usa /api para tus claves API.
 
-- *BlueWallet:* Presiona *Nueva cartera*, *Importar cartera*, *Escanear o importar un archivo*, y escanea el código QR.
-- *Zeus:* Copia la URL de abajo, presiona *Agregar un nuevo nodo*, selecciona *LNDHub* como interfaz de nodo, ingresa la URL, *Guardar configuración del nodo*."""
-couldNotLinkMessage             = """🚫 No se pudo vincular tu cartera. Por favor, inténtalo más tarde."""
-linkHiddenMessage               = """🔍 Enlace oculto. Ingresa /link para verlo de nuevo."""
+- *BlueWallet:* Pulsa *Nueva cartera*, *Importar cartera*, *Escanear o importar un archivo*, y escanea el código QR.
+- *Zeus:* Copia la URL de abajo, pulsa *Añadir un nuevo nodo*, selecciona *LNDHub* como interfaz de Nodo, introduce la URL, *Guardar configuración del nodo*."""
+couldNotLinkMessage             = """🚫 No se pudo vincular tu cartera. Por favor inténtalo de nuevo más tarde."""
+linkHiddenMessage               = """🔍 Enlace oculto. Introduce /link para verlo de nuevo."""
 
 # API
 
@@ -374,7 +341,7 @@ apiConnectMessage = """🔗 *Tus claves API*
 
 - *Clave Admin:* `%s`
 - *Clave Factura:* `%s`"""
-apiHiddenMessage               = """🔍 Claves ocultas. Ingresa /api para verlas de nuevo."""
+apiHiddenMessage               = """🔍 Claves ocultas. Introduce /api para verlas de nuevo."""
 
 # FAUCET
 
@@ -383,33 +350,27 @@ inlineQueryFaucetDescription  = """Uso: @%s faucet <capacidad> <por_usuario>"""
 inlineResultFaucetTitle       = """🚰 Crear un faucet de %d sat."""
 inlineResultFaucetDescription = """👉 Haz clic aquí para crear un faucet en este chat."""
 
-inlineFaucetMessage                     = """Presiona ✅ para recoger %d sat del faucet de %s.
-
-🚰 Restante: %d/%d sat (dado a %d/%d usuarios)
-%s"""
+inlineFaucetMessage                     = """Pulsa ✅ para recoger %d sat del faucet de %s.\n\n🚰 Restantes: %d/%d sat (dados a %d/%d usuarios)\n%s"""
 inlineFaucetEndedMessage                = """🚰 Faucet vacío 🍺\n\n🏅 %d sat dados a %d usuarios."""
 inlineFaucetAppendMemo                  = """\n✉️ %s"""
 inlineFaucetCreateWalletMessage         = """Chatea con %s 👈 para gestionar tu cartera."""
 inlineFaucetCancelledMessage            = """🚫 Faucet cancelado."""
-inlineFaucetInvalidPeruserAmountMessage = """🚫 La cantidad por usuario no es divisor de la capacidad o es demasiado baja (mín 5 sat)."""
+inlineFaucetInvalidPeruserAmountMessage = """🚫 La cantidad por usuario no es divisor de la capacidad o es demasiado baja (mín. 5 sat)."""
 inlineFaucetInvalidAmountMessage        = """🚫 Cantidad inválida."""
 inlineFaucetSentMessage                 = """🚰 %d sat enviados a %s."""
 inlineFaucetReceivedMessage             = """🚰 %s te ha enviado %d sat."""
-inlineFaucetHelpFaucetInGroup           = """Crea un faucet en un grupo con el bot dentro o usa 👉 el comando inline (/help para más información)."""
-inlineFaucetAlreadyTookMessage          = """🚫 Ya tomaste de este faucet."""
-inlineFaucetHelpText                    = """📖 Vaya, eso no funcionó. %s
-
-*Uso:* `/faucet <capacidad> <por_usuario>`
-*Ejemplo:* `/faucet 210 21`"""
+inlineFaucetHelpFaucetInGroup           = """Crea un faucet en un grupo con el bot dentro o usa el 👉 comando inline (/help para más información)."""
+inlineFaucetAlreadyTookMessage          = """🚫 Ya recogiste de este faucet."""
+inlineFaucetHelpText                    = """📖 Vaya, algo salió mal. %s\n\n*Uso:* `/faucet <capacidad> <por_usuario>`\n*Ejemplo:* `/faucet 210 21`"""
 
 # INLINE SEND
 
-inlineQuerySendTitle            = """💸 Enviar pago a un chat."""
+inlineQuerySendTitle            = """💸 Enviar un pago a un chat."""
 inlineQuerySendDescription      = """Uso: @%s send <cantidad> [<usuario>] [<memo>]"""
 inlineResultSendTitle           = """💸 Enviar %d sat."""
 inlineResultSendDescription     = """👉 Haz clic para enviar %d sat a este chat."""
 
-inlineSendMessage              = """Presiona ✅ para recibir el pago de %s.\n\n💸 Cantidad: %d sat"""
+inlineSendMessage              = """Pulsa ✅ para recibir el pago de %s.\n\n💸 Cantidad: %d sat"""
 inlineSendAppendMemo           = """\n✉️ %s"""
 inlineSendUpdateMessageAccept  = """💸 %d sat enviados de %s a %s."""
 inlineSendCreateWalletMessage  = """Chatea con %s 👈 para gestionar tu cartera."""
@@ -425,7 +386,7 @@ inlineQueryReceiveDescription  = """Uso: @%s receive <cantidad> [<usuario>] [<me
 inlineResultReceiveTitle       = """🏅 Recibir %d sat."""
 inlineResultReceiveDescription = """👉 Haz clic para solicitar un pago de %d sat."""
 
-inlineReceiveMessage             = """Presiona 💸 para pagar a %s.\n\n💸 Cantidad: %d sat"""
+inlineReceiveMessage             = """Pulsa 💸 para pagar a %s.\n\n💸 Cantidad: %d sat"""
 inlineReceiveAppendMemo          = """\n✉️ %s"""
 inlineReceiveUpdateMessageAccept = """💸 %d sat enviados de %s a %s."""
 inlineReceiveCreateWalletMessage = """Chatea con %s 👈 para gestionar tu cartera."""
@@ -440,10 +401,7 @@ inlineQueryTipjarDescription  = """Uso: @%s tipjar <capacidad> <por_usuario>"""
 inlineResultTipjarTitle       = """🍯 Crear un tipjar de %d sat."""
 inlineResultTipjarDescription = """👉 Haz clic aquí para crear un tipjar en este chat."""
 
-inlineTipjarMessage                     = """Presiona 💸 para *pagar %d sat* a este tipjar de %s.
-
-🙏 Dado: *%d*/%d sat (por %d usuarios)
-%s"""
+inlineTipjarMessage                     = """Pulsa 💸 para *pagar %d sat* a este tipjar de %s.\n\n🙏 Dado: *%d*/%d sat (por %d usuarios)\n%s"""
 inlineTipjarEndedMessage                = """🍯 El tipjar de %s está lleno ⭐️\n\n🏅 %d sat dados por %d usuarios."""
 inlineTipjarAppendMemo                  = """\n✉️ %s"""
 inlineTipjarCancelledMessage            = """🚫 Tipjar cancelado."""
@@ -451,60 +409,33 @@ inlineTipjarInvalidPeruserAmountMessage = """🚫 La cantidad por usuario no es 
 inlineTipjarInvalidAmountMessage        = """🚫 Cantidad inválida."""
 inlineTipjarSentMessage                 = """🍯 %d sat enviados a %s."""
 inlineTipjarReceivedMessage             = """🍯 %s te ha enviado %d sat."""
-inlineTipjarHelpTipjarInGroup           = """Crea un tipjar en un grupo con el bot dentro o usa 👉 el comando inline (/help para más información)."""
-inlineTipjarHelpText                    = """📖 Vaya, eso no funcionó. %s
-
-*Uso:* `/tipjar <capacidad> <por_usuario>`
-*Ejemplo:* `/tipjar 210 21`"""
+inlineTipjarHelpTipjarInGroup           = """Crea un tipjar en un grupo con el bot dentro o usa el 👉 comando inline (/help para más información)."""
+inlineTipjarHelpText                    = """📖 Vaya, algo salió mal. %s\n\n*Uso:* `/tipjar <capacidad> <por_usuario>`\n*Ejemplo:* `/tipjar 210 21`"""
 
 # GROUP TICKETS
-groupAddGroupHelpMessage            = """📖 Vaya, eso no funcionó. Este comando solo funciona en un chat de grupo. Solo los propietarios del grupo pueden usar este comando.\nUso: `/group add <nombre_grupo> [<cantidad>]`\nEjemplo: `/group add MejorGrupoBitcoin 1000`"""
-groupJoinGroupHelpMessage           = """📖 Vaya, eso no funcionó. Por favor, inténtalo de nuevo.\nUso: `/join <nombre_grupo>`\nEjemplo: `/join MejorGrupoBitcoin`"""
+groupAddGroupHelpMessage            = """📖 Vaya, algo salió mal. Este comando solo funciona en un chat de grupo. Solo los propietarios del grupo pueden usar este comando.\nUso: `/group add <nombre_grupo> [<cantidad>]`\nEjemplo: `/group add ElMejorGrupoBitcoin 1000`"""
+groupJoinGroupHelpMessage           = """📖 Vaya, algo salió mal. Por favor inténtalo de nuevo.\nUso: `/join <nombre_grupo>`\nEjemplo: `/join ElMejorGrupoBitcoin`"""
 groupClickToJoinMessage             = """🎟 [Haz clic aquí](%s) 👈 para unirte a `%s`."""
 groupTicketIssuedGroupMessage       = """🎟 El usuario %s ha recibido un ticket para este grupo."""
 groupPayInvoiceMessage              = """🎟 Para unirte al grupo %s, paga la factura de arriba."""
-groupBotIsNotAdminMessage           = """🚫 Vaya, eso no funcionó. Debes hacerme administrador y concederme derechos para invitar y expulsar usuarios."""
-groupNameExists                     = """🚫 Ya existe un grupo con este nombre. Por favor, elige un nombre diferente."""
+groupBotIsNotAdminMessage           = """🚫 Vaya, algo salió mal. Debes hacerme administrador y concederme derechos para invitar y banear usuarios."""
+groupNameExists                     = """🚫 Ya existe un grupo con este nombre. Por favor elige un nombre diferente."""
 groupAddedMessagePrivate            = """🎟 Tickets para el grupo `%s` añadidos.\n\nAlias: `%s` Precio: %d sat\n\nPara solicitar un ticket para este grupo, inicia una conversación privada con %s y escribe `/join %s`."""
 groupAddedMessagePublic             = """🎟 Tickets habilitados."""
-groupNotFoundMessage                = """🚫 No se pudo encontrar un grupo con este nombre."""
-groupReceiveTicketInvoiceCommission = """🎟 Recibiste *%d sat* (excl. comisión de %d sat) por un ticket para el grupo `%s` pagado por el usuario %s."""
-groupReceiveTicketInvoice           = """🎟 Recibiste *%d sat* por un ticket para el grupo `%s` pagado por el usuario %s."""
-commandPrivateMessage               = """Por favor, usa este comando en una conversación privada con %s."""
-groupHelpMessage                    = """👥 *Comandos de grupo*
-
-🎟 *Tickets públicos*
-
-Para admins (en el chat de grupo): `/group ticket <precio_ticket>`\nEjemplo: `/group ticket 1000`
-
-🎟 *Tickets privados*
-
-Vende tickets para tu _Grupo privado_ y deshazte de los bots spam.
-
-*Instrucciones para administradores del grupo:*
-
-1) Invita a %s a tu grupo y hazlo administrador.
-2) Haz tu grupo privado.
-3) En tu grupo, tú (el propietario del grupo) escribe `/group add <miGrupo> [<precio_ticket>]`.
-
-_Comisiones: El bot toma una comisión del 10%% +10 sat para tickets baratos. Si el ticket es >= 1000 sat, la comisión es del 2%% + 100 sat._
-
-*Instrucciones para miembros del grupo:*
-
-Para unirte a un grupo, habla con %s y escribe en un mensaje privado `/join <miGrupo>`.
-
-📖 *Uso:*
-Para admins (en el chat de grupo): `/group add <nombre_grupo> [<precio_ticket>]`\nEjemplo: `/group add MejorGrupoBitcoin 1000`
-Para usuarios (en el chat privado): `/join <nombre_grupo>`\nEjemplo: `/join MejorGrupoBitcoin`"""
+groupNotFoundMessage                = """🚫 No se encontró ningún grupo con este nombre."""
+groupReceiveTicketInvoiceCommission = """🎟 Recibiste *%d sat* (excl. comisión de %d sat) por un ticket del grupo `%s` pagado por el usuario %s."""
+groupReceiveTicketInvoice           = """🎟 Recibiste *%d sat* por un ticket del grupo `%s` pagado por el usuario %s."""
+commandPrivateMessage               = """Por favor usa este comando en una conversación privada con %s."""
+groupHelpMessage                    = """👥 *Comandos de grupo*\n\n🎟 *Tickets públicos*\n\nPara admins (en chat de grupo): `/group ticket <precio_ticket>`\nEjemplo: `/group ticket 1000`\n\n🎟 *Tickets privados*\n\nVende tickets para tu _Grupo privado_ y elimina los bots spam.\n\n*Instrucciones para administradores del grupo:*\n\n1) Invita a %s a tu grupo y hazlo admin.\n2) Haz tu grupo privado.\n3) En tu grupo, tú (el propietario) escribe `/group add <migrupo> [<precio_ticket>]`.\n\n_Comisiones: El bot cobra una comisión del 10%% +10 sat para tickets baratos. Si el ticket es >= 1000 sat, la comisión es del 2%% + 100 sat._\n\n*Instrucciones para miembros del grupo:*\n\nPara unirte a un grupo, habla con %s y escribe en un mensaje privado `/join <migrupo>`.\n\n📖 *Uso:*\nPara admins (en chat de grupo): `/group add <nombre_grupo> [<precio_ticket>]`\nEjemplo: `/group add ElMejorGrupoBitcoin 1000`\nPara usuarios (en chat privado): `/join <nombre_grupo>`\nEjemplo: `/join ElMejorGrupoBitcoin`"""
 
 # DALLE GENERATE
 generateDalleHelpMessage        = """Genera imágenes usando OpenAI DALLE 2.\nUso: `/generate <prompt>`\nPrecio: 1000 sat"""
 generateDallePayInvoiceMessage  = """Paga esta factura para generar cuatro imágenes 👇"""
-generateDalleGeneratingMessage  = """Tus imágenes están siendo generadas. Por favor espera..."""
+generateDalleGeneratingMessage  = """Tus imágenes se están generando. Por favor espera..."""
 
 # BACKUP
 backupPrivateOnlyMessage = "⚠️ El comando /backup solo puede usarse en chat privado por razones de seguridad."
-backupBreezNotAvailableMessage = "⚠️ No tienes una cartera self-custodial Breez inicializada. Usa /start para configurarla."
+backupBreezNotAvailableMessage = "⚠️ No tienes una cartera Breez self-custodial inicializada. Usa /start para configurarla."
 backupNoMnemonicMessage = "⚠️ No hay frase semilla de respaldo disponible."
 
 # REFUNDS
@@ -512,20 +443,20 @@ refundAvailableMessage = """💰 *Reembolso Disponible*
 
 Tienes %d sats disponibles para reembolsar de un swap fallido.
 
-Haz clic en el botón de abajo para reembolsar a tu dirección Bitcoin."""
+Haz clic en el botón de abajo para recibir el reembolso en tu dirección Bitcoin."""
 
 refundButtonMessage = """🔄 Reclamar Reembolso"""
-refundEnterAddressMessage = """Por favor, ingresa tu dirección Bitcoin donde quieres recibir el reembolso:"""
+refundEnterAddressMessage = """Por favor introduce tu dirección Bitcoin donde quieres recibir el reembolso:"""
 refundProcessingMessage = """⏳ Procesando reembolso..."""
 refundSuccessMessage = """✅ *Reembolso Exitoso*
 
 ID de Transacción: `%s`
 
-Tu reembolso ha sido enviado a tu dirección Bitcoin. Puede tomar algún tiempo confirmar en la blockchain."""
+Tu reembolso ha sido enviado a tu dirección Bitcoin. Puede tardar algún tiempo en confirmarse en la blockchain."""
 refundErrorMessage = """❌ Reembolso fallido: %s
 
-Por favor, inténtalo más tarde o contacta al soporte si el problema persiste."""
-refundInvalidAddressMessage = """❌ Dirección Bitcoin inválida. Por favor, inténtalo de nuevo con una dirección válida."""
+Por favor inténtalo de nuevo más tarde o contacta con soporte si el problema persiste."""
+refundInvalidAddressMessage = """❌ Dirección Bitcoin inválida. Por favor inténtalo de nuevo con una dirección válida."""
 refundCancelledMessage = """Reembolso cancelado."""
 backupWarningMessage = """⚠️ *AVISO DE SEGURIDAD IMPORTANTE*
 
@@ -546,11 +477,11 @@ backupSeedMessage = """🔑 *Tu Frase Semilla de Respaldo*
 
 Escribe estas palabras en orden y guárdalas de forma segura. Esta es la ÚNICA forma de recuperar tu cartera self-custodial."""
 
-backupDeletedMessage = "✅ El mensaje de frase semilla de respaldo ha sido eliminado por seguridad."
+backupDeletedMessage = "✅ El mensaje de la frase semilla de respaldo ha sido eliminado por razones de seguridad."
 
 # BUY BTC
-buyBtcBreezNotAvailableMessage = "⚠️ Necesitas una cartera self-custodial Breez para comprar Bitcoin. Usa /start para configurarla."
-buyBtcCheckingLimitsMessage = "🔍 Verificando límites de compra..."
+buyBtcBreezNotAvailableMessage = "⚠️ Necesitas una cartera Breez self-custodial para comprar Bitcoin. Usa /start para configurarla."
+buyBtcCheckingLimitsMessage = "🔍 Comprobando límites de compra..."
 buyBtcLimitsMessage = """💰 *Límites de Compra de Bitcoin*
 
 Mínimo: %d sats
@@ -561,145 +492,145 @@ buyBtcFeesMessage = "⚡ Comisiones estimadas: %d sats"
 buyBtcPurchaseButton = "🛒 Comprar Bitcoin con Moonpay"
 buyBtcReadyMessage = """✅ *Listo para Comprar*
 
-Toca el botón de abajo para completar tu compra de Bitcoin a través de Moonpay (se abre en el navegador).
+Pulsa el botón de abajo para completar tu compra de Bitcoin a través de Moonpay (se abre en el navegador).
 
-💰 Los Bitcoin serán enviados directamente a tu cartera self-custodial Breez."""
+💰 El Bitcoin se enviará directamente a tu cartera Breez self-custodial."""
 
 # SWAP
-swapHelpText = """💱 *Swaps (Hot ↔ Safe)*
+swapHelpText = """💱 *Intercambios (Hot ↔ Safer)*
 
-Usa `/swaptosafe` (o `/swapall`) para mover todo tu saldo Hot a tu cartera Safe.
-Usa `/swaptohot` para recargar tu cartera Hot desde tu cartera Safe hasta su capacidad máxima."""
+Usa `/swaptosafe` (o `/swapall`) para mover todo tu saldo Hot a tu cartera Safer.
+Usa `/swaptohot` para llenar tu cartera Hot desde tu cartera Safer hasta su capacidad máxima."""
 
-swapAmountPrompt = """💱 *Ingresar Cantidad de Swap*
+swapAmountPrompt = """💱 *Introduce la Cantidad del Intercambio*
 
-Por favor, ingresa la cantidad que quieres intercambiar de Hot a Safe.
+Por favor introduce la cantidad que quieres intercambiar de Hot a Saldo Safer.
 
 Mínimo: %d Sats
 Tu saldo Hot: %d Sats"""
 
-swapAllConfirmation = """💱 *Confirmar Swap*
+swapAllConfirmation = """💱 *Confirmar Intercambio*
 
-¿Intercambiar *%d Sats* de Hot a Safe?
+¿Intercambiar *%d Sats* de Hot a Saldo Cartera Safer?
 
 Saldo Hot: %d Sats
 Comisiones estimadas: ~%d Sats
 
-Después de este swap, tu saldo Hot será aproximadamente 0 Sats."""
+Después de este intercambio, tu saldo Hot será aproximadamente 0 Sats."""
 
-swapConfirmation = """💱 *Confirmar Swap*
+swapConfirmation = """💱 *Confirmar Intercambio*
 
-¿Intercambiar *%d Sats* de Hot a Safe?
+¿Intercambiar *%d Sats* de Hot a Saldo Cartera Safer?
 
-Esto creará una factura en tu saldo Safe y la pagará desde tu saldo Hot."""
+Se creará una factura en tu saldo de cartera Safer y se pagará desde tu Saldo Hot."""
 
-swapSuccess = """✅ *¡Swap Exitoso!*
+swapSuccess = """✅ *¡Intercambio Completado!*
 
-%d Sats han sido transferidos de Hot a tu saldo Safe.
+%d Sats han sido transferidos de Hot a tu Saldo Cartera Safer.
 
-Usa /balance para verificar tus saldos actualizados. Los saldos pueden tardar 2 minutos en actualizarse."""
+Usa /balance para comprobar tus saldos actualizados. Los saldos pueden tardar 2 minutos en actualizarse."""
 
-swapBreezNotInitialized = """⚠️ *Cartera Safe No Inicializada*
+swapBreezNotInitialized = """⚠️ *Cartera Safer No Inicializada*
 
-Necesitas configurar primero tu cartera Safe self-custodial. Usa /start para comenzar."""
+Primero debes configurar tu cartera Safer self-custodial. Usa /start para comenzar."""
 
 swapInsufficientFunds = """❌ *Fondos Insuficientes*
 
 Tu saldo Hot: %d Sats
 Cantidad solicitada: %d Sats
 
-Por favor, ingresa una cantidad menor."""
+Por favor introduce una cantidad menor."""
 
-swapMinimumAmount = """⚠️ *Cantidad Mínima de Swap*
+swapMinimumAmount = """⚠️ *Cantidad Mínima de Intercambio*
 
-La cantidad mínima para el swap es %d sats para garantizar que la transacción pueda cubrir las comisiones de red y swap."""
+La cantidad mínima para un intercambio es de %d sats para garantizar que la transacción pueda cubrir las comisiones de red y de swap."""
 
-swapFailed = """❌ *Swap Fallido*
+swapFailed = """❌ *Intercambio Fallido*
 
 Error: %s
 
-Por favor, inténtalo más tarde o contacta al soporte si el problema persiste."""
+Por favor inténtalo de nuevo más tarde o contacta con soporte si el problema persiste."""
 
-swapButtonConfirm = """✅ Confirmar Swap"""
+swapButtonConfirm = """✅ Confirmar Intercambio"""
 swapButtonCancel = """🚫 Cancelar"""
-swapCancelled = """Swap cancelado."""
+swapCancelled = """Intercambio cancelado."""
 processingMessage = """⏳ Procesando..."""
 
-# SWAP TO BREEZ
+# SWAP TO BREEZ (nuevo smart routing)
 swapToBreezMinimum = """⚠️ *Saldo Insuficiente*
 
 Tu saldo Hot: %d Sats
-Cantidad mínima para swap: %d Sats
+Cantidad mínima para el intercambio: %d Sats
 
-Recibe más fondos antes de hacer el swap."""
+Por favor recibe más fondos antes de intercambiar."""
 
 swapToBreezInsufficientAfterFees = """⚠️ *Saldo Insuficiente Después de Comisiones*
 
 Tu saldo Hot: %d Sats
 Comisiones estimadas: ~%d Sats
 
-La cantidad restante después de las comisiones sería demasiado pequeña para el swap. Recibe más fondos primero."""
+La cantidad restante después de las comisiones sería demasiado pequeña para intercambiar. Por favor recibe primero más fondos."""
 
-swapToBreezConfirmation = """💱 *Confirmar Swap a Saldo Safe*
+swapToBreezConfirmation = """💱 *Confirmar Intercambio a Saldo Safer*
 
-¿Intercambiar tu Saldo Hot a Saldo Safe?
+¿Intercambiar tu Saldo Hot a Saldo Safer?
 
 Cantidad a transferir: *%d Sats*
 Comisiones de enrutamiento estimadas: ~%d Sats
 
-Después de este swap, tu saldo Hot estará cerca de 0 Sats y los fondos estarán en tu cartera Safe self-custodial."""
+Después de este intercambio, tu saldo Hot estará cerca de 0 Sats y los fondos estarán en tu cartera Safer self-custodial."""
 
-swapToBreezSuccess = """✅ *¡Swap a Saldo Safe Completado!*
+swapToBreezSuccess = """✅ *¡Intercambio a Saldo Safer Completado!*
 
-%d Sats han sido transferidos a tu cartera Saldo Safe.
+%d Sats han sido transferidos a tu cartera Saldo Safer.
 
-Usa /balance para verificar tus saldos actualizados. La actualización de saldos puede tardar 2 minutos."""
+Usa /balance para comprobar tus saldos actualizados. La actualización de saldos puede tardar 2 minutos."""
 
-# SWAP TO LNBITS
+# SWAP TO LNBITS (Breez -> LNbits)
 swapToLNbitsMinimum = """⚠️ *Saldo Insuficiente*
 
-Tu saldo Safe: %d Sats
-Cantidad mínima para swap: %d Sats
+Tu saldo Safer: %d Sats
+Cantidad mínima para el intercambio: %d Sats
 
-Recibe más fondos antes de hacer el swap."""
+Por favor recibe más fondos antes de intercambiar."""
 
 swapToLNbitsFull = """⚠️ *Cartera Hot Llena*
 
 Tu saldo Hot: %d Sats
 Capacidad máxima: %d Sats
 
-Tu cartera Hot ya está en su capacidad máxima. Debes mover fondos a tu cartera Safe self-custodial."""
+Tu cartera Hot ya está a su capacidad máxima. Debes mover fondos a tu cartera Safer self-custodial."""
 
 swapToLNbitsInsufficientAfterFees = """⚠️ *Saldo Insuficiente Después de Comisiones*
 
-Tu saldo Safe: %d Sats
+Tu saldo Safer: %d Sats
 Comisiones estimadas: ~%d Sats
 
-La cantidad restante después de las comisiones sería demasiado pequeña para el swap. Recibe más fondos primero."""
+La cantidad restante después de las comisiones sería demasiado pequeña para intercambiar. Por favor recibe primero más fondos."""
 
-swapToLNbitsConfirmation = """💱 *Confirmar Swap a Saldo Hot*
+swapToLNbitsConfirmation = """💱 *Confirmar Intercambio a Saldo Hot*
 
-¿Intercambiar *%d Sats* de Safe a Hot?
+¿Intercambiar *%d Sats* de Safer a Saldo Hot?
 
-Saldo Safe actual: %d Sats
+Saldo Safer actual: %d Sats
 Saldo Hot actual: %d Sats
-Saldo Hot después del swap: %d Sats
+Saldo Hot tras el intercambio: %d Sats
 Comisiones estimadas: ~%d Sats
 
-Esto recargará tu cartera custodial hasta su límite."""
+Esto llenará tu cartera custodial hasta su límite."""
 
-swapToLNbitsSuccess = """✅ *¡Swap a Saldo Hot Completado!*
+swapToLNbitsSuccess = """✅ *¡Intercambio a Saldo Hot Completado!*
 
-%d sats han sido transferidos del Saldo Safe a tu Saldo Hot.
+%d sats han sido transferidos del Saldo Safer a tu Saldo Hot.
 
-Usa /balance para verificar tus saldos actualizados. Los saldos pueden tardar 2 minutos en actualizarse."""
+Usa /balance para comprobar tus saldos actualizados. Los saldos pueden tardar 2 minutos en actualizarse."""
 
-swapLNAmountPrompt = """💱 *Ingresar Cantidad de Swap*
+swapLNAmountPrompt = """💱 *Introduce la Cantidad del Intercambio*
 
-Por favor, ingresa la cantidad que quieres intercambiar de Safe a Hot.
+Por favor introduce la cantidad que quieres intercambiar de Safer a Saldo Hot.
 
 Mínimo: %d Sats
 Máximo: %d Sats
 
-Tu saldo Safe: %d Sats
+Tu saldo Safer: %d Sats
 Tu saldo Hot: %d Sats (máx %d)"""

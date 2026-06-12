@@ -6,6 +6,7 @@ SatsMobiBot
 .idea
 old
 docs/
+CLAUDE.md
 
 # go test -c artifacts (avoid committing test binaries)
 *.test

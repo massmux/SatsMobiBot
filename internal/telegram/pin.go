@@ -307,6 +307,14 @@ func (bot *TipBot) handleOperationPinInput(ctx intercept.Context, user *lnbits.U
 		return bot.handleCreateWalletWithPin(ctx, user, pin)
 	case "view_balance":
 		return bot.handleViewBalanceWithPin(ctx, user, pin)
+	case "swap":
+		return bot.handleSwapWithPin(ctx, user, pin, bot.swapHandler)
+	case "swap_to_breez":
+		return bot.handleSwapWithPin(ctx, user, pin, bot.swapToBreezHandler)
+	case "swap_to_lnbits":
+		return bot.handleSwapWithPin(ctx, user, pin, bot.swapToLNbitsHandler)
+	case "swap_ln":
+		return bot.handleSwapWithPin(ctx, user, pin, bot.swapLNHandler)
 	default:
 		user.ResetState()
 		UpdateUserRecord(user, *bot)
@@ -557,8 +565,24 @@ func (bot *TipBot) resetPinAttempts(user *lnbits.User) {
 	UpdateUserRecord(user, *bot)
 }
 
+// notifyIfColdStart avvisa l'utente che lo sbloccco del wallet Safer potrebbe
+// richiedere fino a un minuto, se il client Breez non è ancora in memoria
+// (es. primo utilizzo dopo un riavvio del bot, con storage.sql grande).
+func (bot *TipBot) notifyIfColdStart(user *lnbits.User) {
+	bot.breezMutex.RLock()
+	_, cached := bot.BreezClients[user.Telegram.ID]
+	bot.breezMutex.RUnlock()
+
+	if !cached {
+		bot.trySendMessage(user.Telegram,
+			"⏳ Unlocking your Safer wallet, this can take up to a minute after a bot restart...")
+	}
+}
+
 // ✨ NUOVA FUNZIONE: handleViewBalanceWithPin inizializza Breez e mostra il balance dopo verifica PIN
 func (bot *TipBot) handleViewBalanceWithPin(ctx intercept.Context, user *lnbits.User, pin string) (intercept.Context, error) {
+	bot.notifyIfColdStart(user)
+
 	// Inizializza il client Breez con il PIN
 	_, err := bot.InitializeBreezClientWithPin(user, pin)
 	if err != nil {
@@ -577,4 +601,26 @@ func (bot *TipBot) handleViewBalanceWithPin(ctx intercept.Context, user *lnbits.
 
 	// Ora richiama balanceHandler che troverà il client in memoria
 	return bot.balanceHandler(ctx)
+}
+
+// handleSwapWithPin inizializza il client Breez con il PIN e ripete l'operazione di swap richiesta
+func (bot *TipBot) handleSwapWithPin(ctx intercept.Context, user *lnbits.User, pin string, resume func(intercept.Context) (intercept.Context, error)) (intercept.Context, error) {
+	bot.notifyIfColdStart(user)
+
+	_, err := bot.InitializeBreezClientWithPin(user, pin)
+	if err != nil {
+		log.Errorf("[PIN] Failed to initialize Breez with PIN: %s", err)
+		bot.trySendMessage(user.Telegram,
+			"❌ Failed to unlock your Safer wallet. Please try the swap command again.")
+		user.ResetState()
+		UpdateUserRecord(user, *bot)
+		return ctx, err
+	}
+
+	log.Infof("[PIN] Breez client initialized, resuming swap for user %s", GetUserStr(user.Telegram))
+
+	user.ResetState()
+	UpdateUserRecord(user, *bot)
+
+	return resume(ctx)
 }

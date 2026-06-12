@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/massmux/SatsMobiBot/internal"
+	"github.com/massmux/SatsMobiBot/internal/breez"
 	"github.com/massmux/SatsMobiBot/internal/errors"
 	"github.com/massmux/SatsMobiBot/internal/i18n"
 	"github.com/massmux/SatsMobiBot/internal/lnbits"
@@ -30,6 +32,33 @@ var (
 	btnConfirmSwapToBreez   = swapConfirmationMenu.Data("✅ Confirm Swap", "confirm_swap_to_breez")
 	btnConfirmSwapToLNbits  = swapConfirmationMenu.Data("✅ Confirm Swap", "confirm_swap_to_lnbits")
 )
+
+// requireUserBreezClient returns the user's cached Breez client. If the client
+// isn't in memory but the user has a PIN-encrypted mnemonic, it stores the
+// given operation name and prompts the user for their PIN so the swap can be
+// resumed once the PIN is verified (see handleOperationPinInput in pin.go).
+// A nil client with a nil error means a PIN prompt was sent and the caller
+// should return without further action.
+func (bot *TipBot) requireUserBreezClient(ctx intercept.Context, user *lnbits.User, operation string) (*breez.Client, error) {
+	userBreez := bot.GetUserBreezClient(user)
+	if userBreez != nil && userBreez.IsInitialized() {
+		return userBreez, nil
+	}
+
+	if user.BreezInitialized && user.HasPin() {
+		user.StateKey = lnbits.UserStateEnterPinForOperation
+		user.StateData = operation
+		UpdateUserRecord(user, *bot)
+
+		bot.trySendMessage(ctx.Sender(),
+			"🔐 Your Safer wallet requires your PIN.\n\n"+
+				"Enter your PIN to continue:")
+		return nil, nil
+	}
+
+	bot.trySendMessage(ctx.Sender(), Translate(ctx, "swapBreezNotInitialized"))
+	return nil, errors.Create(errors.UserNoWalletError)
+}
 
 // SwapData holds information about a swap transaction
 type SwapData struct {
@@ -55,11 +84,14 @@ func (bot *TipBot) swapHandler(ctx intercept.Context) (intercept.Context, error)
 	userStr := GetUserStr(ctx.Sender())
 
 	// Check if Breez is initialized
-	userBreez := bot.GetUserBreezClient(user)
-	if userBreez == nil || !userBreez.IsInitialized() {
-		bot.trySendMessage(ctx.Sender(), Translate(ctx, "swapBreezNotInitialized"))
+	userBreez, err := bot.requireUserBreezClient(ctx, user, "swap")
+	if err != nil {
 		log.Warnf("[/swap] %s tried to swap but Breez not initialized", userStr)
-		return ctx, errors.Create(errors.UserNoWalletError)
+		return ctx, err
+	}
+	if userBreez == nil {
+		// PIN prompt sent, swap will resume once the PIN is verified
+		return ctx, nil
 	}
 
 	// Get LNbits balance
@@ -101,11 +133,14 @@ func (bot *TipBot) swapToBreezHandler(ctx intercept.Context) (intercept.Context,
 	userStr := GetUserStr(ctx.Sender())
 
 	// Check if Breez is initialized
-	userBreez := bot.GetUserBreezClient(user)
-	if userBreez == nil || !userBreez.IsInitialized() {
-		bot.trySendMessage(ctx.Sender(), Translate(ctx, "swapBreezNotInitialized"))
+	userBreez, err := bot.requireUserBreezClient(ctx, user, "swap_to_breez")
+	if err != nil {
 		log.Warnf("[/swaptobreez] %s tried to swap but Breez not initialized", userStr)
-		return ctx, errors.Create(errors.UserNoWalletError)
+		return ctx, err
+	}
+	if userBreez == nil {
+		// PIN prompt sent, swap will resume once the PIN is verified
+		return ctx, nil
 	}
 
 	// Get LNbits balance
@@ -191,11 +226,14 @@ func (bot *TipBot) swapToLNbitsHandler(ctx intercept.Context) (intercept.Context
 	userStr := GetUserStr(ctx.Sender())
 
 	// Check if Breez is initialized
-	userBreez := bot.GetUserBreezClient(user)
-	if userBreez == nil || !userBreez.IsInitialized() {
-		bot.trySendMessage(ctx.Sender(), Translate(ctx, "swapBreezNotInitialized"))
+	userBreez, err := bot.requireUserBreezClient(ctx, user, "swap_to_lnbits")
+	if err != nil {
 		log.Warnf("[/swaptolnbits] %s tried to swap but Breez not initialized", userStr)
-		return ctx, errors.Create(errors.UserNoWalletError)
+		return ctx, err
+	}
+	if userBreez == nil {
+		// PIN prompt sent, swap will resume once the PIN is verified
+		return ctx, nil
 	}
 
 	// Get Breez balance
@@ -312,11 +350,14 @@ func (bot *TipBot) swapLNHandler(ctx intercept.Context) (intercept.Context, erro
 	userStr := GetUserStr(ctx.Sender())
 
 	// Check if Breez is initialized
-	userBreez := bot.GetUserBreezClient(user)
-	if userBreez == nil || !userBreez.IsInitialized() {
-		bot.trySendMessage(ctx.Sender(), Translate(ctx, "swapBreezNotInitialized"))
+	userBreez, err := bot.requireUserBreezClient(ctx, user, "swap_ln")
+	if err != nil {
 		log.Warnf("[/swap-ln] %s tried to swap-ln but Breez not initialized", userStr)
-		return ctx, errors.Create(errors.UserNoWalletError)
+		return ctx, err
+	}
+	if userBreez == nil {
+		// PIN prompt sent, swap will resume once the PIN is verified
+		return ctx, nil
 	}
 
 	// Get Breez balance
@@ -730,6 +771,32 @@ func (bot *TipBot) confirmSwapToBreezHandler(ctx intercept.Context) (intercept.C
 	return ctx, swapData.Inactivate(swapData, bot.Bunt)
 }
 
+// paymentStatusPollAttempts/paymentStatusPollInterval control how long we poll
+// LNbits for a payment's settlement status after Pay() returns a network-level
+// error (e.g. a Cloudflare gateway timeout). In that case LNbits may still be
+// processing the payment on its backend even though the HTTP response was lost.
+const (
+	paymentStatusPollAttempts = 6
+	paymentStatusPollInterval = 5 * time.Second
+)
+
+// checkPaymentSettled polls LNbits for the status of the payment identified by
+// paymentHash and returns true if LNbits confirms it as paid.
+func (bot *TipBot) checkPaymentSettled(user *lnbits.User, paymentHash string) bool {
+	for i := 0; i < paymentStatusPollAttempts; i++ {
+		time.Sleep(paymentStatusPollInterval)
+		payment, err := bot.Client.Payment(*user.Wallet, paymentHash)
+		if err != nil {
+			log.Warnf("[checkPaymentSettled] failed to check status for payment %s: %s", paymentHash, err)
+			continue
+		}
+		if payment.Paid {
+			return true
+		}
+	}
+	return false
+}
+
 // executeSwap performs the actual swap from LNbits to Breez
 func (bot *TipBot) executeSwap(user *lnbits.User, amount int64, ctx intercept.Context) error {
 	userStr := GetUserStr(user.Telegram)
@@ -784,7 +851,11 @@ func (bot *TipBot) executeSwap(user *lnbits.User, amount int64, ctx intercept.Co
 	// 6. Pay invoice from LNbits
 	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoice.Bolt11}, bot.Client)
 	if err != nil {
-		return fmt.Errorf("failed to pay invoice from LNbits: %w", err)
+		log.Warnf("[executeSwap] Pay request error for %s, checking if payment settled anyway: %s", userStr, err)
+		if !bot.checkPaymentSettled(user, invoice.PaymentHash) {
+			return fmt.Errorf("failed to pay invoice from LNbits: %w", err)
+		}
+		log.Infof("[executeSwap] Payment for %s settled despite Pay() error", userStr)
 	}
 
 	log.Infof("[executeSwap] Paid invoice from LNbits for %s", userStr)
@@ -854,7 +925,11 @@ func (bot *TipBot) executeSwapWithContext(user *lnbits.User, amount int64, ctx c
 	// 6. Pay invoice from LNbits
 	_, err = user.Wallet.Pay(lnbits.PaymentParams{Out: true, Bolt11: invoice.Bolt11}, bot.Client)
 	if err != nil {
-		return fmt.Errorf("failed to pay invoice from LNbits: %w", err)
+		log.Warnf("[executeSwapWithContext] Pay request error for %s, checking if payment settled anyway: %s", userStr, err)
+		if !bot.checkPaymentSettled(user, invoice.PaymentHash) {
+			return fmt.Errorf("failed to pay invoice from LNbits: %w", err)
+		}
+		log.Infof("[executeSwapWithContext] Payment for %s settled despite Pay() error", userStr)
 	}
 
 	log.Infof("[executeSwapWithContext] Paid invoice from LNbits for %s", userStr)

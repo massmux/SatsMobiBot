@@ -64,14 +64,14 @@ payButtonEmoji = """💸"""
 # HELP
 
 helpMessage = """⚡️ *SatsMobi*
-_This is a Bitcoin Lightning opensource self-custodial Wallet Suite. There are 2 Balances: Hot and Safe. Breez Library is used. Backup your mnemonic first after /start. Hit /basics for TOS._
+_This is a Bitcoin Lightning opensource self-custodial Wallet Suite. There are 2 Balances: Hot and Safer. Breez Library is used. Backup your mnemonic first after /start. Hit /basics for TOS._
 
-👉 *Basic commands* (Hot/Safe)
+👉 *Basic commands* (Hot/Safer)
 */tip*: Reply to a message to tip (Hot): `/tip <amount> [<memo>]`
-*/balance*: Check your balance (Hot|Safe): `/balance`
+*/balance*: Check your balance (Hot|Safer): `/balance`
 */send*: Send tips to a user (Hot): `/send <amount> @user or user@sats.mobi [<memo>]`
-*/invoice*: Receive (Safe): `/invoice <amount> [<memo>]`
-*/pay*: Pay Invoice (Safe): `/pay <invoice>`
+*/invoice*: Receive (Safer): `/invoice <amount> [<memo>]`
+*/pay*: Pay Invoice (Safer): `/pay <invoice>`
 */rate*: Check exchange rates: `/rate [amount] [currency]` - Example: `/rate 10000 USD`
 */cashback*: QRCODE for receiving cashback.
 */activatecard*: Request activation of a SatsMobi NFC Card `/activatecard <CardID>`
@@ -84,7 +84,7 @@ _This is a Bitcoin Lightning opensource self-custodial Wallet Suite. There are 2
 
 📖 You can use inline commands in every chat, even in private conversations. Wait a second after entering an inline command and *click* the result, don't press enter.
 
-👉 *Advanced commands* (Hot/Safe)
+👉 *Advanced commands* (Hot/Safer)
 */transactions*: Transactions list
 */link*: Link Hot to Bluewallet or Zeus
 */lnurl*: Lnurl receive or pay (Hot): `/lnurl` or `/lnurl <lnurl> [memo]`
@@ -92,11 +92,11 @@ _This is a Bitcoin Lightning opensource self-custodial Wallet Suite. There are 2
 */pos*: Get your POS ready (Hot): `/pos`
 */group*: Group chat features (Hot): `/group`
 */shop*: Browse shops: `/shop` or `/shop <user/shop_id>`
-*/backup*: Backup your Safe Seedphrase: `/backup`
+*/backup*: Backup your Safer Seedphrase: `/backup`
 */buybtc*: Buy Bitcoin with Moonpay: `/buybtc`
-*/swaptosafe*: Swap ALL funds from Hot to Safe: `/swaptosafe`
-*/swapall*: Alias for swapping all from Hot to Safe: `/swapall`
-*/swaptohot*: Fill Hot with Safe up to the limit: `/swaptohot`
+*/swaptosafe*: Swap ALL funds from Hot to Safer: `/swaptosafe`
+*/swapall*: Alias for swapping all from Hot to Safer: `/swapall`
+*/swaptohot*: Fill Hot with Safer up to the limit: `/swaptohot`
 */help*: Read this help.
 """
 infoHelpMessage = """ℹ️ *Info*"""
@@ -109,10 +109,10 @@ infoYourAnonLNURL = """Your (Hot) Anonymous LNURL is: `%s`
 
 basicsMessage = """
 *Economics*
-_This is a Bitcoin Lightning opensource self-custodial Wallet Suite. There are 2 Balances: Hot and Safe. Breez Lib is used. Backup your mnemonic after /start. _
+_This is a Bitcoin Lightning opensource self-custodial Wallet Suite (limitations due to Telegram and Breez apply). There are 2 Balances: Hot and Safer. Breez Lib is used. Backup your mnemonic after /start. Do your own researches and use just small amounts, this is beta software and can be insecure._
 
 *Lightning Wallets*
-_Your Safe Balance can be used to send and receive funds over the Lightning network in a self-custodial manner, where you own your Keys. You can also swap from Hot to Safe Balance whenever you want. The Hot balance can be used for fast and small Tips over Telegram. Immediately backup the seedphrase_. 
+_Your Safer Balance can be used to send and receive funds over the Lightning network in a manner, where you own your Keys. You can also swap from Hot to Safer Balance whenever you want. The Hot balance can be used for fast and small Tips over Telegram. Immediately backup the seedphrase_. 
 
 *Open Source*
 _This Bot is free and opensource software. You can run it on your own computer and use it in your own community. It is a tool intended for educational purposes only._
@@ -121,7 +121,7 @@ _This Bot is free and opensource software. You can run it on your own computer a
 _Add this Bot to your Telegram group chat to /tip posts. If you make the bot admin of the group it will also clean up commands to keep the chat tidy._
 
 *Terms of Service*
-_Immediately Backup of your keys with /backup command, just after /start. We cannot help in recoverying the keys in case of misuse. This Bot is in beta development and experimental. Use at your own risk. The Swaps are subject to Swap fees due to the Breez Nodeless Library which is used in this tool._
+_Immediately Backup of your keys with /backup command, just after /start. We cannot help in recoverying the keys in case of misuse. This Bot is in beta development and experimental. Use at your own risk. The Swaps are subject to Swap fees due to the Breez Nodeless Library which is used in this tool. Do not use more than small amounts. Take in consideration the known limitations due to the use of Telegram and Breez Library._
 
 _Citizen and residents of the United States and any SECO sanctioned countries are prohibited to use this service. By going on, you confirm and declare you are NOT citizen of the United States or any SECO sanctioned countries._
 
@@ -153,13 +153,13 @@ balanceOverMax      = """HOT balance is overlimit. Maximum is:
 
 *%s Sats*
 
-Please swap the Balance from Hot to Safe Wallet.
+Please swap the Balance from Hot to Safer Wallet.
 """
 
 balanceTotalMessage = """💰 *Your Balance recap.*
 			
 			Hot: `%d` Sats
-			Safe: `%d` Sats
+			Safer: `%d` Sats
 			━━━━━━━━━━━━━━━━
 			Total: `%d` Sats"""
 
@@ -565,21 +565,21 @@ Tap the button below to complete your Bitcoin purchase through Moonpay (opens in
 💰 The Bitcoin will be sent directly to your self-custodial Breez wallet."""
 
 # SWAP
-swapHelpText = """💱 *Swaps (Hot ↔ Safe)*
+swapHelpText = """💱 *Swaps (Hot ↔ Safer)*
 
-Use `/swaptosafe` (or `/swapall`) to move all your Hot balance to your Safe wallet.
-Use `/swaptohot` to fill your Hot wallet from your Safe wallet up to its max capacity."""
+Use `/swaptosafe` (or `/swapall`) to move all your Hot balance to your Safer wallet.
+Use `/swaptohot` to fill your Hot wallet from your Safer wallet up to its max capacity."""
 
 swapAmountPrompt = """💱 *Enter Swap Amount*
 
-Please enter the amount you want to swap from Hot to Safe Balance.
+Please enter the amount you want to swap from Hot to Safer Balance.
 
 Minimum: %d Sats
 Your Hot balance: %d Sats"""
 
 swapAllConfirmation = """💱 *Confirm Swap*
 
-Swap *%d Sats* from Hot to Safe Wallet balance?
+Swap *%d Sats* from Hot to Safer Wallet balance?
 
 Hot balance: %d Sats
 Estimated fees: ~%d Sats
@@ -588,19 +588,19 @@ After this swap, your Hot balance will be approximately 0 Sats."""
 
 swapConfirmation = """💱 *Confirm Swap*
 
-Swap *%d Sats* from Hot to Safe Wallet balance?
+Swap *%d Sats* from Hot to Safer Wallet balance?
 
-This will create an invoice on your Safe wallet balance and pay it from your Hot Balance."""
+This will create an invoice on your Safer wallet balance and pay it from your Hot Balance."""
 
 swapSuccess = """✅ *Swap Successful!*
 
-%d Sats have been transferred from Hot to your Safe wallet Balance.
+%d Sats have been transferred from Hot to your Safer wallet Balance.
 
 Use /balance to check your updated balances. Please note that Balances may take 2 minutes to get updated. """
 
-swapBreezNotInitialized = """⚠️ *Safe Wallet Not Initialized*
+swapBreezNotInitialized = """⚠️ *Safer Wallet Not Initialized*
 
-You need to set up your Safe self-custodial wallet first. Use /start to get started."""
+You need to set up your Safer self-custodial wallet first. Use /start to get started."""
 
 swapInsufficientFunds = """❌ *Insufficient Funds*
 
@@ -639,25 +639,25 @@ Estimated fees: ~%d Sats
 
 The remaining amount after fees would be too small to swap. Please receive more funds first."""
 
-swapToBreezConfirmation = """💱 *Confirm Swap to Safe Balance*
+swapToBreezConfirmation = """💱 *Confirm Swap to Safer Balance*
 
-Swap your Hot Balance to Safe Balance?
+Swap your Hot Balance to Safer Balance?
 
 Amount to transfer: *%d Sats*
 Estimated routing fees: ~%d Sats
 
-After this swap, your Hot balance will be near 0 Sats and the funds will be in your self-custodial Safe wallet."""
+After this swap, your Hot balance will be near 0 Sats and the funds will be in your self-custodial Safer wallet."""
 
-swapToBreezSuccess = """✅ *Swap to Safe Balance Complete!*
+swapToBreezSuccess = """✅ *Swap to Safer Balance Complete!*
 
-%d Sats have been transferred to your Safe Balance wallet.
+%d Sats have been transferred to your Safer Balance wallet.
 
 Use /balance to check your updated Balances. Please note that Balances update may take 2 minutes to update."""
 
 # SWAP TO LNBITS (Breez -> LNbits)
 swapToLNbitsMinimum = """⚠️ *Insufficient Balance*
 
-Your Safe balance: %d Sats
+Your Safer balance: %d Sats
 Minimum amount for swap: %d Sats
 
 Please receive more funds before swapping."""
@@ -667,20 +667,20 @@ swapToLNbitsFull = """⚠️ *Hot Wallet Full*
 Your Hot balance: %d Sats
 Maximum capacity: %d Sats
 
-Your Hot wallet is already at its maximum capacity. You must move funds in your self-custodial Safe wallet."""
+Your Hot wallet is already at its maximum capacity. You must move funds in your self-custodial Safer wallet."""
 
 swapToLNbitsInsufficientAfterFees = """⚠️ *Insufficient Balance After Fees*
 
-Your Safe balance: %d Sats
+Your Safer balance: %d Sats
 Estimated fees: ~%d Sats
 
 The remaining amount after fees would be too small to swap. Please receive more funds first."""
 
 swapToLNbitsConfirmation = """💱 *Confirm Swap to Hot Balance*
 
-Swap *%d Sats* from Safe to Hot Balance?
+Swap *%d Sats* from Safer to Hot Balance?
 
-Current Safe balance: %d Sats
+Current Safer balance: %d Sats
 Current Hot balance: %d Sats
 After swap Hot Balance: %d Sats
 Estimated fees: ~%d Sats
@@ -689,16 +689,16 @@ This will fill your custodial wallet up to its limit."""
 
 swapToLNbitsSuccess = """✅ *Swap to Hot Balance Complete!*
 
-%d sats have been transferred from Safe Balance to your Hot Balance.
+%d sats have been transferred from Safer Balance to your Hot Balance.
 
 Use /balance to check your updated balances. Please note that balances may take 2 minutes to update."""
 
 swapLNAmountPrompt = """💱 *Enter Swap Amount*
 
-Please enter the amount you want to swap from Safe to Hot Balance.
+Please enter the amount you want to swap from Safer to Hot Balance.
 
 Minimum: %d Sats
 Maximum: %d Sats
 
-Your Safe balance: %d Sats
+Your Safer balance: %d Sats
 Your Hot balance: %d Sats (max %d)"""
