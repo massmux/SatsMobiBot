@@ -9,6 +9,8 @@ import (
 	"github.com/massmux/SatsMobiBot/internal/errors"
 	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 
+	bip39 "github.com/tyler-smith/go-bip39"
+
 	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	"github.com/massmux/SatsMobiBot/pkg/lightning"
 	log "github.com/sirupsen/logrus"
@@ -34,6 +36,20 @@ func (bot *TipBot) anyTextHandler(ctx intercept.Context) (intercept.Context, err
 		// because balanceHandler calls anyTextHAndler...
 		m.Text = ""
 		return bot.balanceHandler(ctx)
+	}
+
+	// Intercetta mnemonic BIP39 inviata per errore in chat: cancella subito e avvisa.
+	words := strings.Fields(m.Text)
+	if (len(words) == 12 || len(words) == 24) && bip39.IsMnemonicValid(strings.Join(words, " ")) {
+		bot.tryDeleteMessage(m)
+		log.Warnf("[anyTextHandler] User %s sent BIP39 mnemonic in chat — deleted immediately", GetUserStr(m.Sender))
+		bot.trySendMessage(m.Chat,
+			"⚠️ *Security Alert*\n\n"+
+				"Your seed phrase was detected and immediately deleted from this chat.\n\n"+
+				"*Never send your seed phrase here or anywhere else.*\n\n"+
+				"If you need to recover your Safer wallet, use an external Liquid wallet app (e.g. Aqua or Breez) and import the seed phrase there.",
+			tb.ModeMarkdown)
+		return ctx, nil
 	}
 
 	// could be an invoice

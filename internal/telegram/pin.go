@@ -146,9 +146,16 @@ func (bot *TipBot) handleNewPinInput(ctx intercept.Context, user *lnbits.User, p
 		return ctx, nil
 	}
 
-	// PIN valido, chiedi conferma
+	// PIN valido, chiedi conferma.
+	// Nel flow di cambio PIN, StateData contiene il vecchio PIN verificato.
+	// Lo preserviamo come "oldPin|newPin" per permettere la ri-cifratura della mnemonic.
+	oldPin := user.StateData
 	user.StateKey = lnbits.UserStateConfirmNewPin
-	user.StateData = pin // Temporaneamente salva il PIN (sarà cancellato presto)
+	if user.HasPin() && user.BreezMnemonic != "" && oldPin != "" {
+		user.StateData = oldPin + "|" + pin
+	} else {
+		user.StateData = pin
+	}
 	UpdateUserRecord(user, *bot)
 
 	bot.trySendMessage(user.Telegram,
@@ -163,20 +170,30 @@ func (bot *TipBot) handleConfirmPinInput(ctx intercept.Context, user *lnbits.Use
 	// Cancella il messaggio con il PIN per sicurezza
 	bot.tryDeleteMessage(ctx.Message())
 
+	// Estrai vecchio PIN e PIN atteso da StateData.
+	// Nel flow cambio PIN StateData è "oldPin|newPin"; altrimenti è solo il nuovo PIN.
+	var oldPin, expectedPin string
+	if parts := strings.SplitN(user.StateData, "|", 2); len(parts) == 2 {
+		oldPin = parts[0]
+		expectedPin = parts[1]
+	} else {
+		expectedPin = user.StateData
+	}
+
 	// Verifica che il PIN corrisponda
-	if pin != user.StateData {
+	if pin != expectedPin {
 		bot.trySendMessage(user.Telegram,
 			"❌ PINs don't match!\n\n"+
 				"Let's try again. Enter your new PIN:")
 
 		user.StateKey = lnbits.UserStateEnterNewPin
-		user.StateData = ""
+		user.StateData = oldPin // Preserva il vecchio PIN per un eventuale retry
 		UpdateUserRecord(user, *bot)
 		return ctx, nil
 	}
 
-	// PINs corrispondono, salva il PIN
-	err := bot.savePinForUser(user, pin)
+	// PINs corrispondono, salva il PIN (ri-cifra la mnemonic se oldPin disponibile)
+	err := bot.savePinForUser(user, pin, oldPin)
 	if err != nil {
 		log.Errorf("[PIN] Failed to save PIN: %s", err)
 		bot.trySendMessage(user.Telegram,
@@ -388,8 +405,9 @@ func (bot *TipBot) handlePaymentPinInput(ctx intercept.Context, user *lnbits.Use
 	return ctx, nil
 }
 
-// savePinForUser salva il PIN per un utente (sia nuovo che modifica)
-func (bot *TipBot) savePinForUser(user *lnbits.User, pin string) error {
+// savePinForUser salva il PIN per un utente (sia nuovo che modifica).
+// oldPin è necessario solo nel cambio PIN per ri-cifrare la mnemonic esistente.
+func (bot *TipBot) savePinForUser(user *lnbits.User, pin string, oldPin string) error {
 	var err error
 
 	// Se l'utente ha già una seedphrase e sta cambiando PIN
@@ -402,6 +420,23 @@ func (bot *TipBot) savePinForUser(user *lnbits.User, pin string) error {
 			return fmt.Errorf("failed to generate new salt: %w", err)
 		}
 
+		// Ri-cifra la mnemonic con il nuovo PIN+salt prima di aggiornare PinSalt.
+		// Senza questo passo la mnemonic risulta inaccessibile dopo il cambio PIN.
+		if oldPin != "" {
+			mnemonic, err := breez.DecryptMnemonicWithPin(user.BreezMnemonic, oldPin, user.PinSalt)
+			if err != nil {
+				return fmt.Errorf("failed to decrypt mnemonic for re-encryption: %w", err)
+			}
+			newEncrypted, err := breez.EncryptMnemonicWithPin(mnemonic, pin, newSalt)
+			if err != nil {
+				return fmt.Errorf("failed to re-encrypt mnemonic with new PIN: %w", err)
+			}
+			user.BreezMnemonic = newEncrypted
+			log.Infof("[PIN] Mnemonic re-encrypted with new PIN for user %s", GetUserStr(user.Telegram))
+		} else {
+			log.Warnf("[PIN] Changing PIN without old PIN: mnemonic will NOT be re-encrypted for user %s", GetUserStr(user.Telegram))
+		}
+
 		user.PinSalt = newSalt
 	} else {
 		// Primo PIN - genera salt
@@ -409,9 +444,6 @@ func (bot *TipBot) savePinForUser(user *lnbits.User, pin string) error {
 		if err != nil {
 			return fmt.Errorf("failed to generate salt: %w", err)
 		}
-
-		// Note: If user has existing mnemonic, it will be re-encrypted
-		// when they next access it (handled in initUserBreezWallet)
 	}
 
 	// Hash il PIN per la verifica
@@ -565,8 +597,8 @@ func (bot *TipBot) resetPinAttempts(user *lnbits.User) {
 	UpdateUserRecord(user, *bot)
 }
 
-// notifyIfColdStart avvisa l'utente che lo sbloccco del wallet Safer potrebbe
-// richiedere fino a un minuto, se il client Breez non è ancora in memoria
+// notifyIfColdStart avvisa l'utente che lo sblocco del wallet Safer potrebbe
+// richiedere alcuni minuti, se il client Breez non è ancora in memoria
 // (es. primo utilizzo dopo un riavvio del bot, con storage.sql grande).
 func (bot *TipBot) notifyIfColdStart(user *lnbits.User) {
 	bot.breezMutex.RLock()
@@ -575,7 +607,7 @@ func (bot *TipBot) notifyIfColdStart(user *lnbits.User) {
 
 	if !cached {
 		bot.trySendMessage(user.Telegram,
-			"⏳ Unlocking your Safer wallet, this can take up to a minute after a bot restart...")
+			"⏳ Unlocking your Safer wallet... this can take up to 5 minutes after a bot restart. Please wait and do NOT send other messages.")
 	}
 }
 

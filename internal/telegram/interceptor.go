@@ -3,7 +3,9 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/massmux/SatsMobiBot/internal/errors"
 
@@ -13,11 +15,15 @@ import (
 	"github.com/massmux/SatsMobiBot/internal/i18n"
 	i18n2 "github.com/nicksnyder/go-i18n/v2/i18n"
 
+	bip39 "github.com/tyler-smith/go-bip39"
+
 	"github.com/massmux/SatsMobiBot/internal/lnbits"
 	"github.com/massmux/SatsMobiBot/internal/telegram/intercept"
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/lightningtipbot/telebot.v3"
 )
+
+var pinPattern = regexp.MustCompile(`^\d{4,8}$`)
 
 type Interceptor struct {
 	Before  []intercept.Func
@@ -199,11 +205,27 @@ func (bot TipBot) requirePrivateChatInterceptor(ctx intercept.Context) (intercep
 
 const photoTag = "<Photo>"
 
+// redactSensitiveText sostituisce testo sensibile con placeholder prima di loggarlo.
+// Oscura: PIN (4-8 cifre), mnemonic BIP39 (12/24 parole valide).
+func redactSensitiveText(text string) string {
+	if pinPattern.MatchString(strings.TrimSpace(text)) {
+		return "[PIN REDACTED]"
+	}
+	words := strings.Fields(text)
+	if len(words) == 12 || len(words) == 24 {
+		if bip39.IsMnemonicValid(strings.Join(words, " ")) {
+			return "[MNEMONIC REDACTED]"
+		}
+	}
+	return text
+}
+
 func (bot TipBot) logMessageInterceptor(ctx intercept.Context) (intercept.Context, error) {
 	if ctx.Message() != nil {
 
 		if ctx.Message().Text != "" {
-			log_string := fmt.Sprintf("[%s:%d %s:%d] %s", ctx.Message().Chat.Title, ctx.Message().Chat.ID, GetUserStr(ctx.Message().Sender), ctx.Message().Sender.ID, ctx.Message().Text)
+			safeText := redactSensitiveText(ctx.Message().Text)
+			log_string := fmt.Sprintf("[%s:%d %s:%d] %s", ctx.Message().Chat.Title, ctx.Message().Chat.ID, GetUserStr(ctx.Message().Sender), ctx.Message().Sender.ID, safeText)
 			if ctx.Message().IsReply() {
 				log_string = fmt.Sprintf("%s -> %s", log_string, GetUserStr(ctx.Message().ReplyTo.Sender))
 			}

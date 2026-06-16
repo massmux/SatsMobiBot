@@ -173,28 +173,23 @@ func (bot *TipBot) initUserBreezWallet(user *lnbits.User) error {
 		return fmt.Errorf("PIN required - user must set PIN first")
 	}
 
-	// Check if user has encrypted mnemonic stored in DB
+	// Mnemonic requires the user's PIN to decrypt — request it via the normal PIN flow.
 	if user.BreezMnemonic != "" {
-		// User has existing mnemonic, decrypt it with PIN
-		log.Infof("[Breez] User %s has existing encrypted mnemonic", GetUserStr(user.Telegram))
-
-		mnemonic, err = breez.DecryptMnemonicWithPin(user.BreezMnemonic, user.PinHash, user.PinSalt)
-		if err != nil {
-			log.Errorf("[Breez] Failed to decrypt mnemonic with PIN: %s", err)
-			return fmt.Errorf("failed to decrypt mnemonic: %w", err)
-		}
+		log.Infof("[Breez] User %s has existing encrypted mnemonic, requesting PIN to decrypt", GetUserStr(user.Telegram))
+		bot.trySendMessage(user.Telegram,
+			"🔐 Enter your PIN to unlock your Safer wallet:")
+		user.StateKey = lnbits.UserStateEnterPinForOperation
+		user.StateData = "view_balance"
+		UpdateUserRecord(user, *bot)
+		return fmt.Errorf("waiting for PIN to decrypt mnemonic")
 	} else {
-		// Generate new mnemonic with PIN protection
+		// No mnemonic yet — request PIN to create a new wallet.
 		log.Infof("[Breez] Generating new mnemonic for user %s", GetUserStr(user.Telegram))
-
-		// Request PIN to encrypt the new mnemonic
 		bot.trySendMessage(user.Telegram,
 			"🔐 Enter your PIN to create your secure wallet:")
-
 		user.StateKey = lnbits.UserStateEnterPinForOperation
 		user.StateData = "create_wallet"
 		UpdateUserRecord(user, *bot)
-
 		return fmt.Errorf("waiting for PIN to create wallet")
 	}
 
