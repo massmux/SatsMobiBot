@@ -72,6 +72,7 @@ _Dies ist eine opensource self-custodial Bitcoin Lightning Wallet-Suite. Es gibt
 */send*: Sende Trinkgeld an einen Nutzer (Hot): `/send <Betrag> @Nutzer oder Nutzer@sats.mobi [<Memo>]`
 */invoice*: Empfangen (Safer): `/invoice <Betrag> [<Memo>]`
 */pay*: Rechnung bezahlen (Safer): `/pay <Rechnung>`
+*/payln*: Rechnung bezahlen (Hot): `/payln <Rechnung>`
 */rate*: Wechselkurse pruefen: `/rate [Betrag] [Waehrung]` - Beispiel: `/rate 10000 USD`
 */cashback*: QRCODE fuer Cashback-Empfang.
 */activatecard*: Aktivierung einer SatsMobi NFC-Karte anfordern `/activatecard <CardID>`
@@ -211,6 +212,8 @@ invoiceUndefinedErrorMessage = """Rechnung konnte nicht bezahlt werden."""
 confirmPayInvoiceMessage     = """Moechtest du diese Zahlung senden?\n\n💸 Betrag: %d sat"""
 confirmPayAppendMemo         = """\n✉️ %s"""
 payHelpText                  = """📖 Hoppla, das hat nicht geklappt. %s\n\n*Verwendung:* `/pay <Rechnung>`\n*Beispiel:* `/pay lnbc20n1psscehd...`"""
+confirmPayLnInvoiceMessage   = """⚡ Moechtest du diese Zahlung mit deinem Lightning (Hot) Guthaben senden?\n\n💸 Betrag: %d sat"""
+paylnHelpText                = """📖 Hoppla, das hat nicht geklappt. %s\n\n*Verwendung:* `/payln <Rechnung>`\n*Beispiel:* `/payln lnbc20n1psscehd...`\n\nDieser Befehl bezahlt immer aus deinem Lightning (Hot) Guthaben, auch wenn die Safer-Wallet nicht aktiv, initialisiert oder funktionsfaehig ist."""
 
 activatecardHelpText         = """📖 Hoppla, das hat nicht geklappt. Vergiss nicht die CardID (14-Zeichen-Code) nach dem Befehl\n\n*Verwendung:* `/activatecard <cardid>`\n*Beispiel:* `/activatecard 04B4596A926980`"""
 

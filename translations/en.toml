@@ -72,6 +72,7 @@ _This is a Bitcoin Lightning opensource self-custodial Wallet Suite. There are 2
 */send*: Send tips to a user (Hot): `/send <amount> @user or user@sats.mobi [<memo>]`
 */invoice*: Receive (Safer): `/invoice <amount> [<memo>]`
 */pay*: Pay Invoice (Safer): `/pay <invoice>`
+*/payln*: Pay Invoice (Hot): `/payln <invoice>`
 */rate*: Check exchange rates: `/rate [amount] [currency]` - Example: `/rate 10000 USD`
 */cashback*: QRCODE for receiving cashback.
 */activatecard*: Request activation of a SatsMobi NFC Card `/activatecard <CardID>`
@@ -229,6 +230,13 @@ payHelpText                  = """📖 Oops, that didn't work. %s
 
 *Usage:* `/pay <invoice>`
 *Example:* `/pay lnbc20n1psscehd...`"""
+confirmPayLnInvoiceMessage   = """⚡ Do you want to send this payment using your Lightning (Hot) balance?\n\n💸 Amount: %d sat"""
+paylnHelpText                = """📖 Oops, that didn't work. %s
+
+*Usage:* `/payln <invoice>`
+*Example:* `/payln lnbc20n1psscehd...`
+
+This command always pays from your Lightning (Hot) balance, even if the Safer wallet is not active, initialized, or working."""
 
 activatecardHelpText         = """📖 Oops, that didn't work. Do not forget the CardID (14 characters code) after the command
 

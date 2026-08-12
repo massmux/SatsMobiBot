@@ -132,6 +132,22 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 			},
 		},
 		{
+			Endpoints: []interface{}{"/payln"},
+			Handler:   bot.payLnHandler,
+			Interceptor: &Interceptor{
+				Before: []intercept.Func{
+					bot.requirePrivateChatInterceptor,
+					bot.localizerInterceptor,
+					bot.logMessageInterceptor,
+					bot.requireUserInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
 			Endpoints: []interface{}{"/pos"},
 			Handler:   bot.posHandler,
 			Interceptor: &Interceptor{
@@ -777,6 +793,36 @@ func (bot TipBot) getHandler() []InterceptionWrapper {
 		{
 			Endpoints: []interface{}{&btnCancelPay},
 			Handler:   bot.cancelPaymentHandler,
+			Interceptor: &Interceptor{
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+					bot.answerCallbackInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{&btnPayLn},
+			Handler:   bot.confirmPayLnHandler,
+			Interceptor: &Interceptor{
+				Before: []intercept.Func{
+					bot.localizerInterceptor,
+					bot.requireUserInterceptor,
+					bot.answerCallbackInterceptor,
+					bot.lockInterceptor,
+				},
+				OnDefer: []intercept.Func{
+					bot.unlockInterceptor,
+				},
+			},
+		},
+		{
+			Endpoints: []interface{}{&btnCancelPayLn},
+			Handler:   bot.cancelPayLnHandler,
 			Interceptor: &Interceptor{
 				Before: []intercept.Func{
 					bot.localizerInterceptor,

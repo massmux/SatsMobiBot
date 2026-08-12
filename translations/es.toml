@@ -72,6 +72,7 @@ _Esta es una suite de carteras Bitcoin Lightning opensource self-custodial. Hay 
 */send*: Envía propinas a un usuario (Hot): `/send <cantidad> @usuario o usuario@sats.mobi [<memo>]`
 */invoice*: Recibir (Safer): `/invoice <cantidad> [<memo>]`
 */pay*: Pagar factura (Safer): `/pay <factura>`
+*/payln*: Pagar factura (Hot): `/payln <factura>`
 */rate*: Consulta tipos de cambio: `/rate [cantidad] [moneda]` - Ejemplo: `/rate 10000 USD`
 */cashback*: QRCODE para recibir cashback.
 */activatecard*: Solicita la activación de una NFC Card SatsMobi `/activatecard <CardID>`
@@ -211,6 +212,8 @@ invoiceUndefinedErrorMessage = """No se pudo pagar la factura."""
 confirmPayInvoiceMessage     = """¿Quieres enviar este pago?\n\n💸 Cantidad: %d sat"""
 confirmPayAppendMemo         = """\n✉️ %s"""
 payHelpText                  = """📖 Vaya, algo salió mal. %s\n\n*Uso:* `/pay <factura>`\n*Ejemplo:* `/pay lnbc20n1psscehd...`"""
+confirmPayLnInvoiceMessage   = """⚡ ¿Quieres enviar este pago usando tu saldo Lightning (Hot)?\n\n💸 Cantidad: %d sat"""
+paylnHelpText                = """📖 Vaya, algo salió mal. %s\n\n*Uso:* `/payln <factura>`\n*Ejemplo:* `/payln lnbc20n1psscehd...`\n\nEste comando siempre paga desde tu saldo Lightning (Hot), incluso si la wallet Safer no está activa, inicializada o funcionando."""
 
 activatecardHelpText         = """📖 Vaya, algo salió mal. No olvides el CardID (código de 14 caracteres) después del comando\n\n*Uso:* `/activatecard <cardid>`\n*Ejemplo:* `/activatecard 04B4596A926980`"""
 
