@@ -5,7 +5,7 @@ go 1.24.2
 require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/PuerkitoBio/goquery v1.8.0
-	github.com/breez/breez-sdk-liquid-go v0.11.7
+	github.com/SatsRouting/breez-sdk-liquid-go v0.11.7
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4
 	github.com/eko/gocache v1.2.0
 	github.com/fiatjaf/go-lnurl v1.13.1

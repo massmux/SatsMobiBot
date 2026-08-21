@@ -3,7 +3,7 @@ package breez
 import (
 	"fmt"
 
-	breez_sdk "github.com/breez/breez-sdk-liquid-go/breez_sdk_liquid"
+	breez_sdk "github.com/SatsRouting/breez-sdk-liquid-go/breez_sdk_liquid"
 )
 
 // Client wraps the Breez SDK client

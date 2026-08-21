@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	breez_sdk "github.com/breez/breez-sdk-liquid-go/breez_sdk_liquid"
+	breez_sdk "github.com/SatsRouting/breez-sdk-liquid-go/breez_sdk_liquid"
 	log "github.com/sirupsen/logrus"
 )
 
