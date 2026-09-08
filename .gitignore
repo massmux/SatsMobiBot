@@ -7,6 +7,8 @@ SatsMobiBot
 old
 docs/
 CLAUDE.md
+high-crit
+verify.sh
 
 # go test -c artifacts (avoid committing test binaries)
 *.test

@@ -23,6 +23,8 @@ github.com/PuerkitoBio/purell v1.0.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbt
 github.com/PuerkitoBio/urlesc v0.0.0-20160726150825-5bd2802263f2/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/SatsRouting/breez-sdk-liquid-go v0.11.7 h1:pDpe42V099lHZG7IBMdCjC/A3jSlXTroLqZo95UBt4c=
 github.com/SatsRouting/breez-sdk-liquid-go v0.11.7/go.mod h1:1bv9FH6p8U+B1VxUWv0r9W8gPKmt5aLliw+AgiufeuE=
+github.com/SatsRouting/breez-sdk-liquid-go v0.11.8 h1:XY+XIs0HivygYc+X9KMg1yUyDd8L03AkJ49taYmqi30=
+github.com/SatsRouting/breez-sdk-liquid-go v0.11.8/go.mod h1:1bv9FH6p8U+B1VxUWv0r9W8gPKmt5aLliw+AgiufeuE=
 github.com/SaveTheRbtz/generic-sync-map-go v0.0.0-20220414055132-a37292614db8 h1:Xa6tp8DPDhdV+k23uiTC/GrAYOe4IdyJVKtob4KW3GA=
 github.com/SaveTheRbtz/generic-sync-map-go v0.0.0-20220414055132-a37292614db8/go.mod h1:ihkm1viTbO/LOsgdGoFPBSvzqvx7ibvkMzYp3CgtHik=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
