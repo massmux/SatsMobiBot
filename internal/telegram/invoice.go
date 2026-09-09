@@ -343,6 +343,7 @@ func (bot *TipBot) createInvoiceWithEvent(ctx context.Context, user *lnbits.User
 	}
 
 	invoiceEvent := InvoiceEvent{
+		Base: storage.New(storage.ID(fmt.Sprintf("invoice:%s", paymentHash))),
 		Invoice: &Invoice{PaymentHash: paymentHash,
 			PaymentRequest: paymentRequest,
 			Amount:         amount,
@@ -478,6 +479,7 @@ func (bot *TipBot) createLNbitsInvoiceWithEvent(ctx context.Context, user *lnbit
 	}
 
 	invoiceEvent := InvoiceEvent{
+		Base: storage.New(storage.ID(fmt.Sprintf("invoice:%s", invoice.PaymentHash))),
 		Invoice: &Invoice{PaymentHash: invoice.PaymentHash,
 			PaymentRequest: invoice.PaymentRequest,
 			Amount:         amount,

@@ -483,6 +483,7 @@ func (w Lnurl) serveLNURLpSecond(username string, amount_msat int64, comment str
 	// save the invoice Event that will be loaded when the invoice is paid and trigger the comment display callback
 	runtime.IgnoreError(w.buntdb.Set(
 		telegram.InvoiceEvent{
+			Base:         storage.New(storage.ID(fmt.Sprintf("invoice:%s", invoiceStruct.PaymentHash))),
 			Invoice:      invoiceStruct,
 			User:         user,
 			Callback:     telegram.InvoiceCallbackLNURLPayReceive,

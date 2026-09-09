@@ -1,4 +1,5 @@
 config.yaml
+!internal/lnbits/webhook/config.yaml
 data/*
 !data/.placeholder
 LightningTipBot
