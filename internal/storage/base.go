@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"encoding/json"
 	"github.com/massmux/SatsMobiBot/internal/runtime"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 	gocache "github.com/patrickmn/go-cache"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/tidwall/buntdb"
 )
 
 var transactionCache = store.NewGoCache(gocache.New(5*time.Minute, 10*time.Minute), nil)
@@ -84,6 +86,41 @@ func (tx *Base) Set(s Storable, db *DB) error {
 	}
 	log.Tracef("[Bunt Cache] set object: %s", s.Key())
 	return err
+}
+
+// ClaimOnce atomically transitions s from active to inactive and reports
+// whether this call is the one that made the transition. It reads the
+// currently persisted state inside the same buntdb write transaction, so
+// concurrent/replayed calls race safely: exactly one caller sees claimed=true,
+// everyone else (including calls arriving after it's already inactive) sees
+// claimed=false with no error. Used to make webhook-triggered dispatch
+// idempotent against replay.
+func (tx *Base) ClaimOnce(s Storable, db *DB) (claimed bool, err error) {
+	err = db.Update(func(btx *buntdb.Tx) error {
+		val, getErr := btx.Get(s.Key())
+		if getErr != nil {
+			return getErr
+		}
+		var current Base
+		if jsonErr := json.Unmarshal([]byte(val), &current); jsonErr != nil {
+			return jsonErr
+		}
+		if !current.Active {
+			return nil
+		}
+		tx.Active = false
+		tx.UpdatedAt = time.Now()
+		b, marshalErr := json.Marshal(s)
+		if marshalErr != nil {
+			return marshalErr
+		}
+		if _, _, setErr := btx.Set(s.Key(), string(b), nil); setErr != nil {
+			return setErr
+		}
+		claimed = true
+		return nil
+	})
+	return
 }
 
 func (tx *Base) Delete(s Storable, db *DB) error {

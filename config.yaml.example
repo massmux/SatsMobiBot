@@ -19,7 +19,12 @@ lnbits:
   url: "https://seven.gwoq.com"
   admin_key: "XXXX"
   admin_id: "XXXX"
-  webhook_call: "http://IP:5588"
+  # webhook_secret authenticates incoming LNbits payment webhooks - required,
+  # the bot refuses to start without it. Generate one with e.g.:
+  #   openssl rand -hex 32
+  # and append it as a path segment to webhook_call (not webhook_server).
+  webhook_secret: "CHANGE_ME_RANDOM_SECRET"
+  webhook_call: "http://IP:5588/CHANGE_ME_RANDOM_SECRET"
   webhook_server: "http://satsmobi:5588"
   lnbits_public_url: "https://lnbitspublicurl/"
 database:  

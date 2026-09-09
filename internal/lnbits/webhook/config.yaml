@@ -1,0 +1,42 @@
+bot:
+  lnurl_public_host_name: "https://example.com"
+  lnurl_server: "http://127.0.0.1:5454"
+  lnurl_image: false
+  admin_api_host: "127.0.0.1:6060"
+  username: "@TestBot"
+  name: "testbot"
+  botadmin: "testadmin"
+telegram:
+  message_dispose_duration: 10
+  api_key: "12345:fake"
+lnbits:
+  url: "http://127.0.0.1:1"
+  admin_key: "fake"
+  admin_id: "fake"
+  webhook_secret: "test-webhook-secret"
+  webhook_call: "http://127.0.0.1:5588/test-webhook-secret"
+  webhook_server: "http://127.0.0.1:5588"
+database:
+  db_path: ":memory:"
+  buntdb_path: ":memory:"
+  transactions_path: ":memory:"
+  shop_buntdb_path: ":memory:"
+  groupsdb_path: ":memory:"
+generate:
+  open_ai_bearer_token: ""
+  dalle_key: ""
+  dalle_price: 1000
+  worker: 0
+nostr:
+  private_key: ""
+pos:
+  currency: "EUR"
+  max_balance: 1000000
+breez:
+  enabled: false
+  api_key: ""
+  working_dir: "data/breez"
+  network: "testnet"
+limits:
+  lnbits_max_balance: 50000
+  auto_swap_threshold: 60000

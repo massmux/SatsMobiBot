@@ -87,6 +87,7 @@ type LnbitsConfiguration struct {
 	LnbitsPublicUrl  string   `yaml:"lnbits_public_url"`
 	WebhookServer    string   `yaml:"webhook_server"`
 	WebhookCall      string   `yaml:"webhook_call"`
+	WebhookSecret    string   `yaml:"webhook_secret"` // required path-segment secret authenticating incoming LNbits webhooks
 	WebhookServerUrl *url.URL `yaml:"-"`
 }
 
@@ -203,6 +204,9 @@ func checkBreezConfiguration() {
 func checkLnbitsConfiguration() {
 	if Configuration.Lnbits.Url == "" {
 		panic(fmt.Errorf("please configure a lnbits url"))
+	}
+	if Configuration.Lnbits.WebhookSecret == "" {
+		panic(fmt.Errorf("please configure lnbits.webhook_secret (required to authenticate incoming LNbits payment webhooks); append it as a path segment to lnbits.webhook_call, e.g. \"http://host:5588/<secret>\""))
 	}
 	if Configuration.Lnbits.LnbitsPublicUrl == "" {
 		log.Warnf("Please specify a lnbits public url otherwise users won't be able to")
