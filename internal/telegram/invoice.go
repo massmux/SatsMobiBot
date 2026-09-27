@@ -113,10 +113,25 @@ func helpInvoiceUsage(ctx context.Context, errormsg string) string {
 	}
 }
 
+// liquidPegDisabled temporarily disables /invoice and the Lightning -> Liquid
+// swaps (Hot -> Safer) while the Liquid peg is not restored by Blockstream.
+// Users are redirected to /invoiceln. Set to false to re-enable them.
+const liquidPegDisabled = true
+
+const invoiceDisabledMessage = "⚠️ The /invoice command is temporarily disabled.\n\n" +
+	"Until the Liquid peg is restored by Blockstream, please use the /invoiceln command only."
+
+const swapToLiquidDisabledMessage = "⚠️ Swaps from Lightning to Liquid (Hot → Safer) are temporarily disabled.\n\n" +
+	"Until the Liquid peg is restored by Blockstream, please use the /invoiceln command only."
+
 func (bot *TipBot) invoiceHandler(ctx intercept.Context) (intercept.Context, error) {
 	m := ctx.Message()
 	// check and print all commands
 	bot.anyTextHandler(ctx)
+	if liquidPegDisabled {
+		bot.trySendMessage(m.Sender, invoiceDisabledMessage)
+		return ctx, nil
+	}
 	user := LoadUser(ctx)
 	// load user settings
 	user, err := GetLnbitsUserWithSettings(user.Telegram, *bot)

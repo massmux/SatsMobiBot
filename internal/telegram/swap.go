@@ -75,6 +75,10 @@ type SwapData struct {
 func (bot *TipBot) swapHandler(ctx intercept.Context) (intercept.Context, error) {
 	// check and print all commands
 	bot.anyTextHandler(ctx)
+	if liquidPegDisabled {
+		bot.trySendMessage(ctx.Sender(), swapToLiquidDisabledMessage)
+		return ctx, nil
+	}
 
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
@@ -124,6 +128,10 @@ func (bot *TipBot) swapHandler(ctx intercept.Context) (intercept.Context, error)
 func (bot *TipBot) swapToBreezHandler(ctx intercept.Context) (intercept.Context, error) {
 	// check and print all commands
 	bot.anyTextHandler(ctx)
+	if liquidPegDisabled {
+		bot.trySendMessage(ctx.Sender(), swapToLiquidDisabledMessage)
+		return ctx, nil
+	}
 
 	user := LoadUser(ctx)
 	if user.Wallet == nil {
@@ -542,6 +550,12 @@ func (bot *TipBot) enterSwapAmountHandler(ctx intercept.Context) (intercept.Cont
 	if user.Wallet == nil {
 		return ctx, errors.Create(errors.UserNoWalletError)
 	}
+	if liquidPegDisabled {
+		user.ResetState()
+		UpdateUserRecord(user, *bot)
+		bot.trySendMessage(ctx.Sender(), swapToLiquidDisabledMessage)
+		return ctx, nil
+	}
 
 	userStr := GetUserStr(ctx.Sender())
 
@@ -614,6 +628,11 @@ func (bot *TipBot) enterSwapAmountHandler(ctx intercept.Context) (intercept.Cont
 
 // confirmSwapHandler executes the actual swap transaction
 func (bot *TipBot) confirmSwapHandler(ctx intercept.Context) (intercept.Context, error) {
+	if liquidPegDisabled {
+		// confirmation sent before the swap was disabled: drop its buttons
+		bot.tryEditMessage(ctx.Message(), swapToLiquidDisabledMessage, &tb.ReplyMarkup{})
+		return ctx, nil
+	}
 	tx := &SwapData{Base: storage.New(storage.ID(ctx.Data()))}
 	mutex.LockWithContext(ctx, tx.ID)
 	defer mutex.UnlockWithContext(ctx, tx.ID)
@@ -706,6 +725,11 @@ func (bot *TipBot) cancelSwapHandler(ctx intercept.Context) (intercept.Context, 
 
 // confirmSwapToBreezHandler executes the swap from LNbits to Breez
 func (bot *TipBot) confirmSwapToBreezHandler(ctx intercept.Context) (intercept.Context, error) {
+	if liquidPegDisabled {
+		// confirmation sent before the swap was disabled: drop its buttons
+		bot.tryEditMessage(ctx.Message(), swapToLiquidDisabledMessage, &tb.ReplyMarkup{})
+		return ctx, nil
+	}
 	tx := &SwapData{Base: storage.New(storage.ID(ctx.Data()))}
 	mutex.LockWithContext(ctx, tx.ID)
 	defer mutex.UnlockWithContext(ctx, tx.ID)
